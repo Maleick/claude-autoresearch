@@ -1,0 +1,15 @@
+{
+  "name": "autoresearch",
+  "owner": {
+    "name": "Maleick",
+    "email": ""
+  },
+  "plugins": [
+    {
+      "name": "autoresearch",
+      "description": "Autonomous Goal-directed Iteration — debug, fix, learn, predict, scenario, security, ship, and plan sub-commands for measurable iterative improvement.",
+      "source": "./plugins/autoresearch",
+      "category": "development"
+    }
+  ]
+}

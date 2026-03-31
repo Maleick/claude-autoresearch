@@ -1,0 +1,8 @@
+{
+  "name": "autoresearch",
+  "version": "1.0.0",
+  "description": "Autonomous Goal-directed Iteration — debug, fix, learn, predict, scenario, security, ship, and plan sub-commands for measurable iterative improvement.",
+  "author": {
+    "name": "Maleick"
+  }
+}
