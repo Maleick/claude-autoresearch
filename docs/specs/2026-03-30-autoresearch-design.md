@@ -13,7 +13,7 @@ Core idea from Karpathy: **Modify → Verify → Keep/Discard → Repeat.**
 
 1. **Zero interaction after launch** — all config is front-loaded into the invocation. No `AskUserQuestion` mid-loop. If something is ambiguous, fail loudly and stop rather than guess.
 2. **Safety by default** — automatic rollback on any regression. Guard commands prevent collateral damage. Soft cap at 100 iterations (override with `--no-limit`). Duration cap supported.
-3. **Git as memory** — every kept change is a commit. The agent reads its own git history to learn what worked and what didn't. Discarded changes are reverted, not committed.
+3. **Git as memory** — every kept change is a commit on an isolated branch. The agent reads its own git history to learn what worked and what didn't. Discarded changes are reset (removed from history), not reverted.
 4. **Mechanical verification only** — metrics come from running commands (tests, linters, benchmarks), never from LLM self-assessment.
 5. **One atomic change per iteration** — small, reviewable diffs. Never bundle multiple changes.
 6. **Morning report everywhere** — structured markdown file + terminal summary + Discord notification on completion or stuck.
@@ -120,7 +120,7 @@ Offensive security audit. STRIDE threat modeling + OWASP Top 10 + red-team adver
 
 - Maps trust boundaries and attack surfaces
 - 4 adversarial personas: External Attacker, Insider Threat, Supply Chain, Infrastructure
-- Every finding includes a working exploit PoC written to `security/poc-<vuln-slug>.{py,sh,js}`
+- Every finding includes a working exploit PoC written to `autoresearch-security/poc-<vuln-slug>.{py,sh,js}`
 - PoC files double as regression tests once the vulnerability is fixed
 - Severity classification: Critical / High / Medium / Low
 - `--fix` auto-remediates confirmed findings after writing the PoC
@@ -135,6 +135,7 @@ All commands share this iteration engine:
 ### Phase 0: Preconditions
 
 - Confirm inside a git repo with clean working tree
+- Create an isolated branch: `autoresearch/<timestamp>` — NEVER run on the default branch
 - Validate Verify command runs and outputs a number
 - Validate Guard command (if provided) exits 0
 - Record baseline metric (iteration 0)
@@ -163,7 +164,7 @@ All commands share this iteration engine:
 
 - `git add` changed files within Scope only
 - Commit with message: `autoresearch: <description of change>`
-- Commit BEFORE verification (so rollback = `git revert`)
+- Commit BEFORE verification (so rollback = `git reset --hard HEAD~1` on isolated branch)
 
 ### Phase 5: Verify
 
@@ -178,8 +179,8 @@ All commands share this iteration engine:
 ### Phase 6: Decide
 
 - **Keep:** metric improved (or equal + meaningful change) AND guard passed → reset consecutive discard counter
-- **Discard:** metric worsened OR guard failed → `git revert HEAD --no-edit` → increment consecutive discard counter
-- **Crash:** command failed to run → `git revert HEAD --no-edit`, log crash, continue
+- **Discard:** metric worsened OR guard failed → `git reset --hard HEAD~1` → increment consecutive discard counter
+- **Crash:** command failed to run → `git reset --hard HEAD~1`, log crash, continue
 
 ### Phase 7: Log
 
@@ -264,23 +265,38 @@ Statuses: `baseline`, `keep`, `discard`, `crash`, `stuck`
 ## File Structure (Plugin Distribution)
 
 ```
-autoresearch/
-├── claude-plugin/
-│   ├── skills/
-│   │   └── autoresearch/
-│   │       ├── SKILL.md              # Core loop engine + all protocol inline
-│   │       └── references/
-│   │           ├── plan-workflow.md
-│   │           ├── debug-workflow.md
-│   │           ├── fix-workflow.md
-│   │           └── security-workflow.md
-│   └── commands/
-│       ├── autoresearch.md           # Main slash command entry point
-│       └── autoresearch/
-│           ├── plan.md
-│           ├── debug.md
-│           ├── fix.md
-│           └── security.md
+claude-autoresearch/
+├── .claude-plugin/
+│   └── marketplace.json              # Marketplace manifest
+├── plugins/
+│   └── autoresearch/
+│       ├── .claude-plugin/
+│       │   └── plugin.json           # Plugin manifest
+│       ├── commands/
+│       │   ├── autoresearch.md       # Main slash command entry point
+│       │   └── autoresearch/
+│       │       ├── plan.md
+│       │       ├── debug.md
+│       │       ├── fix.md
+│       │       ├── learn.md
+│       │       ├── predict.md
+│       │       ├── scenario.md
+│       │       ├── security.md
+│       │       └── ship.md
+│       └── skills/
+│           └── autoresearch/
+│               ├── SKILL.md          # Core skill definition
+│               └── references/
+│                   ├── autonomous-loop-protocol.md
+│                   ├── results-logging.md
+│                   ├── plan-workflow.md
+│                   ├── debug-workflow.md
+│                   ├── fix-workflow.md
+│                   ├── learn-workflow.md
+│                   ├── predict-workflow.md
+│                   ├── scenario-workflow.md
+│                   ├── security-workflow.md
+│                   └── ship-workflow.md
 ├── docs/
 │   └── specs/
 │       └── 2026-03-30-autoresearch-design.md
@@ -294,20 +310,15 @@ autoresearch/
 **Via marketplace (recommended):**
 
 ```
-/plugin marketplace add maleick/claude-autoresearch
-/plugin install autoresearch@autoresearch
+/install maleick/claude-autoresearch
 ```
-
-**Manual:**
-Copy `claude-plugin/skills/autoresearch/` to `~/.claude/skills/autoresearch/`
-Copy `claude-plugin/commands/autoresearch.md` and `claude-plugin/commands/autoresearch/` to `~/.claude/commands/`
 
 ## Key Differences from uditgoenka/autoresearch
 
 | Aspect               | Original (v1.8.2)        | Ours                                          |
 | -------------------- | ------------------------ | --------------------------------------------- |
-| Commands             | 9                        | 5 (core, plan, debug, fix, security)          |
-| Reference files      | 11                       | 4 (lean workflow refs)                        |
+| Commands             | 9                        | 9 (core, plan, debug, fix, security, learn, predict, scenario, ship) |
+| Reference files      | 11                       | 10 (workflow refs + loop protocol + results logging) |
 | Interactive mid-loop | Yes (7 questions)        | No — fail-fast if config incomplete           |
 | Overnight capable    | Not designed for it      | Primary use case                              |
 | Iteration limits     | Count only               | Count + Duration, soft cap 100                |

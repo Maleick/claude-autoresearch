@@ -27,7 +27,7 @@ All remaining text in $ARGUMENTS is additional context — use it to understand 
 ## Execution
 
 1. Read the learn workflow: `.claude/skills/autoresearch/references/learn-workflow.md`
-2. If scope or goal is missing — use `AskUserQuestion` with batched questions per learn-workflow.md
+2. If scope or goal is missing — **FAIL FAST**: print a clear error listing the missing fields and an example invocation, then STOP. Do NOT use `AskUserQuestion` — this command must run unattended.
 3. Execute the learn workflow
 4. If bounded: after each iteration, check `current_iteration < max_iterations`. If not, STOP and print summary.
 

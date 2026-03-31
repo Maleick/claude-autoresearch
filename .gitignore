@@ -3,6 +3,7 @@ autoresearch-results.tsv
 autoresearch-report.md
 autoresearch-debug-findings.md
 autoresearch-security/
+security/poc-*
 
 # OS
 .DS_Store

@@ -25,7 +25,7 @@ All remaining text in $ARGUMENTS is additional context — use it to understand 
 ## Execution
 
 1. Read the security workflow: `.claude/skills/autoresearch/references/security-workflow.md`
-2. If scope is missing — use `AskUserQuestion` with batched questions per security-workflow.md
+2. If scope is missing — **FAIL FAST**: print a clear error listing the missing fields and an example invocation, then STOP. Do NOT use `AskUserQuestion` — this command must run unattended.
 3. Execute the 7-step security audit
 4. If bounded: after each iteration, check `current_iteration < max_iterations`. If not, STOP and print summary.
 

@@ -29,7 +29,7 @@ All remaining text not matching flags is the goal/focus description.
 ## Execution
 
 1. Read the predict workflow: `.claude/skills/autoresearch/references/predict-workflow.md`
-2. If scope or goal is missing — use `AskUserQuestion` with batched questions per predict-workflow.md
+2. If scope or goal is missing — **FAIL FAST**: print a clear error listing the missing fields and an example invocation, then STOP. Do NOT use `AskUserQuestion` — this command must run unattended.
 3. Execute the 8-phase predict workflow
 4. If bounded: after each iteration, check `current_iteration < max_iterations`. If not, STOP and print summary.
 5. If `--chain` is set, hand off to each chained command sequentially

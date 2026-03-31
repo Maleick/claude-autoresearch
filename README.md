@@ -2,7 +2,7 @@
 
 Autonomous overnight iteration engine for [Claude Code](https://claude.ai/claude-code). Fire it before bed, review improvements in the morning.
 
-Inspired by [Karpathy's autoresearch](https://github.com/karpathy/autoresearch). Applies constraint-driven autonomous iteration to any codebase.
+Inspired by [Karpathy's autoresearch](https://github.com/karpathy/autoresearch). Applies constraint-driven autonomous iteration to any git-backed codebase with a deterministic verification command.
 
 **Core loop:** Modify → Verify → Keep/Discard → Repeat.
 
@@ -10,30 +10,34 @@ Inspired by [Karpathy's autoresearch](https://github.com/karpathy/autoresearch).
 
 You give autoresearch a goal, a scope (which files to touch), and a verification command that outputs a number. It then autonomously:
 
-1. Makes one small, atomic change
-2. Commits it
-3. Runs your verification command
-4. Keeps the change if the metric improved, reverts if it didn't
-5. Repeats until iterations run out, time expires, or it gets stuck
+1. Creates an isolated `autoresearch/<timestamp>` branch
+2. Makes one small, atomic change
+3. Commits it
+4. Runs your verification command
+5. Keeps the change if the metric improved, resets if it didn't
+6. Repeats until iterations run out, time expires, or it gets stuck
 
-Every kept change is a git commit. Every discarded change is reverted. In the morning you get a structured report (file + terminal + Discord notification) showing what happened.
+Every kept change is a git commit on the isolated branch. Every discarded change is cleanly reset (no revert commits). In the morning you get a structured report (file + terminal + Discord notification) showing what happened.
 
 ## Commands
 
-| Command                  | Purpose                                       |
-| ------------------------ | --------------------------------------------- |
-| `/autoresearch`          | Core autonomous loop — runs unattended        |
-| `/autoresearch:plan`     | Interactive setup wizard — builds your config |
-| `/autoresearch:debug`    | Scientific-method bug hunting                 |
-| `/autoresearch:fix`      | Iterative error repair until zero remain      |
-| `/autoresearch:security` | Offensive security audit with exploit PoCs    |
+| Command                    | Purpose                                       |
+| -------------------------- | --------------------------------------------- |
+| `/autoresearch`            | Core autonomous loop — runs unattended        |
+| `/autoresearch:plan`       | Interactive setup wizard — builds your config  |
+| `/autoresearch:debug`      | Scientific-method bug hunting                  |
+| `/autoresearch:fix`        | Iterative error repair until zero remain       |
+| `/autoresearch:security`   | Offensive security audit with exploit PoCs     |
+| `/autoresearch:learn`      | Autonomous codebase documentation engine       |
+| `/autoresearch:predict`    | Multi-persona swarm analysis from expert views |
+| `/autoresearch:scenario`   | Scenario-driven use case & edge case generator |
+| `/autoresearch:ship`       | Structured shipping workflow (PR, release, deploy) |
 
 ## Quick Start
 
 ```bash
 # Install the plugin
-/plugin marketplace add maleick/claude-autoresearch
-/plugin install autoresearch@claude-autoresearch
+/install maleick/claude-autoresearch
 
 # Use the wizard to set up your first run
 /autoresearch:plan
@@ -67,12 +71,14 @@ Runs at 1 AM daily. Writes report, sends Discord notification when done.
 
 ## Safety
 
-- **Automatic rollback** — every regression is immediately reverted via `git revert`
+- **Branch isolation** — all work happens on `autoresearch/<timestamp>`, never on your default branch
+- **Clean discard** — failed experiments are reset (`git reset`), not reverted — no commit spam
 - **Guard commands** — a command that must always pass (e.g., `npm test`) prevents breaking changes
 - **Bounded iterations** — default 50, soft cap at 100 (override with `--no-limit`)
 - **Duration limits** — set `Duration: 8h` to cap wall-clock time
 - **Stuck detection** — stops after 10 consecutive failed attempts and alerts you via Discord
 - **Git as memory** — full audit trail in git history, easy to review or bulk-revert
+- **Fail-fast** — all non-plan commands fail immediately on missing required parameters (no interactive prompts mid-loop)
 
 ## Morning Report
 
@@ -81,19 +87,6 @@ When the run finishes, you get:
 1. **`autoresearch-report.md`** — detailed report with every change, metrics, and recommendations
 2. **Terminal summary** — quick stats if you check the session
 3. **Discord ping** — notification on your phone with the headline numbers
-
-## Manual Installation
-
-If you prefer not to use the plugin marketplace:
-
-```bash
-# Copy skill files
-cp -r claude-plugin/skills/autoresearch/ ~/.claude/skills/autoresearch/
-
-# Copy command files
-cp claude-plugin/commands/autoresearch.md ~/.claude/commands/
-cp -r claude-plugin/commands/autoresearch/ ~/.claude/commands/autoresearch/
-```
 
 ## Configuration Reference
 

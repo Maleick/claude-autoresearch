@@ -27,7 +27,7 @@ All remaining text in $ARGUMENTS is additional context — use it to understand 
 ## Execution
 
 1. Read the ship workflow: `.claude/skills/autoresearch/references/ship-workflow.md`
-2. If ship type is unclear — use `AskUserQuestion` with batched questions per ship-workflow.md
+2. If ship type is unclear — **FAIL FAST**: print a clear error listing the missing fields and an example invocation, then STOP. Do NOT use `AskUserQuestion` — this command must run unattended.
 3. Execute the 8-phase ship workflow
 
 Stream all output live — never run in background.

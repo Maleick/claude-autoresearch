@@ -25,7 +25,7 @@ If `Iterations: N` or `--iterations N` is found, set `max_iterations = N`. Track
 ## Execution
 
 1. Read the scenario workflow: `.claude/skills/autoresearch/references/scenario-workflow.md`
-2. If scenario or domain is missing — use `AskUserQuestion` with adaptive questions per scenario-workflow.md
+2. If scenario description is missing — **FAIL FAST**: print a clear error listing the missing fields and an example invocation, then STOP. Do NOT use `AskUserQuestion` — this command must run unattended.
 3. Execute the 7-phase scenario loop
 4. If bounded: after each iteration, check `current_iteration < max_iterations`. If not, STOP and print summary.
 

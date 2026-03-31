@@ -7,7 +7,7 @@
   "plugins": [
     {
       "name": "autoresearch",
-      "description": "Autonomous Goal-directed Iteration — debug, fix, learn, predict, scenario, security, ship, and plan sub-commands for measurable iterative improvement.",
+      "description": "Autonomous overnight iteration engine for git-backed codebases. Modify, verify, keep/discard, repeat.",
       "source": "./plugins/autoresearch",
       "category": "development"
     }
