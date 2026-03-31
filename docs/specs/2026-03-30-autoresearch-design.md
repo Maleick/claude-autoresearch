@@ -309,22 +309,24 @@ claude-autoresearch/
 
 **Via marketplace (recommended):**
 
-```
-/install maleick/claude-autoresearch
+```bash
+/plugin marketplace add Maleick/claude-autoresearch
+/plugin install autoresearch@Maleick-claude-autoresearch
+/reload-plugins
 ```
 
 ## Key Differences from uditgoenka/autoresearch
 
-| Aspect               | Original (v1.8.2)        | Ours                                          |
-| -------------------- | ------------------------ | --------------------------------------------- |
+| Aspect               | Original (v1.8.2)        | Ours                                                                 |
+| -------------------- | ------------------------ | -------------------------------------------------------------------- |
 | Commands             | 9                        | 9 (core, plan, debug, fix, security, learn, predict, scenario, ship) |
-| Reference files      | 11                       | 10 (workflow refs + loop protocol + results logging) |
-| Interactive mid-loop | Yes (7 questions)        | No — fail-fast if config incomplete           |
-| Overnight capable    | Not designed for it      | Primary use case                              |
-| Iteration limits     | Count only               | Count + Duration, soft cap 100                |
-| Morning report       | No                       | Markdown + terminal + Discord                 |
-| Stuck handling       | >5 discards, keeps going | 5 = strategy shift, 10 = stop + Discord alert |
-| Loop protocol        | Separate reference file  | Inline in SKILL.md                            |
-| Security workflow    | Generic STRIDE/OWASP     | Full offensive — writes exploit PoCs          |
-| Notifications        | None                     | Discord on complete/stuck                     |
-| Distribution         | Plugin only              | Plugin + manual install                       |
+| Reference files      | 11                       | 10 (workflow refs + loop protocol + results logging)                 |
+| Interactive mid-loop | Yes (7 questions)        | No — fail-fast if config incomplete                                  |
+| Overnight capable    | Not designed for it      | Primary use case                                                     |
+| Iteration limits     | Count only               | Count + Duration, soft cap 100                                       |
+| Morning report       | No                       | Markdown + terminal + Discord                                        |
+| Stuck handling       | >5 discards, keeps going | 5 = strategy shift, 10 = stop + Discord alert                        |
+| Loop protocol        | Separate reference file  | Inline in SKILL.md                                                   |
+| Security workflow    | Generic STRIDE/OWASP     | Full offensive — writes exploit PoCs                                 |
+| Notifications        | None                     | Discord on complete/stuck                                            |
+| Distribution         | Plugin only              | Plugin + manual install                                              |

@@ -21,24 +21,36 @@ Every kept change is a git commit on the isolated branch. Every discarded change
 
 ## Commands
 
-| Command                    | Purpose                                       |
-| -------------------------- | --------------------------------------------- |
-| `/autoresearch`            | Core autonomous loop — runs unattended        |
-| `/autoresearch:plan`       | Interactive setup wizard — builds your config  |
-| `/autoresearch:debug`      | Scientific-method bug hunting                  |
-| `/autoresearch:fix`        | Iterative error repair until zero remain       |
-| `/autoresearch:security`   | Offensive security audit with exploit PoCs     |
-| `/autoresearch:learn`      | Autonomous codebase documentation engine       |
-| `/autoresearch:predict`    | Multi-persona swarm analysis from expert views |
-| `/autoresearch:scenario`   | Scenario-driven use case & edge case generator |
-| `/autoresearch:ship`       | Structured shipping workflow (PR, release, deploy) |
+| Command                  | Purpose                                            |
+| ------------------------ | -------------------------------------------------- |
+| `/autoresearch`          | Core autonomous loop — runs unattended             |
+| `/autoresearch:plan`     | Interactive setup wizard — builds your config      |
+| `/autoresearch:debug`    | Scientific-method bug hunting                      |
+| `/autoresearch:fix`      | Iterative error repair until zero remain           |
+| `/autoresearch:security` | Offensive security audit with exploit PoCs         |
+| `/autoresearch:learn`    | Autonomous codebase documentation engine           |
+| `/autoresearch:predict`  | Multi-persona swarm analysis from expert views     |
+| `/autoresearch:scenario` | Scenario-driven use case & edge case generator     |
+| `/autoresearch:ship`     | Structured shipping workflow (PR, release, deploy) |
 
 ## Quick Start
 
-```bash
-# Install the plugin
-/install maleick/claude-autoresearch
+### Install
 
+```bash
+# Add the marketplace source
+/plugin marketplace add Maleick/claude-autoresearch
+
+# Install the plugin
+/plugin install autoresearch@Maleick-claude-autoresearch
+
+# Reload to activate
+/reload-plugins
+```
+
+### Use
+
+```bash
 # Use the wizard to set up your first run
 /autoresearch:plan
 
