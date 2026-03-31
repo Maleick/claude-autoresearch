@@ -16,6 +16,29 @@ Before the first iteration, validate all of the following. If any check fails, S
 6. **Record baseline metric.** The number extracted in step 4 is iteration 0's metric. Store it as `baseline` and `previous_best`.
 7. **Record start time.** Capture wall-clock time for Duration limit tracking.
 8. **Initialize results log.** Create or append to `autoresearch-results.tsv` with a header row if the file is new (see results-logging.md for format).
+9. **Write initial `autoresearch-state.json`** with all config and baseline values. This file persists loop state for crash recovery and observability. Update this file after every subsequent phase completes. Initial contents:
+   ```json
+   {
+     "run_id": "<branch-name>",
+     "branch": "autoresearch/<timestamp>",
+     "goal": "<goal text>",
+     "scope": "<glob>",
+     "direction": "maximize|minimize",
+     "verify_cmd": "<cmd>",
+     "guard_cmd": "<cmd or null>",
+     "timeout_sec": 300,
+     "iteration": 0,
+     "max_iterations": 50,
+     "duration_limit": "8h",
+     "start_time": "<ISO8601>",
+     "previous_best": 42.0,
+     "baseline": 42.0,
+     "consecutive_discards": 0,
+     "last_phase_completed": "phase_0_preconditions",
+     "last_commit_sha": "abc1234",
+     "status": "running"
+   }
+   ```
 
 ---
 
@@ -23,6 +46,7 @@ Before the first iteration, validate all of the following. If any check fails, S
 
 Read recent history to avoid repeating failed approaches.
 
+0. **Working tree hygiene check.** Run `git status --porcelain`. If the working tree is dirty, something went wrong in the previous iteration. Attempt cleanup: `git checkout -- .` and `git clean -fd`. If still dirty after cleanup, STOP with an error.
 1. Run `git log --oneline -20` to see recent commits on this branch.
 2. Read `autoresearch-results.tsv` to see metrics and outcomes from prior iterations.
 3. Identify patterns:
@@ -67,12 +91,13 @@ Commit the change before verification so that discard is a clean reset.
 
 Measure the effect of the change.
 
-1. Run the Verify command.
-2. Extract the numeric metric from its output.
-3. Compare to `previous_best`:
+1. **Run the Verify command** with a hard timeout (default: 300 seconds, configurable via `Timeout:` param). If the command does not complete within the timeout, kill it, treat this iteration as a **Crash**, and continue. Use `timeout <N>` on Unix/macOS. On Windows, use `python3 -c "import subprocess; subprocess.run([...], timeout=N)"` as a cross-platform fallback.
+2. **Extract the metric:** take the LAST line of stdout, strip whitespace, and parse as a float. If the last line is not a valid number, try matching the LAST number found anywhere in stdout using regex `[-+]?[0-9]*\.?[0-9]+`. If no number can be extracted, treat as **Crash**.
+3. **Sanity check:** if the extracted metric differs from `previous_best` by more than 100x (i.e., `metric / previous_best > 100` or `previous_best / metric > 100`), log a warning: "Metric sanity check failed -- extracted value differs by >100x from previous. Treating as Crash to prevent silent metric breakage." Treat as **Crash**.
+4. Compare to `previous_best`:
    - If Direction is `minimize`: improvement means the metric **decreased**.
    - If Direction is `maximize`: improvement means the metric **increased**.
-4. If the Verify command crashes (non-zero exit without a metric), mark this iteration as **Crash**.
+5. If the Verify command crashes (non-zero exit without a metric), mark this iteration as **Crash**.
 
 ---
 
@@ -80,7 +105,7 @@ Measure the effect of the change.
 
 Run the Guard check (skip if no Guard command is configured).
 
-1. Run the Guard command.
+1. **Run the Guard command** with a hard timeout (default: 300 seconds, configurable via `Timeout:` param). If the command does not complete within the timeout, kill it, treat this iteration as a **Crash**, and continue. Use `timeout <N>` on Unix/macOS. On Windows, use `python3 -c "import subprocess; subprocess.run([...], timeout=N)"` as a cross-platform fallback.
 2. If exit code is 0: pass.
 3. If exit code is non-zero: fail. The change will be discarded regardless of metric improvement.
 
@@ -91,20 +116,25 @@ Run the Guard check (skip if no Guard command is configured).
 Determine the outcome for this iteration. Exactly one of three outcomes applies:
 
 ### Keep
-- Metric improved (or equal with a meaningful structural change) AND Guard passed.
+- Metric **strictly improved** AND Guard passed. Equal metrics are treated as Discard -- if the metric did not move, the change had no measurable effect.
 - Update `previous_best` to the new metric.
 - Reset consecutive discard counter to 0.
+- Update `autoresearch-state.json` with new `previous_best`, `consecutive_discards`, `last_phase_completed`, and `last_commit_sha`.
 
 ### Discard
-- Metric worsened OR Guard failed.
+- Metric worsened, metric unchanged, OR Guard failed.
 - Run `git reset --hard HEAD~1` to remove the commit entirely.
+- Run `git clean -fd` to remove any untracked files generated during the iteration (build artifacts, coverage reports, temp files, etc.).
 - Increment consecutive discard counter.
-- Note: use `git reset --hard HEAD~1`, NOT `git revert`. The isolated branch should have clean history — only kept changes survive.
+- Update `autoresearch-state.json` with new `consecutive_discards`, `last_phase_completed`, and `last_commit_sha`.
+- Note: use `git reset --hard HEAD~1`, NOT `git revert`. The isolated branch should have clean history -- only kept changes survive.
 
 ### Crash
 - Verify or Guard command failed to execute (not a metric result, an execution failure).
 - Run `git reset --hard HEAD~1` to remove the commit.
+- Run `git clean -fd` to remove any untracked files generated during the iteration (build artifacts, coverage reports, temp files, etc.).
 - Log the crash with error details.
+- Update `autoresearch-state.json` with `last_phase_completed` and crash status.
 - Continue to the next iteration.
 
 ---
@@ -112,6 +142,8 @@ Determine the outcome for this iteration. Exactly one of three outcomes applies:
 ## Phase 7: Log
 
 Append one row to `autoresearch-results.tsv` with the iteration results. See results-logging.md for the exact column format.
+
+After logging, update `autoresearch-state.json` with the current `iteration`, `last_phase_completed: "phase_7_log"`, and `status`.
 
 ---
 
@@ -125,6 +157,9 @@ Check stop conditions. If ANY one triggers, end the loop.
 | Duration limit | Wall-clock time since start exceeds the configured duration |
 | Metric goal | Metric has reached or passed the target value |
 | Stuck | 10 consecutive discards |
+| Plateau | Last 20 iterations had less than 1% cumulative metric improvement |
+
+**Plateau detection** prevents the loop from running for hours making negligible improvements. Cumulative improvement is measured as `abs(metric_at_iteration_N - metric_at_iteration_N-20) / abs(baseline - metric_at_iteration_N-20)`. Only active after 20+ iterations.
 
 ### Stuck Recovery Table
 

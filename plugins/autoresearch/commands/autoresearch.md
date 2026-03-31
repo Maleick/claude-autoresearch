@@ -1,7 +1,7 @@
 ---
 name: autoresearch
 description: Autonomous Goal-directed Iteration. Modify, verify, keep/discard, repeat. For git-backed codebases with deterministic verification commands.
-argument-hint: "[Goal: <text>] [Scope: <glob>] [Metric: <text>] [Verify: <cmd>] [Guard: <cmd>] [--iterations N]"
+argument-hint: "[Goal: <text>] [Scope: <glob>] [Metric: <text>] [Verify: <cmd>] [Guard: <cmd>] [Target: <num>] [Timeout: <sec>] [--iterations N] [--resume]"
 ---
 
 EXECUTE IMMEDIATELY — do not deliberate, do not ask clarifying questions before reading the protocol.
@@ -19,6 +19,10 @@ Extract these from $ARGUMENTS — the user may provide extensive context alongsi
 - `Duration:` — max wall-clock time (e.g., `6h`, `90m`). Loop stops when duration OR iteration limit is hit, whichever first.
 - `Iterations:` or `--iterations` — integer N for bounded mode (CRITICAL: if set, you MUST run exactly N iterations then stop)
 - `--no-limit` — removes the soft cap of 100 iterations (use with `Duration:` for safety)
+- `Target:` — numeric target value for the metric. When the metric reaches this value (respecting Direction), the loop stops. Example: `Target: 0` for minimizing errors to zero.
+- `MetricPattern:` — optional regex pattern to extract the metric from Verify output. If not set, the last number in stdout is used. Example: `MetricPattern: "score: ([0-9.]+)"`
+- `Timeout:` — per-command timeout in seconds for Verify and Guard commands (default: 300). If a command exceeds this, the iteration is treated as a crash.
+- `--resume` — resume a previous run from `autoresearch-state.json`. Skips Phase 0 setup; reads state file to restore iteration count, branch, previous_best, and config.
 
 If `Iterations: N` or `--iterations N` is found, set `max_iterations = N`. Track `current_iteration` starting at 0. After iteration N, print final summary and STOP.
 
@@ -26,6 +30,7 @@ If `Iterations: N` or `--iterations N` is found, set `max_iterations = N`. Track
 
 1. Read the autonomous loop protocol: `.claude/skills/autoresearch/references/autonomous-loop-protocol.md`
 2. Read the results logging format: `.claude/skills/autoresearch/references/results-logging.md`
+2.5. If `--resume` is set, read `autoresearch-state.json` from the project root. Validate the state file exists and the branch still exists. Checkout the branch, restore all loop state (iteration, previous_best, consecutive_discards, etc.), and skip Phase 0. Resume from the last completed phase.
 3. If Goal, Scope, Metric, and Verify are all extracted — proceed directly to loop setup
 4. If any critical field is missing — **FAIL FAST**: print a clear error listing the missing fields and a ready-to-paste example invocation, then STOP. Do NOT use `AskUserQuestion` — this command must run unattended.
 5. Execute the autonomous loop: Modify → Verify → Keep/Discard → Repeat

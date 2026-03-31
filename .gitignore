@@ -1,6 +1,7 @@
 # Autoresearch runtime artifacts
 autoresearch-results.tsv
 autoresearch-report.md
+autoresearch-state.json
 autoresearch-debug-findings.md
 autoresearch-security/
 security/poc-*

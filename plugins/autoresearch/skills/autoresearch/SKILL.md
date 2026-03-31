@@ -22,7 +22,8 @@ The detailed protocols for each workflow are in `references/`:
 | File | Used By | Purpose |
 |------|---------|---------|
 | `autonomous-loop-protocol.md` | `/autoresearch` | Core iteration loop (Phase 0-8) |
-| `results-logging.md` | `/autoresearch` | TSV logging format |
+| `results-logging.md` | `/autoresearch` | TSV logging format (with run_id scoping) |
+| `state-management.md` | `/autoresearch` | Checkpoint state file + resume protocol |
 | `plan-workflow.md` | `/autoresearch:plan` | Interactive setup wizard |
 | `debug-workflow.md` | `/autoresearch:debug` | Scientific-method bug hunting |
 | `fix-workflow.md` | `/autoresearch:fix` | Error repair loop |
@@ -37,24 +38,29 @@ The detailed protocols for each workflow are in `references/`:
 These rules apply to ALL commands:
 
 1. **Branch isolation** — always create `autoresearch/<timestamp>` branch. Never commit to main/master.
-2. **Clean discard** — use `git reset --hard HEAD~1` (not `git revert`) to discard failed experiments.
+2. **Clean discard** — use `git reset --hard HEAD~1` + `git clean -fd` to discard failed experiments.
 3. **Fail-fast** — if required parameters are missing, print error and stop. Never prompt mid-loop.
 4. **One change per iteration** — atomic, reviewable diffs only.
-5. **Mechanical verification** — metrics come from running commands, never from LLM self-assessment.
+5. **Mechanical verification** — metrics come from running commands, never from LLM self-assessment. Strict improvement only — equal metrics are treated as discard.
 6. **Guard enforcement** — if a Guard command is configured, it must pass or the change is discarded.
+7. **Command timeouts** — Verify and Guard commands have a hard timeout (default 300s). Timeout = Crash.
+8. **State persistence** — loop state is checkpointed to `autoresearch-state.json` after every phase. Enables `--resume` after crashes.
+9. **Git hygiene** — `git status --porcelain` is checked at the start of every iteration. Dirty tree = cleanup or stop.
 
 ## Stop Conditions
 
 Any one of these triggers a stop:
 - Iteration limit reached
 - Duration limit reached
-- Metric goal achieved
+- Metric target achieved (if `Target:` is set)
 - 10 consecutive discards (stuck)
+- Plateau detected (20 iterations with <1% cumulative improvement)
 
 ## Output Artifacts
 
 All runtime artifacts are gitignored:
-- `autoresearch-results.tsv` — iteration log
+- `autoresearch-state.json` — checkpoint state (enables `--resume`)
+- `autoresearch-results.tsv` — iteration log (scoped by run_id)
 - `autoresearch-report.md` — morning report
 - `autoresearch-debug-findings.md` — debug findings
 - `autoresearch-security/` — security audit artifacts and PoCs
