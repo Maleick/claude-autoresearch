@@ -56,6 +56,18 @@ Every kept change is a git commit on the isolated branch. Every discarded change
 /reload-plugins
 ```
 
+### Update
+
+The marketplace caches the plugin at install time — it won't automatically detect new versions on the remote. To check for and install updates:
+
+```bash
+/plugin marketplace update Maleick/claude-autoresearch
+```
+
+You'll be prompted to enable auto-update. With auto-update on, the marketplace checks for new versions periodically. Without it, run the update command manually when you want the latest version.
+
+You can verify your installed version in **Customize > Autoresearch** — the version number is shown at the top of the plugin panel.
+
 ### Use
 
 ```bash
