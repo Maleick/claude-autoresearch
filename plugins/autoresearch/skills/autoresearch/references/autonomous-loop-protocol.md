@@ -63,7 +63,7 @@ Choose the next change to try.
 
 1. Based on the Goal, the Scope, the review from Phase 1, and the current codebase state, pick **ONE** change that has not been tried.
 2. The change must be within Scope. Do not modify files outside Scope.
-3. If the consecutive discard count exceeds 5: **change strategy entirely**. Try a fundamentally different approach — target different files within Scope, use a different algorithm, restructure differently. Do not keep making minor variations of a failing idea.
+3. If the consecutive discard count reaches 5: **change strategy entirely**. Try a fundamentally different approach — target different files within Scope, use a different algorithm, restructure differently. Do not keep making minor variations of a failing idea.
 
 ---
 
@@ -83,7 +83,7 @@ Commit the change before verification so that discard is a clean reset.
 
 1. Stage only files within Scope: `git add <changed files>`.
 2. Commit with message format: `autoresearch: <short description of what changed>`.
-3. Do NOT run verification before committing. The commit exists so we can cleanly revert.
+3. Do NOT run verification before committing. The commit exists so we can cleanly reset.
 
 ---
 
@@ -105,7 +105,7 @@ Measure the effect of the change.
 
 Run the Guard check (skip if no Guard command is configured).
 
-1. **Run the Guard command** with a hard timeout (default: 300 seconds, configurable via `Timeout:` param). If the command does not complete within the timeout, kill it, treat this iteration as a **Crash**, and continue. Use `timeout <N>` on Unix/macOS. On Windows, use `python3 -c "import subprocess; subprocess.run([...], timeout=N)"` as a cross-platform fallback.
+1. **Run the Guard command** with the same timeout rules as Phase 5.
 2. If exit code is 0: pass.
 3. If exit code is non-zero: fail. The change will be discarded regardless of metric improvement.
 

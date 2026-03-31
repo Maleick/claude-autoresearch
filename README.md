@@ -1,6 +1,6 @@
 # Autoresearch
 
-> **v1.3.1** — [Changelog](#) | [Issues](https://github.com/Maleick/claude-autoresearch/issues)
+> **v1.3.1** — [Issues](https://github.com/Maleick/claude-autoresearch/issues)
 
 Autonomous overnight iteration engine for [Claude Code](https://claude.ai/claude-code). Fire it before bed, review improvements in the morning.
 
@@ -112,8 +112,6 @@ Runs at 1 AM daily. Writes report when done.
 - **Command timeouts** — `Verify:` and `Guard:` commands have a hard timeout (default 300s). Timeout is treated as a crash
 - **Bounded iterations** — default 50, soft cap at 100 (override with `--no-limit`)
 - **Duration limits** — set `Duration: 8h` to cap wall-clock time
-- **Stuck detection** — stops after 10 consecutive discards
-- **Plateau detection** — stops after 20 iterations with <1% cumulative improvement
 - **State persistence** — loop state is checkpointed to `autoresearch-state.json` after every phase, enabling `--resume` after crashes
 - **Fail-fast** — all non-plan commands fail immediately on missing required parameters (no interactive prompts mid-loop)
 

@@ -29,13 +29,11 @@ docs/specs/                        ← design specs (historical reference)
 
 **Key relationship:** Each command `.md` file parses arguments and then reads its corresponding `references/*-workflow.md` protocol. The skill's `SKILL.md` defines shared invariants that all commands inherit.
 
-## How Commands and Skills Work
-
-Commands (`commands/*.md`) are user-invocable via `/autoresearch` and `/autoresearch:<sub>`. They are frontmatter-annotated markdown files that Claude Code loads and executes as prompts. The `argument-hint` field in frontmatter defines the CLI signature.
-
-Skills (`skills/autoresearch/SKILL.md`) provide the shared context and reference material. The `references/` directory contains detailed step-by-step protocols that commands read during execution.
+**Commands** are frontmatter-annotated `.md` files invoked via `/autoresearch` and `/autoresearch:<sub>`. The `argument-hint` frontmatter field defines the CLI signature.
 
 ## Safety Invariants (Never Violate)
+
+Authoritative list is in `SKILL.md`. Summary:
 
 1. **Branch isolation** — all work on `autoresearch/<timestamp>`, never on main/master
 2. **Clean discard** — `git reset --hard HEAD~1` for failed experiments, not revert commits
@@ -44,6 +42,8 @@ Skills (`skills/autoresearch/SKILL.md`) provide the shared context and reference
 5. **Mechanical verification only** — metrics from commands, never LLM self-assessment
 6. **Guard enforcement** — Guard command must pass or change is discarded
 7. **Command timeouts** — 300s default, timeout = crash
+8. **State persistence** — checkpoint to `autoresearch-state.json` after every phase
+9. **Git hygiene** — `git status --porcelain` checked at start of every iteration
 
 ## Runtime Artifacts (All Gitignored)
 

@@ -1,6 +1,6 @@
 # Fix Workflow
 
-Autonomous error repair loop. One fix per iteration, atomic, auto-reverted on failure.
+Autonomous error repair loop. One fix per iteration, atomic, auto-discarded on failure.
 
 ## Phase 1: Detect Errors
 
