@@ -65,7 +65,6 @@ Autonomous bug-hunting loop. Scientific method: hypothesize → test → prove/d
 
 - `autoresearch-debug-findings.md` — all findings with file:line evidence
 - Terminal summary: N findings (X critical, Y high, Z medium, W low)
-- Discord notification on completion with finding count
 
 ## Important Rules
 

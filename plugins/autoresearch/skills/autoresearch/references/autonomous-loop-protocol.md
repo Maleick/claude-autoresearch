@@ -116,12 +116,14 @@ Run the Guard check (skip if no Guard command is configured).
 Determine the outcome for this iteration. Exactly one of three outcomes applies:
 
 ### Keep
+
 - Metric **strictly improved** AND Guard passed. Equal metrics are treated as Discard -- if the metric did not move, the change had no measurable effect.
 - Update `previous_best` to the new metric.
 - Reset consecutive discard counter to 0.
 - Update `autoresearch-state.json` with new `previous_best`, `consecutive_discards`, `last_phase_completed`, and `last_commit_sha`.
 
 ### Discard
+
 - Metric worsened, metric unchanged, OR Guard failed.
 - Run `git reset --hard HEAD~1` to remove the commit entirely.
 - Run `git clean -fd` to remove any untracked files generated during the iteration (build artifacts, coverage reports, temp files, etc.).
@@ -130,6 +132,7 @@ Determine the outcome for this iteration. Exactly one of three outcomes applies:
 - Note: use `git reset --hard HEAD~1`, NOT `git revert`. The isolated branch should have clean history -- only kept changes survive.
 
 ### Crash
+
 - Verify or Guard command failed to execute (not a metric result, an execution failure).
 - Run `git reset --hard HEAD~1` to remove the commit.
 - Run `git clean -fd` to remove any untracked files generated during the iteration (build artifacts, coverage reports, temp files, etc.).
@@ -151,24 +154,24 @@ After logging, update `autoresearch-state.json` with the current `iteration`, `l
 
 Check stop conditions. If ANY one triggers, end the loop.
 
-| Condition | Trigger |
-|---|---|
-| Iteration limit | `iteration >= max_iterations` |
-| Duration limit | Wall-clock time since start exceeds the configured duration |
-| Metric goal | Metric has reached or passed the target value |
-| Stuck | 10 consecutive discards |
-| Plateau | Last 20 iterations had less than 1% cumulative metric improvement |
+| Condition       | Trigger                                                           |
+| --------------- | ----------------------------------------------------------------- |
+| Iteration limit | `iteration >= max_iterations`                                     |
+| Duration limit  | Wall-clock time since start exceeds the configured duration       |
+| Metric goal     | Metric has reached or passed the target value                     |
+| Stuck           | 10 consecutive discards                                           |
+| Plateau         | Last 20 iterations had less than 1% cumulative metric improvement |
 
 **Plateau detection** prevents the loop from running for hours making negligible improvements. Cumulative improvement is measured as `abs(metric_at_iteration_N - metric_at_iteration_N-20) / abs(baseline - metric_at_iteration_N-20)`. Only active after 20+ iterations.
 
 ### Stuck Recovery Table
 
-| Consecutive Discards | Action |
-|---|---|
-| 1-4 | Normal. Keep iterating with incremental changes. |
-| 5 | **Strategy shift.** Try a fundamentally different approach. Target different files within Scope. Rethink the problem. |
-| 6-9 | Continue with the new strategy from the shift at 5. |
-| 10 | **STOP.** Write the morning report with stuck analysis. Send Discord alert if configured. |
+| Consecutive Discards | Action                                                                                                                |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| 1-4                  | Normal. Keep iterating with incremental changes.                                                                      |
+| 5                    | **Strategy shift.** Try a fundamentally different approach. Target different files within Scope. Rethink the problem. |
+| 6-9                  | Continue with the new strategy from the shift at 5.                                                                   |
+| 10                   | **STOP.** Write the morning report with stuck analysis.                                                               |
 
 If no stop condition is met, return to **Phase 1** for the next iteration.
 
@@ -179,7 +182,9 @@ If no stop condition is met, return to **Phase 1** for the next iteration.
 When the loop ends (for any reason), generate the following:
 
 ### 1. Report File
+
 Write `autoresearch-report.md` in the project root containing:
+
 - **Run summary:** goal, scope, direction, branch name, start/end time, total iterations.
 - **Metric trajectory:** baseline value -> final value (with percentage change).
 - **Kept changes:** list each kept commit with SHA, description, and metric delta.
@@ -189,7 +194,9 @@ Write `autoresearch-report.md` in the project root containing:
 - **Recommendations:** what to try in the next run based on observed patterns.
 
 ### 2. Terminal Summary
+
 Print a compact summary to the terminal:
+
 ```
 autoresearch complete.
 Branch: autoresearch/<timestamp>
@@ -197,9 +204,6 @@ Iterations: <total> (<kept> kept, <discarded> discarded)
 Metric: <baseline> -> <final> (<direction> goal)
 Stop reason: <reason>
 ```
-
-### 3. Discord Notification
-If Discord is configured, send a notification with the terminal summary content. Always send on stuck-stop. Optionally send on normal completion.
 
 ---
 

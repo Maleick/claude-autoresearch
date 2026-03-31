@@ -1,6 +1,6 @@
 {
   "name": "autoresearch",
-  "version": "1.3.0",
+  "version": "1.3.1",
   "description": "Autonomous overnight iteration engine for git-backed codebases. Modify, verify, keep/discard, repeat. Includes debug, fix, learn, predict, scenario, security, ship, and plan sub-commands.",
   "author": {
     "name": "Maleick"
