@@ -1,0 +1,18 @@
+# Autoresearch runtime artifacts
+autoresearch-results.tsv
+autoresearch-report.md
+autoresearch-debug-findings.md
+autoresearch-security/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Node
+node_modules/
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
