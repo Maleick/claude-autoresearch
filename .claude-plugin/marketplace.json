@@ -7,7 +7,7 @@
   "plugins": [
     {
       "name": "autoresearch",
-      "description": "Autonomous overnight iteration engine for git-backed codebases. Modify, verify, keep/discard, repeat.",
+      "description": "Autonomous iteration engine for git-backed codebases. Set a goal and a verification command — autoresearch modifies code, measures results, keeps improvements, and discards regressions.",
       "source": "./plugins/autoresearch",
       "category": "development"
     }

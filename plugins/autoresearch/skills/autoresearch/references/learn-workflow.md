@@ -2,6 +2,13 @@
 
 Autonomous codebase documentation engine. Scout, learn, generate/update docs with a validation-fix loop.
 
+## Setup
+
+- Create branch `autoresearch/<timestamp>` before generating or modifying any files.
+- Persist state to `autoresearch-state.json` after each phase completes (see state-management.md protocol).
+- Log each iteration/finding to `autoresearch-results.tsv` (see results-logging.md for format).
+- Apply 300s timeout to all shell commands using the Bash tool's timeout parameter (300000ms). If a command times out, treat as crash — see autonomous-loop-protocol.
+
 ## Modes
 
 - **init**: Generate documentation from scratch for the codebase
@@ -10,6 +17,7 @@ Autonomous codebase documentation engine. Scout, learn, generate/update docs wit
 - **summarize**: Generate a high-level summary of the codebase
 
 ## Phase 1: Scout
+
 - Scan files matching Scope glob
 - Identify: entry points, exports, public APIs, key data structures
 - Build a map of modules/components and their relationships
@@ -18,6 +26,7 @@ Autonomous codebase documentation engine. Scout, learn, generate/update docs wit
 - If `--depth deep`: scan source + tests + configs
 
 ## Phase 2: Learn
+
 - For each module/component identified:
   - Read the code and understand its purpose
   - Identify inputs, outputs, side effects
@@ -25,6 +34,7 @@ Autonomous codebase documentation engine. Scout, learn, generate/update docs wit
   - Extract existing comments/docstrings
 
 ## Phase 3: Generate
+
 - Based on `--format` (default: markdown):
   - Generate documentation files in the appropriate format
   - If `--file` is set, only generate/update that specific file
@@ -32,6 +42,7 @@ Autonomous codebase documentation engine. Scout, learn, generate/update docs wit
 - Structure: overview → architecture → modules → API reference
 
 ## Phase 4: Validate
+
 - Check generated docs against code:
   - Are all public APIs documented?
   - Do code examples compile/run?
@@ -39,10 +50,12 @@ Autonomous codebase documentation engine. Scout, learn, generate/update docs wit
 - Report discrepancies
 
 ## Phase 5: Fix (unless `--no-fix`)
+
 - Auto-correct inaccuracies found in validation
 - Re-validate after fixes
 - Repeat until clean or max iterations reached
 
 ## Phase 6: Summary
+
 - Print what was generated/updated
 - List any remaining validation issues

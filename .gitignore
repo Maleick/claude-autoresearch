@@ -2,9 +2,10 @@
 autoresearch-results.tsv
 autoresearch-report.md
 autoresearch-state.json
+autoresearch-state.json.tmp
 autoresearch-debug-findings.md
 autoresearch-security/
-security/poc-*
+.autoresearch-predict/
 
 # OS
 .DS_Store

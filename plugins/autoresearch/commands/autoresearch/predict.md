@@ -1,6 +1,6 @@
 ---
 name: autoresearch:predict
-description: Multi-persona swarm prediction — pre-analyze code from multiple expert perspectives using file-based knowledge representation. Zero external dependencies.
+description: Multi-perspective code analysis — expert personas debate your code's risks and trade-offs before you commit to a change
 argument-hint: "[goal/focus] [--scope <glob>] [--chain debug|security|fix|ship|scenario] [--depth shallow|standard|deep] [--personas N] [--rounds N] [--adversarial] [--budget <N>] [--fail-on <severity>] [--iterations N]"
 ---
 
@@ -29,6 +29,7 @@ All remaining text not matching flags is the goal/focus description.
 ## Execution
 
 1. Read the predict workflow: `.claude/skills/autoresearch/references/predict-workflow.md`
+   - Also read: `.claude/skills/autoresearch/references/results-logging.md` (for logging findings)
 2. If scope or goal is missing — **FAIL FAST**: print a clear error listing the missing fields and an example invocation, then STOP. Do NOT use `AskUserQuestion` — this command must run unattended.
 3. Execute the 8-phase predict workflow
 4. If bounded: after each iteration, check `current_iteration < max_iterations`. If not, STOP and print summary.

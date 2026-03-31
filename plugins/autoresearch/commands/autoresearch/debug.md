@@ -1,6 +1,6 @@
 ---
 name: autoresearch:debug
-description: Autonomous bug-hunting loop — scientific method + autoresearch iteration. Finds ALL bugs, not just one.
+description: Bug hunter — iterates through scientific-method investigation to surface multiple bugs, not just the first one
 argument-hint: "[--fix] [--scope <glob>] [--symptom <text>] [--severity <level>] [--technique <name>] [--iterations N]"
 ---
 
@@ -24,6 +24,7 @@ All remaining text in $ARGUMENTS is additional context — use it to understand 
 ## Execution
 
 1. Read the debug workflow: `.claude/skills/autoresearch/references/debug-workflow.md`
+   - Also read: `.claude/skills/autoresearch/references/results-logging.md` (for logging findings)
 2. If scope is missing — **FAIL FAST**: print a clear error listing the missing fields and an example invocation, then STOP. Do NOT use `AskUserQuestion` — this command must run unattended.
 3. Execute the 7-phase debug loop
 4. If bounded: after each iteration, check `current_iteration < max_iterations`. If not, STOP and print summary.

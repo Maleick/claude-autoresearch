@@ -2,6 +2,11 @@
 
 Autonomous security audit. STRIDE threat modeling + OWASP Top 10 + red-team with 4 adversarial personas.
 
+## Phase 0: Setup
+
+- If `--fix` is enabled, create branch `autoresearch/<timestamp>` before Phase 1. Read-only audits (no --fix) do not require branch isolation.
+- If `--fix` is enabled, apply 300s timeout to all shell commands using the Bash tool's timeout parameter (300000ms). If a command times out, treat as crash — see autonomous-loop-protocol.
+
 ## Phase 1: Attack Surface Mapping
 
 - Read files matching Scope glob

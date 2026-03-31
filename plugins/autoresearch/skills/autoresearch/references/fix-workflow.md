@@ -2,6 +2,14 @@
 
 Autonomous error repair loop. One fix per iteration, atomic, auto-discarded on failure.
 
+> This workflow extends the core autonomous-loop-protocol. It uses a specialized error-targeting strategy but follows the same safety invariants defined in SKILL.md.
+
+## Phase 0: Setup
+
+- Unless `--force-branch` is set, create branch `autoresearch/<timestamp>` if not already on an autoresearch branch. Verify with `git branch --show-current`. Never commit to main/master.
+- Apply 300s timeout to all shell commands using the Bash tool's timeout parameter (300000ms). If a command times out, treat as crash — see autonomous-loop-protocol.
+- Persist state to `autoresearch-state.json` after each phase completes (see state-management.md protocol).
+
 ## Phase 1: Detect Errors
 
 - Run the Target/Verify command to capture current errors
@@ -30,7 +38,7 @@ Autonomous error repair loop. One fix per iteration, atomic, auto-discarded on f
 ## Phase 5: Commit
 
 - `git add` changed files
-- Commit: `autoresearch-fix: <description of fix>`
+- Commit: `autoresearch: <description of fix>`
 - Commit BEFORE re-running verification
 
 ## Phase 6: Verify
@@ -56,4 +64,4 @@ Autonomous error repair loop. One fix per iteration, atomic, auto-discarded on f
 ## Output
 
 - Terminal summary: started with N errors, ended with M errors, fixed K
-- Updates `autoresearch-results.tsv` with each iteration
+- Updates `autoresearch-results.tsv` with each iteration (see results-logging.md for column format)

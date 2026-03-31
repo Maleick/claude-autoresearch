@@ -1,6 +1,6 @@
 ---
 name: autoresearch:scenario
-description: Scenario-driven use case generator — explores situations, edge cases, and derivative scenarios from a seed scenario using autonomous iteration.
+description: Edge case explorer — generates derivative scenarios and use cases from a seed idea using iterative expansion
 argument-hint: "[scenario description] [--scope <glob>] [--depth shallow|standard|deep] [--domain <type>] [--format <type>] [--focus <area>] [--iterations N]"
 ---
 
@@ -25,6 +25,7 @@ If `Iterations: N` or `--iterations N` is found, set `max_iterations = N`. Track
 ## Execution
 
 1. Read the scenario workflow: `.claude/skills/autoresearch/references/scenario-workflow.md`
+   - Also read: `.claude/skills/autoresearch/references/results-logging.md` (for logging findings)
 2. If scenario description is missing — **FAIL FAST**: print a clear error listing the missing fields and an example invocation, then STOP. Do NOT use `AskUserQuestion` — this command must run unattended.
 3. Execute the 7-phase scenario loop
 4. If bounded: after each iteration, check `current_iteration < max_iterations`. If not, STOP and print summary.

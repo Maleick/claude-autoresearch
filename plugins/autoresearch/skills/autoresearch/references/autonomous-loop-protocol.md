@@ -14,31 +14,36 @@ Before the first iteration, validate all of the following. If any check fails, S
 4. **Validate Verify command.** Run the Verify command once. Confirm it exits successfully and its output contains a number. If it fails or returns no number, STOP.
 5. **Validate Guard command.** If a Guard command is configured, run it and confirm exit code 0. If it fails, STOP.
 6. **Record baseline metric.** The number extracted in step 4 is iteration 0's metric. Store it as `baseline` and `previous_best`.
-7. **Record start time.** Capture wall-clock time for Duration limit tracking.
-8. **Initialize results log.** Create or append to `autoresearch-results.tsv` with a header row if the file is new (see results-logging.md for format).
-9. **Write initial `autoresearch-state.json`** with all config and baseline values. This file persists loop state for crash recovery and observability. Update this file after every subsequent phase completes. Initial contents:
-   ```json
-   {
-     "run_id": "<branch-name>",
-     "branch": "autoresearch/<timestamp>",
-     "goal": "<goal text>",
-     "scope": "<glob>",
-     "direction": "maximize|minimize",
-     "verify_cmd": "<cmd>",
-     "guard_cmd": "<cmd or null>",
-     "timeout_sec": 300,
-     "iteration": 0,
-     "max_iterations": 50,
-     "duration_limit": "8h",
-     "start_time": "<ISO8601>",
-     "previous_best": 42.0,
-     "baseline": 42.0,
-     "consecutive_discards": 0,
-     "last_phase_completed": "phase_0_preconditions",
-     "last_commit_sha": "abc1234",
-     "status": "running"
-   }
-   ```
+7. **Resolve Scope glob.** Expand the Scope glob pattern and verify it matches at least one file. If zero files match, STOP with error: "Scope glob matched no files — check the pattern."
+8. **Record start time.** Capture wall-clock time for Duration limit tracking.
+9. **Initialize results log.** Create or append to `autoresearch-results.tsv` with a header row if the file is new (see results-logging.md for format).
+10. **Write initial `autoresearch-state.json`** with all config and baseline values. This file persists loop state for crash recovery and observability. Update this file after every subsequent phase completes. Initial contents:
+    ```json
+    {
+      "run_id": "<branch-name>",
+      "branch": "autoresearch/<timestamp>",
+      "goal": "<goal text>",
+      "scope": "<glob>",
+      "direction": "maximize|minimize",
+      "verify_cmd": "<cmd>",
+      "guard_cmd": "<cmd or null>",
+      "metric": "<metric description>",
+      "metric_pattern": "<regex or null>",
+      "target": "<number or null>",
+      "timeout_sec": 300,
+      "iteration": 0,
+      "max_iterations": 50,
+      "duration_limit": "8h",
+      "start_time": "<ISO8601>",
+      "previous_best": 42.0,
+      "baseline": 42.0,
+      "consecutive_discards": 0,
+      "consecutive_crashes": 0,
+      "last_phase_completed": "phase_0_preconditions",
+      "last_commit_sha": "abc1234",
+      "status": "running"
+    }
+    ```
 
 ---
 
@@ -91,7 +96,7 @@ Commit the change before verification so that discard is a clean reset.
 
 Measure the effect of the change.
 
-1. **Run the Verify command** with a hard timeout (default: 300 seconds, configurable via `Timeout:` param). If the command does not complete within the timeout, kill it, treat this iteration as a **Crash**, and continue. Use `timeout <N>` on Unix/macOS. On Windows, use `python3 -c "import subprocess; subprocess.run([...], timeout=N)"` as a cross-platform fallback.
+1. **Run the Verify command** with a hard timeout (default: 300 seconds, configurable via `Timeout:` param). If the command does not complete within the timeout, kill it, treat this iteration as a **Crash**, and continue. Use `timeout <N>` on Unix/macOS. On Windows, use `python3 -c "import subprocess; subprocess.run([...], timeout=N)"` as a cross-platform fallback. **Secondary kill switch:** Also set the Bash tool's `timeout` parameter to `300000`ms (matching the configured timeout). This ensures the command is terminated even if the `timeout` shell command fails or is unavailable.
 2. **Extract the metric:** take the LAST line of stdout, strip whitespace, and parse as a float. If the last line is not a valid number, try matching the LAST number found anywhere in stdout using regex `[-+]?[0-9]*\.?[0-9]+`. If no number can be extracted, treat as **Crash**.
 3. **Sanity check:** if the extracted metric differs from `previous_best` by more than 100x (i.e., `metric / previous_best > 100` or `previous_best / metric > 100`), log a warning: "Metric sanity check failed -- extracted value differs by >100x from previous. Treating as Crash to prevent silent metric breakage." Treat as **Crash**.
 4. Compare to `previous_best`:
@@ -120,24 +125,29 @@ Determine the outcome for this iteration. Exactly one of three outcomes applies:
 - Metric **strictly improved** AND Guard passed. Equal metrics are treated as Discard -- if the metric did not move, the change had no measurable effect.
 - Update `previous_best` to the new metric.
 - Reset consecutive discard counter to 0.
-- Update `autoresearch-state.json` with new `previous_best`, `consecutive_discards`, `last_phase_completed`, and `last_commit_sha`.
+- Reset `consecutive_crashes` to 0.
+- Update `autoresearch-state.json` with new `previous_best`, `consecutive_discards`, `consecutive_crashes`, `last_phase_completed`, and `last_commit_sha`.
 
 ### Discard
 
 - Metric worsened, metric unchanged, OR Guard failed.
+- **SHA guard:** Verify that HEAD matches the SHA committed in Phase 4 (stored in state as `last_commit_sha`). If it does NOT match, skip the reset and log an anomaly — the commit phase may have silently failed, and resetting would destroy the previous kept iteration.
 - Run `git reset --hard HEAD~1` to remove the commit entirely.
 - Run `git clean -fd` to remove any untracked files generated during the iteration (build artifacts, coverage reports, temp files, etc.).
 - Increment consecutive discard counter.
-- Update `autoresearch-state.json` with new `consecutive_discards`, `last_phase_completed`, and `last_commit_sha`.
+- Reset `consecutive_crashes` to 0.
+- Update `autoresearch-state.json` with new `consecutive_discards`, `consecutive_crashes`, `last_phase_completed`, and `last_commit_sha`.
 - Note: use `git reset --hard HEAD~1`, NOT `git revert`. The isolated branch should have clean history -- only kept changes survive.
 
 ### Crash
 
 - Verify or Guard command failed to execute (not a metric result, an execution failure).
+- **SHA guard:** Verify that HEAD matches the SHA committed in Phase 4 (stored in state as `last_commit_sha`). If it does NOT match, skip the reset and log an anomaly — the commit phase may have silently failed, and resetting would destroy the previous kept iteration.
 - Run `git reset --hard HEAD~1` to remove the commit.
 - Run `git clean -fd` to remove any untracked files generated during the iteration (build artifacts, coverage reports, temp files, etc.).
+- Increment `consecutive_crashes`.
 - Log the crash with error details.
-- Update `autoresearch-state.json` with `last_phase_completed` and crash status.
+- Update `autoresearch-state.json` with `consecutive_crashes`, `last_phase_completed`, and crash status.
 - Continue to the next iteration.
 
 ---
@@ -154,15 +164,16 @@ After logging, update `autoresearch-state.json` with the current `iteration`, `l
 
 Check stop conditions. If ANY one triggers, end the loop.
 
-| Condition       | Trigger                                                           |
-| --------------- | ----------------------------------------------------------------- |
-| Iteration limit | `iteration >= max_iterations`                                     |
-| Duration limit  | Wall-clock time since start exceeds the configured duration       |
-| Metric goal     | Metric has reached or passed the target value                     |
-| Stuck           | 10 consecutive discards                                           |
-| Plateau         | Last 20 iterations had less than 1% cumulative metric improvement |
+| Condition       | Trigger                                                                                |
+| --------------- | -------------------------------------------------------------------------------------- |
+| Iteration limit | `iteration >= max_iterations`                                                          |
+| Duration limit  | Wall-clock time since start exceeds the configured duration                            |
+| Metric goal     | Metric has reached or passed the target value                                          |
+| Stuck           | 10 consecutive discards                                                                |
+| Plateau         | Last 20 iterations had less than 1% cumulative metric improvement                      |
+| Crash loop      | 5 consecutive crashes — "Verify/Guard command appears broken — 5 consecutive crashes." |
 
-**Plateau detection** prevents the loop from running for hours making negligible improvements. Cumulative improvement is measured as `abs(metric_at_iteration_N - metric_at_iteration_N-20) / abs(baseline - metric_at_iteration_N-20)`. Only active after 20+ iterations.
+**Plateau detection** prevents the loop from running for hours making negligible improvements. Cumulative improvement is measured as `abs(metric_at_iteration_N - metric_at_iteration_N-20) / abs(baseline - metric_at_iteration_N-20)`. Only active after 20+ iterations. **Div-by-zero guard:** If the denominator `abs(baseline - metric_at_iteration_N-20)` is zero, treat as plateau — no improvement over baseline means stuck.
 
 ### Stuck Recovery Table
 

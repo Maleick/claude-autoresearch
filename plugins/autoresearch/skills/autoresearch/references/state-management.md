@@ -4,7 +4,9 @@ Autoresearch persists loop state to `autoresearch-state.json` in the project roo
 
 ## State File: `autoresearch-state.json`
 
-Written after every phase completion. Gitignored (add to .gitignore if not present).
+Gitignored (add to .gitignore if not present).
+
+**Atomic write protocol:** Always write state to `autoresearch-state.json.tmp` first, then rename to `autoresearch-state.json`. This prevents corruption if the session crashes mid-write. On resume, if `autoresearch-state.json.tmp` exists but `autoresearch-state.json` does not, rename the `.tmp` file and resume.
 
 ### Schema
 
@@ -28,6 +30,7 @@ Written after every phase completion. Gitignored (add to .gitignore if not prese
   "previous_best": 128.5,
   "baseline": 185.0,
   "consecutive_discards": 2,
+  "consecutive_crashes": 0,
   "last_phase_completed": "phase_7_log",
   "last_commit_sha": "abc1234",
   "status": "running"
@@ -36,52 +39,55 @@ Written after every phase completion. Gitignored (add to .gitignore if not prese
 
 ### Fields
 
-| Field | Type | Description |
-|-------|------|-------------|
-| run_id | string | Unique identifier = branch name |
-| branch | string | The isolated autoresearch branch |
-| goal | string | The user's Goal text |
-| scope | string | File glob pattern |
-| metric | string | Metric description |
-| direction | string | "maximize" or "minimize" |
-| verify_cmd | string | The Verify shell command |
-| guard_cmd | string or null | The Guard shell command |
-| metric_pattern | string or null | Optional regex for metric extraction |
-| target | number or null | Target metric value for goal-achieved stop |
-| timeout_sec | integer | Per-command timeout in seconds |
-| iteration | integer | Current iteration number |
-| max_iterations | integer | Iteration limit |
-| duration_limit | string or null | Wall-clock duration limit |
-| start_time | string | ISO 8601 start timestamp |
-| previous_best | number | Best metric value seen so far |
-| baseline | number | Initial metric value (iteration 0) |
-| consecutive_discards | integer | Current streak of consecutive discards |
-| last_phase_completed | string | Last successfully completed phase identifier |
-| last_commit_sha | string | SHA of the last commit (for validation) |
-| status | string | "running", "completed", "stuck", "crashed" |
+| Field                | Type           | Description                                       |
+| -------------------- | -------------- | ------------------------------------------------- |
+| run_id               | string         | Unique identifier = branch name                   |
+| branch               | string         | The isolated autoresearch branch                  |
+| goal                 | string         | The user's Goal text                              |
+| scope                | string         | File glob pattern                                 |
+| metric               | string         | Metric description                                |
+| direction            | string         | "maximize" or "minimize"                          |
+| verify_cmd           | string         | The Verify shell command                          |
+| guard_cmd            | string or null | The Guard shell command                           |
+| metric_pattern       | string or null | Optional regex for metric extraction              |
+| target               | number or null | Target metric value for goal-achieved stop        |
+| timeout_sec          | integer        | Per-command timeout in seconds                    |
+| iteration            | integer        | Current iteration number                          |
+| max_iterations       | integer        | Iteration limit                                   |
+| duration_limit       | string or null | Wall-clock duration limit                         |
+| start_time           | string         | ISO 8601 start timestamp                          |
+| previous_best        | number         | Best metric value seen so far                     |
+| baseline             | number         | Initial metric value (iteration 0)                |
+| consecutive_discards | integer        | Current streak of consecutive discards            |
+| consecutive_crashes  | integer        | Current streak of consecutive crashes (default 0) |
+| last_phase_completed | string         | Last successfully completed phase identifier      |
+| last_commit_sha      | string         | SHA of the last commit (for validation)           |
+| status               | string         | "running", "completed", "stuck", "crashed"        |
 
 ### When to Write
 
-Update the state file after:
-- Phase 0 completion (initial state with baseline)
-- Phase 6 completion (after Keep/Discard/Crash decision — updates iteration, previous_best, consecutive_discards)
-- Phase 7 completion (after logging — updates last_phase_completed)
-- End of run (updates status to completed/stuck)
+Update `autoresearch-state.json` after every phase completes. This ensures crash recovery can resume from the last completed phase rather than replaying multiple phases. Use the atomic write protocol (write to `.tmp`, then rename) for every state update.
 
 ### Resume Protocol
 
 When `--resume` is used:
-1. Read `autoresearch-state.json` from project root
-2. Validate: file exists, status is "running", branch exists in git
-3. Checkout the branch: `git checkout <branch>`
-4. Restore all loop variables from the state file
-5. Verify git state: `git log --oneline -1` SHA matches `last_commit_sha`
-6. If validation fails: warn and offer to start fresh instead
-7. Resume from Phase 1 (Review) of the next iteration
+
+1. If `autoresearch-state.json.tmp` exists but `autoresearch-state.json` does not, rename the `.tmp` file before proceeding.
+2. Read `autoresearch-state.json` from project root.
+3. Validate: file exists, status is "running", branch exists in git.
+4. Checkout the branch: `git checkout <branch>`.
+5. Restore all loop variables from the state file.
+6. **SHA validation and mismatch recovery:**
+   - Get current HEAD SHA via `git rev-parse HEAD`.
+   - **(a) If working tree is dirty** (`git status --porcelain` is non-empty): run `git checkout -- .` and `git clean -fd`, then skip to the next iteration (Phase 1).
+   - **(b) If clean but HEAD SHA is ahead of `last_commit_sha`:** run `git reset --hard <last_commit_sha>` to roll back to the last known-good state, then resume from Phase 1.
+   - **(c) If HEAD SHA matches `last_commit_sha`:** resume from `current_phase` (the phase after `last_phase_completed`).
+7. If none of the above conditions can be resolved: warn and offer to start fresh instead.
 
 ### Crash Recovery
 
 If a session crashes mid-run:
+
 - The state file persists on disk
 - Git commits persist on the isolated branch
 - Results TSV persists

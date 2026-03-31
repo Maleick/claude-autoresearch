@@ -1,6 +1,6 @@
 ---
 name: autoresearch:plan
-description: Interactive wizard to build Scope, Metric, Direction & Verify from a Goal
+description: Setup wizard — interactively builds the Goal, Scope, Metric, and Verify command needed for an autoresearch run
 argument-hint: "[goal description]"
 ---
 

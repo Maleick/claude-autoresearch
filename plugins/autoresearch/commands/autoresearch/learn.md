@@ -1,6 +1,6 @@
 ---
 name: autoresearch:learn
-description: Autonomous codebase documentation engine — scout, learn, generate/update docs with validation-fix loop
+description: Documentation generator — analyzes your codebase and produces or updates docs with a validate-and-fix loop
 argument-hint: "[goal/focus] [--mode init|update|check|summarize] [--scope <glob>] [--depth quick|standard|deep] [--file <name>] [--scan] [--topics <list>] [--no-fix] [--format markdown|html|json|rst] [--iterations N]"
 ---
 
@@ -27,6 +27,7 @@ All remaining text in $ARGUMENTS is additional context — use it to understand 
 ## Execution
 
 1. Read the learn workflow: `.claude/skills/autoresearch/references/learn-workflow.md`
+   - Also read: `.claude/skills/autoresearch/references/results-logging.md` (for TSV log format)
 2. If scope or goal is missing — **FAIL FAST**: print a clear error listing the missing fields and an example invocation, then STOP. Do NOT use `AskUserQuestion` — this command must run unattended.
 3. Execute the learn workflow
 4. If bounded: after each iteration, check `current_iteration < max_iterations`. If not, STOP and print summary.

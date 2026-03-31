@@ -1,6 +1,6 @@
 ---
 name: autoresearch:ship
-description: Universal shipping workflow — ship code, content, marketing, sales, research, or anything through structured 8-phase workflow
+description: Shipping workflow — guides code through an 8-phase checklist from readiness check to post-ship monitoring
 argument-hint: "[--dry-run] [--auto] [--force] [--rollback] [--monitor N] [--type <type>] [--target <path>] [--checklist-only] [--iterations N]"
 ---
 
@@ -27,6 +27,7 @@ All remaining text in $ARGUMENTS is additional context — use it to understand 
 ## Execution
 
 1. Read the ship workflow: `.claude/skills/autoresearch/references/ship-workflow.md`
+   - Also read: `.claude/skills/autoresearch/references/results-logging.md` (for TSV log format)
 2. If ship type is unclear — **FAIL FAST**: print a clear error listing the missing fields and an example invocation, then STOP. Do NOT use `AskUserQuestion` — this command must run unattended.
 3. Execute the 8-phase ship workflow
 

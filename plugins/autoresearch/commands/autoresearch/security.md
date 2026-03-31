@@ -1,6 +1,6 @@
 ---
 name: autoresearch:security
-description: Autonomous security audit — STRIDE threat model + OWASP Top 10 + red-team with 4 adversarial personas
+description: Security audit — STRIDE threat model, OWASP Top 10 checks, and red-team probing with adversarial personas
 argument-hint: "[--diff] [--fix] [--fail-on <severity>] [--scope <glob>] [--depth <level>] [--iterations N]"
 ---
 
@@ -25,8 +25,9 @@ All remaining text in $ARGUMENTS is additional context — use it to understand 
 ## Execution
 
 1. Read the security workflow: `.claude/skills/autoresearch/references/security-workflow.md`
+   - Also read: `.claude/skills/autoresearch/references/results-logging.md` (for TSV log format)
 2. If scope is missing — **FAIL FAST**: print a clear error listing the missing fields and an example invocation, then STOP. Do NOT use `AskUserQuestion` — this command must run unattended.
-3. Execute the 7-step security audit
+3. Execute the security audit (Phase 0-7)
 4. If bounded: after each iteration, check `current_iteration < max_iterations`. If not, STOP and print summary.
 
 Stream all output live — never run in background.

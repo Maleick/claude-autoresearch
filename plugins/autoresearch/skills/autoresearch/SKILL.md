@@ -10,6 +10,7 @@ Autonomous iteration engine for Claude Code. Runs unattended on any git-backed c
 ## Core Concept
 
 Given a Goal, Scope, Metric, and Verify command, autoresearch autonomously:
+
 1. Creates an isolated `autoresearch/<timestamp>` branch
 2. Makes one atomic change per iteration
 3. Keeps improvements, resets regressions
@@ -19,19 +20,19 @@ Given a Goal, Scope, Metric, and Verify command, autoresearch autonomously:
 
 The detailed protocols for each workflow are in `references/`:
 
-| File | Used By | Purpose |
-|------|---------|---------|
-| `autonomous-loop-protocol.md` | `/autoresearch` | Core iteration loop (Phase 0-8) |
-| `results-logging.md` | `/autoresearch` | TSV logging format (with run_id scoping) |
-| `state-management.md` | `/autoresearch` | Checkpoint state file + resume protocol |
-| `plan-workflow.md` | `/autoresearch:plan` | Interactive setup wizard |
-| `debug-workflow.md` | `/autoresearch:debug` | Scientific-method bug hunting |
-| `fix-workflow.md` | `/autoresearch:fix` | Error repair loop |
-| `learn-workflow.md` | `/autoresearch:learn` | Codebase documentation engine |
-| `predict-workflow.md` | `/autoresearch:predict` | Multi-persona swarm analysis |
-| `scenario-workflow.md` | `/autoresearch:scenario` | Use case & edge case generation |
-| `security-workflow.md` | `/autoresearch:security` | STRIDE + OWASP + red-team audit |
-| `ship-workflow.md` | `/autoresearch:ship` | Structured shipping workflow |
+| File                          | Used By                  | Purpose                                  |
+| ----------------------------- | ------------------------ | ---------------------------------------- |
+| `autonomous-loop-protocol.md` | All code-modifying modes | Core iteration loop (Phase 0-8)          |
+| `results-logging.md`          | All modes                | TSV logging format (with run_id scoping) |
+| `state-management.md`         | All code-modifying modes | Checkpoint state file + resume protocol  |
+| `plan-workflow.md`            | `/autoresearch:plan`     | Interactive setup wizard                 |
+| `debug-workflow.md`           | `/autoresearch:debug`    | Scientific-method bug hunting            |
+| `fix-workflow.md`             | `/autoresearch:fix`      | Error repair loop                        |
+| `learn-workflow.md`           | `/autoresearch:learn`    | Codebase documentation engine            |
+| `predict-workflow.md`         | `/autoresearch:predict`  | Multi-persona swarm analysis             |
+| `scenario-workflow.md`        | `/autoresearch:scenario` | Use case & edge case generation          |
+| `security-workflow.md`        | `/autoresearch:security` | STRIDE + OWASP + red-team audit          |
+| `ship-workflow.md`            | `/autoresearch:ship`     | Structured shipping workflow             |
 
 ## Safety Invariants
 
@@ -50,17 +51,21 @@ These rules apply to ALL commands:
 ## Stop Conditions
 
 Any one of these triggers a stop:
+
 - Iteration limit reached
 - Duration limit reached
 - Metric target achieved (if `Target:` is set)
 - 10 consecutive discards (stuck)
 - Plateau detected (20 iterations with <1% cumulative improvement)
+- 5 consecutive crashes (commands timing out or failing to execute)
 
 ## Output Artifacts
 
 All runtime artifacts are gitignored:
+
 - `autoresearch-state.json` — checkpoint state (enables `--resume`)
 - `autoresearch-results.tsv` — iteration log (scoped by run_id)
 - `autoresearch-report.md` — morning report
 - `autoresearch-debug-findings.md` — debug findings
 - `autoresearch-security/` — security audit artifacts and PoCs
+- `.autoresearch-predict/` — predict workflow temporary persona files
