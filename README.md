@@ -1,6 +1,6 @@
 # Autoresearch
 
-> **v1.3.1** — [Issues](https://github.com/Maleick/claude-autoresearch/issues)
+> **v2.0.0** — [Issues](https://github.com/Maleick/claude-autoresearch/issues)
 
 Autonomous overnight iteration engine for [Claude Code](https://claude.ai/claude-code). Fire it before bed, review improvements in the morning.
 
