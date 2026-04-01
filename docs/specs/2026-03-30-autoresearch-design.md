@@ -1,7 +1,7 @@
 # Autoresearch — Autonomous Overnight Iteration Engine
 
 **Date:** 2026-03-30
-**Status:** Final
+**Status:** Historical — this document describes the v1.0 design. See [README.md](../../README.md) for current documentation.
 
 ## Purpose
 
