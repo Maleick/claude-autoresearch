@@ -51,7 +51,8 @@ Autonomous error repair loop. One fix per iteration, atomic, auto-discarded on f
 
 - **Keep:** error count decreased AND guard passed → reset rework counter for this error
 - **Discard:** error count same or increased OR guard failed → `git reset --hard HEAD~1` → increment rework counter
-- **Max rework:** if the same error has been attempted 3 times, skip it and move to the next error
+  - **Rollback validation:** After reset, re-run Target/Verify and confirm error count matches pre-fix count. If mismatch, log warning: "Rollback validation failed — error count doesn't match pre-fix baseline."
+- **Max rework:** if the same error has been attempted `--max-attempts-per-error` times (default: 3), skip it and move to the next error
 
 ## Phase 8: Continue or Stop
 

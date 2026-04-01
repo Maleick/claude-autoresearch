@@ -33,6 +33,15 @@ Autonomous bug-hunting loop. Scientific method: hypothesize → test → prove/d
 - If proven: log the finding with file:line reference
 - If disproven: note what was learned, form new hypothesis (go to Phase 2)
 
+### Phase 4.5: Reproduce
+
+Before classifying a confirmed finding, attempt minimal reproduction:
+
+1. Identify the smallest input or state that triggers the bug.
+2. If the codebase has a test framework, write a failing test that demonstrates the bug.
+3. If a test cannot be written, document reproduction steps in prose.
+4. Attach the reproduction to the finding in Phase 6.
+
 ## Phase 5: Classification
 
 - Severity: Critical / High / Medium / Low

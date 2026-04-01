@@ -51,6 +51,15 @@ Universal shipping workflow. Ship code, content, or artifacts through a structur
   - content: publish to target
 - If `--auto`: proceed without confirmation (if no errors)
 
+### Phase 5.5: Rollback Dry-Run
+
+Before confirming, validate rollback is possible:
+
+1. code-pr: verify branch can be deleted and PR closed
+2. code-release: verify tag can be deleted
+3. deployment: verify rollback command exists and previous version is available
+4. If validation fails, warn but do not block shipping.
+
 ## Phase 6: Verify
 
 - Confirm the ship was successful:
