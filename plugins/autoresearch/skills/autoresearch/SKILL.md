@@ -36,36 +36,51 @@ The detailed protocols for each workflow are in `references/`:
 
 ## Safety Invariants
 
-These rules apply to ALL commands:
+These invariants apply to ALL commands. They are non-negotiable and cannot be overridden by user parameters or command arguments.
 
-1. **Branch isolation** — always create `autoresearch/<timestamp>` branch. Never commit to main/master.
-2. **Clean discard** — use `git reset --hard HEAD~1` + `git clean -fd` to discard failed experiments.
-3. **Fail-fast** — if required parameters are missing, print error and stop. Never prompt mid-loop.
-4. **One change per iteration** — atomic, reviewable diffs only.
-5. **Mechanical verification** — metrics come from running commands, never from LLM self-assessment. Strict improvement only — equal metrics are treated as discard.
-6. **Guard enforcement** — if a Guard command is configured, it must pass or the change is discarded.
-7. **Command timeouts** — Verify and Guard commands have a hard timeout (default 300s). Timeout = Crash.
-8. **State persistence** — loop state is checkpointed to `autoresearch-state.json` after every phase. Enables `--resume` after crashes.
-9. **Git hygiene** — `git status --porcelain` is checked at the start of every iteration. Dirty tree = cleanup or stop.
+1. **Branch isolation** — always create `autoresearch/<timestamp>` branch. Never commit to main/master. The `--force-branch` flag skips the branch name check but does not allow committing to default branches.
+2. **Clean discard** — use `git reset --hard HEAD~1` + `git clean -fd` to discard failed experiments. Never use `git revert` — the isolated branch should have clean history with only kept changes.
+3. **Fail-fast** — if required parameters are missing, print error and stop. Never prompt mid-loop. All non-plan commands must run fully unattended.
+4. **One atomic change per iteration** — each iteration makes exactly one small, focused, reviewable change. Multiple unrelated changes in a single iteration violate this invariant.
+5. **Mechanical verification only** — metrics come from running shell commands, never from LLM self-assessment. Strict improvement only — equal metrics are treated as discard.
+6. **Guard enforcement** — if a Guard command is configured, it must pass or the change is discarded, regardless of metric improvement.
+7. **Command timeouts** — Verify and Guard commands have a hard timeout (default 300s). Timeout = Crash. Both the shell `timeout` command and the Bash tool's `timeout` parameter are set.
+8. **State persistence** — loop state is checkpointed to `autoresearch-state.json` after every phase via atomic write (write to `.tmp`, then rename). Enables `--resume` after crashes.
+9. **Git hygiene** — `git status --porcelain` is checked at the start of every iteration. Dirty tree = cleanup or stop. SHA guards prevent resetting the wrong commit.
+10. **Duplicate detection** — before making a change, check the TSV log for previously discarded changes with similar descriptions. Skip changes that match a previously discarded approach (fuzzy match on description). This invariant prevents wasting iterations on approaches already proven ineffective.
 
 ## Stop Conditions
 
 Any one of these triggers a stop:
 
-- Iteration limit reached
-- Duration limit reached
-- Metric target achieved (if `Target:` is set)
-- 10 consecutive discards (stuck)
-- Plateau detected (20 iterations with <1% cumulative improvement)
-- 5 consecutive crashes (commands timing out or failing to execute)
+1. **Iteration limit** — `iteration >= max_iterations`
+2. **Duration limit** — wall-clock time exceeds the configured duration
+3. **Metric target** — metric has reached or passed the `Target:` value (respecting Direction)
+4. **Stuck** — 10 consecutive discards
+5. **Plateau** — last 20 iterations had <1% cumulative metric improvement
+6. **Crash loop** — 5 consecutive crashes (Verify/Guard command appears broken)
+7. **Goal satisfaction** — if Goal is qualitative and all Scope files pass Verify + Guard with no findings, stop early
+
+## Artifact Cleanup
+
+Runtime artifacts accumulate across runs. Cleanup strategy:
+
+- `autoresearch-state.json` — overwritten each run. Delete after merging the branch.
+- `autoresearch-results.tsv` — append-only, scoped by `run_id`. Safe to keep indefinitely or truncate old run_ids.
+- `autoresearch-report.md` — overwritten each run. Archive if needed before starting a new run.
+- `autoresearch-debug-findings.md` — overwritten per debug session.
+- `autoresearch-security/` — accumulates per audit. Delete after review.
+- `.autoresearch-predict/` — cleaned up automatically at end of predict workflow.
 
 ## Output Artifacts
 
 All runtime artifacts are gitignored:
 
-- `autoresearch-state.json` — checkpoint state (enables `--resume`)
-- `autoresearch-results.tsv` — iteration log (scoped by run_id)
-- `autoresearch-report.md` — morning report
-- `autoresearch-debug-findings.md` — debug findings
-- `autoresearch-security/` — security audit artifacts and PoCs
-- `.autoresearch-predict/` — predict workflow temporary persona files
+| Artifact                         | Description                              | Lifecycle                        |
+| -------------------------------- | ---------------------------------------- | -------------------------------- |
+| `autoresearch-state.json`        | Checkpoint state (enables `--resume`)    | Overwritten each run             |
+| `autoresearch-results.tsv`       | Iteration log (scoped by run_id)         | Append-only across runs          |
+| `autoresearch-report.md`         | Morning report                           | Overwritten each run             |
+| `autoresearch-debug-findings.md` | Debug mode findings                      | Overwritten per debug session    |
+| `autoresearch-security/`         | Security audit artifacts and PoCs        | Accumulates, delete after review |
+| `.autoresearch-predict/`         | Predict workflow temporary persona files | Auto-cleaned at end of workflow  |
