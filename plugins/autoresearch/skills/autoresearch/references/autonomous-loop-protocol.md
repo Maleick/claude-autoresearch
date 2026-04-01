@@ -72,12 +72,11 @@ Choose the next change to try.
 
 ### Phase 2.5: Pre-flight Check
 
-Before implementing the planned change, validate it hasn't already been tried:
+Before implementing the planned change, validate it hasn't already been tried. Reuse the TSV data already loaded in Phase 1 — do not re-read the file.
 
-1. Read `autoresearch-results.tsv` and filter to rows with the current `run_id`.
+1. From the Phase 1 data, filter to rows with the current `run_id`.
 2. Compare the planned change's description (fuzzy match) against the `description` column of all `discard` rows.
 3. If a substantially similar change was previously discarded, skip it and ideate a different change. Log: "Pre-flight: skipped — similar to discarded iteration N: '<description>'."
-4. This check prevents wasting iterations on approaches already proven ineffective.
 
 ---
 

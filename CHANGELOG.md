@@ -42,8 +42,11 @@ All notable changes to the autoresearch plugin are documented in this file.
 ### Changed
 
 - Design spec marked as historical (v1.0 reference)
-- Improved error messages for Verify command failures
 - Guided wizard menu options now include 1-line descriptions
+
+### Improved
+
+- Better error diagnostics when Verify command fails on baseline (explains what went wrong, suggests fixes)
 
 ## [2.0.0] - 2026-03-30
 

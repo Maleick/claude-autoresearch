@@ -27,6 +27,8 @@ plugins/autoresearch/
 docs/specs/                        ← design specs (historical reference)
 ```
 
+**Repo-level files:** `CHANGELOG.md`, `CONTRIBUTING.md`, `SECURITY.md`, `CODE_OF_CONDUCT.md` — standard GitHub community files added in v2.1.0.
+
 **Key relationship:** Each command `.md` file parses arguments and then reads its corresponding `references/*-workflow.md` protocol. The skill's `SKILL.md` defines shared invariants that all commands inherit.
 
 **Commands** are frontmatter-annotated `.md` files invoked via `/autoresearch` and `/autoresearch:<sub>`. The `argument-hint` frontmatter field defines the CLI signature.
@@ -82,16 +84,11 @@ For marketplace changes, run `/plugin marketplace update Maleick/claude-autorese
 
 ## Version Bump Procedure
 
-When releasing a new version, update ALL of these files:
-
-1. `plugins/autoresearch/.claude-plugin/plugin.json` — `"version"` field
-2. `.claude-plugin/marketplace.json` — `"version"` field
-3. `README.md` — version in the header line (`> **vX.Y.Z**`)
-4. `CHANGELOG.md` — add new version section at the top
+See [CONTRIBUTING.md](CONTRIBUTING.md#version-bumping) for the full checklist (4 files to update).
 
 ## Common Pitfalls
 
 - **Frontmatter format:** YAML frontmatter must be the very first thing in the file, with `---` delimiters. No blank lines before the opening `---`. The `argument-hint` field must be a quoted string.
 - **Argument parsing:** Commands extract parameters by keyword matching (`Goal:`, `Scope:`, etc.). If you add a new parameter, ensure the keyword doesn't collide with existing ones and is documented in the argument-hint.
-- **Cross-references:** Commands read workflow files by relative path (e.g., `.claude/skills/autoresearch/references/fix-workflow.md`). If you rename or move a reference file, update the command that reads it.
+- **Cross-references:** Commands read workflow files by relative path from the plugin root (e.g., `references/fix-workflow.md` resolved via `.claude/skills/autoresearch/`). If you rename or move a reference file, update the command that reads it.
 - **Phase numbering:** Workflow files use sequential phase numbers. When inserting a new phase (e.g., "Phase 2.5"), use decimal numbering to avoid renumbering all subsequent phases.

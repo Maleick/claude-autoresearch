@@ -175,14 +175,15 @@ All runtime artifacts are gitignored.
 
 The loop stops when any of these triggers:
 
-| Condition       | Trigger                                                         |
-| --------------- | --------------------------------------------------------------- |
-| Iteration limit | `iteration >= max_iterations`                                   |
-| Duration limit  | Wall-clock time exceeds `Duration:` value                       |
-| Metric goal     | Metric reached or passed `Target:` value (respecting Direction) |
-| Stuck           | 10 consecutive discards                                         |
-| Plateau         | Last 20 iterations had <1% cumulative metric improvement        |
-| Crash loop      | 5 consecutive crashes (Verify/Guard command appears broken)     |
+| Condition       | Trigger                                                                     |
+| --------------- | --------------------------------------------------------------------------- |
+| Iteration limit | `iteration >= max_iterations`                                               |
+| Duration limit  | Wall-clock time exceeds `Duration:` value                                   |
+| Metric goal     | Metric reached or passed `Target:` value (respecting Direction)             |
+| Stuck           | 10 consecutive discards                                                     |
+| Plateau         | Last 20 iterations had <1% cumulative metric improvement                    |
+| Crash loop      | 5 consecutive crashes (Verify/Guard command appears broken)                 |
+| Goal satisfied  | Qualitative goal met — all Scope files pass verify + guard with no findings |
 
 ## Command Reference
 
@@ -313,15 +314,15 @@ Generates derivative scenarios and use cases from a seed idea using iterative ex
 
 **Flags:**
 
-| Flag                | Description                                       |
-| ------------------- | ------------------------------------------------- |
-| `--scope <glob>`    | Code paths to map scenarios against               |
-| `--depth <d>`       | shallow (10 scenarios), standard (25), deep (50+) |
-| `--domain <type>`   | software, product, business, security, marketing  |
-| `--format <f>`      | use-cases, test-cases, bdd, or threat-model       |
-| `--focus <area>`    | Weight generation toward a specific area          |
-| `--iterations N`    | Bounded mode                                      |
-| `--seed-from-tests` | Generate scenarios from existing test cases       |
+| Flag                | Description                                                  |
+| ------------------- | ------------------------------------------------------------ |
+| `--scope <glob>`    | Code paths to map scenarios against                          |
+| `--depth <d>`       | shallow (10 scenarios), standard (25), deep (50+)            |
+| `--domain <type>`   | software, product, business, security, marketing             |
+| `--format <f>`      | use-cases, user-stories, test-scenarios, or threat-scenarios |
+| `--focus <area>`    | Weight generation toward a specific area                     |
+| `--iterations N`    | Bounded mode                                                 |
+| `--seed-from-tests` | Generate scenarios from existing test cases                  |
 
 ### `/autoresearch:security` — Security Audit
 
@@ -353,18 +354,18 @@ Guides code through an 8-phase checklist from readiness check to post-ship monit
 
 **Flags:**
 
-| Flag               | Description                                  |
-| ------------------ | -------------------------------------------- |
-| `--dry-run`        | Validate without executing                   |
-| `--auto`           | Proceed without confirmation if no errors    |
-| `--force`          | Skip non-critical pre-flight checks          |
-| `--rollback`       | Undo the last ship action                    |
-| `--monitor N`      | Watch for N minutes after shipping           |
-| `--type <type>`    | code-pr, code-release, docs, deploy, content |
-| `--target <path>`  | Primary artifact path                        |
-| `--checklist-only` | Output checklist without executing           |
-| `--iterations N`   | Bounded mode                                 |
-| `--changelog`      | Auto-generate CHANGELOG entry from commits   |
+| Flag               | Description                                |
+| ------------------ | ------------------------------------------ |
+| `--dry-run`        | Validate without executing                 |
+| `--auto`           | Proceed without confirmation if no errors  |
+| `--force`          | Skip non-critical pre-flight checks        |
+| `--rollback`       | Undo the last ship action                  |
+| `--monitor N`      | Watch for N minutes after shipping         |
+| `--type <type>`    | code-pr, code-release, deployment, content |
+| `--target <path>`  | Primary artifact path                      |
+| `--checklist-only` | Output checklist without executing         |
+| `--iterations N`   | Bounded mode                               |
+| `--changelog`      | Auto-generate CHANGELOG entry from commits |
 
 ## Troubleshooting
 
