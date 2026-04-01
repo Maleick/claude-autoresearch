@@ -81,6 +81,49 @@ All notable changes to the autoresearch plugin are documented in this file.
 - README accuracy audit — removed broken Discord notifications reference
 - Simplified review terminology and deduplicated invariants
 
+## [1.3.0] - 2026-03-31
+
+### Fixed
+
+- Installation instructions — replaced non-existent `/install` command with correct three-step marketplace process
+- Added `repository` and `license` fields to plugin.json
+
+### Known Issues
+
+- 3 command files have FAIL FAST logic issues (fix.md, learn.md, ship.md)
+- 4 skill/reference inconsistencies (state schema mismatch, write frequency contradiction, metric_pattern gap, branch isolation ambiguity)
+
+## [1.2.0] - 2026-03-31
+
+### Added
+
+- `--resume` flag — recover from session crashes via checkpointed state
+- `Target:` parameter — numeric target for metric goal stop condition
+- `MetricPattern:` parameter — custom regex for metric extraction
+- `Timeout:` parameter — per-command hard timeout (default: 300s)
+- Plateau detection — stops if 20 iterations yield <1% cumulative improvement
+- Run-scoped logging — `run_id` column in TSV prevents prior runs from contaminating strategy
+- `duration_sec` column in TSV for iteration timing analysis
+
+### Changed
+
+- Metric extraction tightened: last-line parsing, regex fallback, 100x sanity check
+- Strict keep rule: equal metrics = discard (no subjective judgment)
+- Git hygiene: `git status --porcelain` checked every iteration; `git clean -fd` after discards
+
+## [1.1.0] - 2026-03-31
+
+### Added
+
+- All 10 workflow protocols (prior versions had command stubs referencing missing files)
+- Full safety invariant enforcement across all commands
+
+### Changed
+
+- **Breaking:** Commands no longer prompt interactively when params are missing — fail fast instead
+- **Breaking:** Discard mechanism changed from `git revert` to `git reset` on isolated branches
+- **Breaking:** All runs now happen on `autoresearch/<timestamp>` branches, never on main
+
 ## [1.0.0] - 2026-03-29
 
 ### Added
