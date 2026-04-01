@@ -175,11 +175,212 @@ All runtime artifacts are gitignored.
 
 The loop stops when any of these triggers:
 
-- Iteration limit reached
-- Duration limit reached
-- Metric target achieved (if `Target:` is set)
-- 10 consecutive discards (stuck)
-- Plateau detected (20 iterations with <1% cumulative improvement)
+| Condition       | Trigger                                                         |
+| --------------- | --------------------------------------------------------------- |
+| Iteration limit | `iteration >= max_iterations`                                   |
+| Duration limit  | Wall-clock time exceeds `Duration:` value                       |
+| Metric goal     | Metric reached or passed `Target:` value (respecting Direction) |
+| Stuck           | 10 consecutive discards                                         |
+| Plateau         | Last 20 iterations had <1% cumulative metric improvement        |
+| Crash loop      | 5 consecutive crashes (Verify/Guard command appears broken)     |
+
+## Command Reference
+
+### `/autoresearch` — Core Optimization Loop
+
+Run with no arguments to launch the **guided wizard** (added in v2.0.0), which walks you through parameter collection interactively.
+
+Or provide parameters directly:
+
+```bash
+/autoresearch Goal: "Reduce bundle size" Scope: "src/**/*.ts" Metric: "bundle size KB" Verify: "npm run build 2>&1 | grep size | awk '{print $3}'" Direction: minimize --iterations 50
+```
+
+**Flags:**
+
+| Flag             | Description                                           |
+| ---------------- | ----------------------------------------------------- |
+| `--iterations N` | Run exactly N iterations then stop                    |
+| `--resume`       | Resume from `autoresearch-state.json`                 |
+| `--force-branch` | Skip branch safety check (use on feature branches)    |
+| `--no-limit`     | Remove 100-iteration soft cap (pair with `Duration:`) |
+| `--dry-run`      | Validate config without running iterations            |
+| `--notify`       | Print completion summary to stdout (useful for tmux)  |
+
+### `/autoresearch:plan` — Setup Wizard
+
+Interactively builds Goal, Scope, Metric, and Verify from a free-text description.
+
+```bash
+/autoresearch:plan "I want to speed up my test suite"
+```
+
+### `/autoresearch:debug` — Bug Hunter
+
+Scientific-method investigation that surfaces multiple bugs, not just the first one.
+
+```bash
+/autoresearch:debug --scope "src/**/*" --symptom "intermittent timeout in auth module" --iterations 10
+```
+
+**Flags:**
+
+| Flag                 | Description                                                         |
+| -------------------- | ------------------------------------------------------------------- |
+| `--fix`              | Auto-fix found bugs                                                 |
+| `--scope <glob>`     | Files to investigate                                                |
+| `--symptom <text>`   | Describe the observed problem                                       |
+| `--severity <level>` | Filter by severity                                                  |
+| `--technique <name>` | Specify investigation technique                                     |
+| `--iterations N`     | Bounded mode                                                        |
+| `--output <path>`    | Where to write findings (default: `autoresearch-debug-findings.md`) |
+
+### `/autoresearch:fix` — Error Repair Loop
+
+Fixes errors one at a time, auto-reverting on regression, until zero remain.
+
+```bash
+/autoresearch:fix --target "npm test" --scope "src/**/*.ts" --iterations 20
+```
+
+**Flags:**
+
+| Flag                       | Description                             |
+| -------------------------- | --------------------------------------- |
+| `--target <cmd>`           | Command that reveals errors             |
+| `--guard <cmd>`            | Secondary pass/fail check               |
+| `--scope <glob>`           | Files to fix                            |
+| `--category <type>`        | Only fix: test, type, lint, or build    |
+| `--skip-lint`              | Skip lint fixes                         |
+| `--from-debug`             | Read findings from latest debug session |
+| `--force-branch`           | Skip branch safety check                |
+| `--iterations N`           | Bounded mode                            |
+| `--max-attempts-per-error` | Max fix attempts per error (default: 3) |
+
+### `/autoresearch:learn` — Documentation Generator
+
+Analyzes your codebase and produces or updates docs with a validate-and-fix loop.
+
+```bash
+/autoresearch:learn "API reference" --scope "src/api/**/*" --mode init --depth standard
+```
+
+**Flags:**
+
+| Flag              | Description                          |
+| ----------------- | ------------------------------------ |
+| `--mode <m>`      | init, update, check, or summarize    |
+| `--scope <glob>`  | Files to analyze                     |
+| `--depth <d>`     | quick, standard, or deep             |
+| `--file <name>`   | Only generate/update a specific file |
+| `--scan`          | Scan only, don't generate            |
+| `--topics <list>` | Comma-separated topics to focus on   |
+| `--no-fix`        | Skip auto-correction of inaccuracies |
+| `--format <f>`    | markdown, html, json, or rst         |
+| `--iterations N`  | Bounded mode                         |
+| `--audience <a>`  | developer, user, or api-consumer     |
+
+### `/autoresearch:predict` — Expert Analysis
+
+Multi-perspective code analysis where expert personas debate your code's risks and trade-offs.
+
+```bash
+/autoresearch:predict "error handling gaps" --scope "src/**/*" --depth standard
+```
+
+**Flags:**
+
+| Flag              | Description                                  |
+| ----------------- | -------------------------------------------- |
+| `--scope <glob>`  | Files to review                              |
+| `--chain <cmds>`  | Chain to other commands (e.g., `debug,fix`)  |
+| `--depth <d>`     | shallow (3 personas), standard (5), deep (8) |
+| `--personas N`    | Override persona count                       |
+| `--rounds N`      | Debate rounds                                |
+| `--adversarial`   | Red team personas instead of expert roles    |
+| `--budget N`      | Max findings (default: 40)                   |
+| `--fail-on <sev>` | Exit non-zero if findings meet severity      |
+| `--iterations N`  | Bounded mode                                 |
+| `--export <path>` | Save persona analysis as JSON                |
+
+### `/autoresearch:scenario` — Edge Case Explorer
+
+Generates derivative scenarios and use cases from a seed idea using iterative expansion.
+
+```bash
+/autoresearch:scenario "user uploads a 10GB file" --scope "src/upload/**/*" --depth deep
+```
+
+**Flags:**
+
+| Flag                | Description                                       |
+| ------------------- | ------------------------------------------------- |
+| `--scope <glob>`    | Code paths to map scenarios against               |
+| `--depth <d>`       | shallow (10 scenarios), standard (25), deep (50+) |
+| `--domain <type>`   | software, product, business, security, marketing  |
+| `--format <f>`      | use-cases, test-cases, bdd, or threat-model       |
+| `--focus <area>`    | Weight generation toward a specific area          |
+| `--iterations N`    | Bounded mode                                      |
+| `--seed-from-tests` | Generate scenarios from existing test cases       |
+
+### `/autoresearch:security` — Security Audit
+
+STRIDE threat model, OWASP Top 10 checks, and red-team probing with adversarial personas.
+
+```bash
+/autoresearch:security --scope "src/**/*" --depth standard --fail-on high
+```
+
+**Flags:**
+
+| Flag                | Description                                   |
+| ------------------- | --------------------------------------------- |
+| `--diff`            | Audit only changed files                      |
+| `--fix`             | Auto-fix discovered vulnerabilities           |
+| `--fail-on <sev>`   | Exit non-zero at severity threshold           |
+| `--scope <glob>`    | Files to audit                                |
+| `--depth <level>`   | Audit depth                                   |
+| `--iterations N`    | Bounded mode                                  |
+| `--baseline <path>` | Compare against previous audit (delta report) |
+
+### `/autoresearch:ship` — Shipping Workflow
+
+Guides code through an 8-phase checklist from readiness check to post-ship monitoring.
+
+```bash
+/autoresearch:ship --type code-pr --auto
+```
+
+**Flags:**
+
+| Flag               | Description                                  |
+| ------------------ | -------------------------------------------- |
+| `--dry-run`        | Validate without executing                   |
+| `--auto`           | Proceed without confirmation if no errors    |
+| `--force`          | Skip non-critical pre-flight checks          |
+| `--rollback`       | Undo the last ship action                    |
+| `--monitor N`      | Watch for N minutes after shipping           |
+| `--type <type>`    | code-pr, code-release, docs, deploy, content |
+| `--target <path>`  | Primary artifact path                        |
+| `--checklist-only` | Output checklist without executing           |
+| `--iterations N`   | Bounded mode                                 |
+| `--changelog`      | Auto-generate CHANGELOG entry from commits   |
+
+## Troubleshooting
+
+**"Scope glob matched no files"** — The `Scope:` pattern didn't match any files. Check your glob syntax and working directory. Use `ls <pattern>` to verify matches.
+
+**"Verify command failed on baseline"** — The `Verify:` command either exited non-zero or produced no number. Run it manually to check output. Ensure it prints a number to stdout.
+
+**"10 consecutive discards (stuck)"** — The engine tried 10 changes and none improved the metric. Try broadening the Scope, changing the Goal, or running `/autoresearch:predict` first to identify better approaches.
+
+**"5 consecutive crashes"** — The Verify or Guard command keeps failing. Check that the command works outside autoresearch. Common causes: missing dependencies, path issues, command timeout.
+
+**"Plateau detected"** — The metric hasn't improved meaningfully over 20 iterations. The remaining gains may require a different approach or architectural changes.
+
+**State file corrupted** — Delete `autoresearch-state.json` and start fresh. The branch and commits are preserved in git.
+
+**Resuming after a crash** — Use `--resume` to pick up where the last run stopped. State is checkpointed after every phase.
 
 ## License
 
