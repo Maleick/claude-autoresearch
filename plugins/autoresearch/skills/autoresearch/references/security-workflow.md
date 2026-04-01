@@ -48,8 +48,16 @@ Each persona independently analyzes the code from their perspective.
 ## Phase 6: Classification
 
 - Severity: Critical / High / Medium / Low
-- CVSS-like scoring: exploitability × impact
+- **CVSS v3.1 scoring:** For each finding, compute a CVSS base score using:
+  - Attack Vector (Network/Adjacent/Local/Physical)
+  - Attack Complexity (Low/High)
+  - Privileges Required (None/Low/High)
+  - User Interaction (None/Required)
+  - Scope (Unchanged/Changed)
+  - Impact: Confidentiality/Integrity/Availability (None/Low/High)
+  - Map to severity: Critical (9.0-10.0), High (7.0-8.9), Medium (4.0-6.9), Low (0.1-3.9)
 - Affected files with line references
+- If `--baseline` is provided: compare findings against previous audit to produce a delta report (new findings, resolved findings, persistent findings)
 
 ## Phase 7: Report and Stop
 

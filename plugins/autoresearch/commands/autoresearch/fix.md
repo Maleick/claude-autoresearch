@@ -1,7 +1,7 @@
 ---
 name: autoresearch:fix
 description: Error repair loop — fixes errors one at a time, auto-reverting on regression, until zero remain
-argument-hint: "[--target <cmd>] [--guard <cmd>] [--scope <glob>] [--category <type>] [--skip-lint] [--from-debug] [--force-branch] [--iterations N]"
+argument-hint: "[--target <cmd>] [--guard <cmd>] [--scope <glob>] [--category <type>] [--skip-lint] [--from-debug] [--force-branch] [--max-attempts-per-error N] [--iterations N]"
 ---
 
 EXECUTE IMMEDIATELY — do not deliberate, do not ask clarifying questions before reading the protocol.
@@ -17,6 +17,7 @@ Extract these from $ARGUMENTS — the user may provide extensive context alongsi
 - `--skip-lint` — skip lint fixes, focus on tests/types/build only
 - `--from-debug` — read findings from latest debug session
 - `--force-branch` — skip the branch safety check (use when already on a feature branch)
+- `--max-attempts-per-error <N>` — maximum fix attempts per unique error (default: 3). Prevents infinite loops on unfixable errors. After N failed attempts on the same error, skip it and move to the next.
 - `Iterations:` or `--iterations N` — integer for bounded mode (CRITICAL: run exactly N iterations then stop)
 
 If `Iterations: N` or `--iterations N` is found, set `max_iterations = N`. Track `current_iteration` starting at 0. After iteration N, print final summary and STOP. Also stops when error count = 0.

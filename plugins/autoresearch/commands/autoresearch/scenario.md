@@ -1,7 +1,7 @@
 ---
 name: autoresearch:scenario
 description: Edge case explorer — generates derivative scenarios and use cases from a seed idea using iterative expansion
-argument-hint: "[scenario description] [--scope <glob>] [--depth shallow|standard|deep] [--domain <type>] [--format <type>] [--focus <area>] [--iterations N]"
+argument-hint: "[scenario description] [--scope <glob>] [--depth shallow|standard|deep] [--domain <type>] [--format <type>] [--focus <area>] [--seed-from-tests] [--iterations N]"
 ---
 
 EXECUTE IMMEDIATELY — do not deliberate, do not ask clarifying questions before reading the protocol.
@@ -15,6 +15,7 @@ Extract these from $ARGUMENTS — the user may provide extensive context alongsi
 - `--scope <glob>` or `Scope:` — file globs
 - `--format <type>` — use-cases, user-stories, test-scenarios, threat-scenarios
 - `--focus <area>` — edge-cases, failures, security, scale
+- `--seed-from-tests` — generate scenarios from existing test cases in the scope. Reads test files, extracts test descriptions, and uses them as seed scenarios for expansion.
 - `Iterations:` or `--iterations N` — integer for bounded mode (CRITICAL: run exactly N iterations then stop). Overrides depth preset.
 - `Scenario:` — text after "Scenario:" keyword
 

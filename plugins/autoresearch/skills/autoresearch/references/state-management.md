@@ -10,8 +10,15 @@ Gitignored (add to .gitignore if not present).
 
 ### Schema
 
+The state file includes a `schema_version` field for forward compatibility. When reading a state file, check the schema version:
+
+- `schema_version: 1` — current format (v2.0.0+)
+- If the field is missing, treat as schema version 1 (backwards compatible with v2.0.0 state files)
+- Future versions may add fields. Unknown fields should be preserved on write, not dropped.
+
 ```json
 {
+  "schema_version": 1,
   "run_id": "autoresearch/20260331-0100",
   "branch": "autoresearch/20260331-0100",
   "goal": "Reduce bundle size",

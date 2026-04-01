@@ -1,7 +1,7 @@
 ---
 name: autoresearch:ship
 description: Shipping workflow — guides code through an 8-phase checklist from readiness check to post-ship monitoring
-argument-hint: "[--dry-run] [--auto] [--force] [--rollback] [--monitor N] [--type <type>] [--target <path>] [--checklist-only] [--iterations N]"
+argument-hint: "[--dry-run] [--auto] [--force] [--rollback] [--monitor N] [--type <type>] [--target <path>] [--checklist-only] [--changelog] [--iterations N]"
 ---
 
 EXECUTE IMMEDIATELY — do not deliberate, do not ask clarifying questions before reading the protocol.
@@ -17,6 +17,7 @@ Extract these from $ARGUMENTS — the user may provide extensive context alongsi
 - `--monitor N` — post-ship monitoring for N minutes
 - `--type <type>` — override auto-detection (code-pr, code-release, deployment, content, etc.)
 - `--checklist-only` — only generate checklist
+- `--changelog` — auto-generate a CHANGELOG.md entry from the commits on the current branch (uses `git log` to summarize changes)
 - `--target <path>` or `Target:` — what to ship (path, PR, artifact)
 - `Iterations:` or `--iterations N` — bounded preparation iterations (CRITICAL: run exactly N prep iterations then ship)
 

@@ -1,7 +1,7 @@
 ---
 name: autoresearch:predict
 description: Multi-perspective code analysis — expert personas debate your code's risks and trade-offs before you commit to a change
-argument-hint: "[goal/focus] [--scope <glob>] [--chain debug|security|fix|ship|scenario] [--depth shallow|standard|deep] [--personas N] [--rounds N] [--adversarial] [--budget <N>] [--fail-on <severity>] [--iterations N]"
+argument-hint: "[goal/focus] [--scope <glob>] [--chain debug|security|fix|ship|scenario] [--depth shallow|standard|deep] [--personas N] [--rounds N] [--adversarial] [--budget <N>] [--fail-on <severity>] [--export <path>] [--iterations N]"
 ---
 
 EXECUTE IMMEDIATELY — do not deliberate, do not ask clarifying questions before reading the protocol.
@@ -18,6 +18,7 @@ Extract these from $ARGUMENTS — the user may provide extensive context alongsi
 - `--adversarial` — use red team personas
 - `--budget <N>` — max total findings across all personas (default: 40)
 - `--fail-on <severity>` — CI/CD gate
+- `--export <path>` — save the full persona analysis as JSON for downstream tools or archiving
 - `--incremental` — reuse existing knowledge files, update only changed files
 - `--goal <text>` or `Goal:` — focus area for analysis
 - `Iterations:` or `--iterations N` — integer for bounded mode (CRITICAL: run exactly N iterations then stop)

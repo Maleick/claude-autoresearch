@@ -1,7 +1,7 @@
 ---
 name: autoresearch:learn
 description: Documentation generator — analyzes your codebase and produces or updates docs with a validate-and-fix loop
-argument-hint: "[goal/focus] [--mode init|update|check|summarize] [--scope <glob>] [--depth quick|standard|deep] [--file <name>] [--scan] [--topics <list>] [--no-fix] [--format markdown|html|json|rst] [--iterations N]"
+argument-hint: "[goal/focus] [--mode init|update|check|summarize] [--scope <glob>] [--depth quick|standard|deep] [--file <name>] [--scan] [--topics <list>] [--no-fix] [--format markdown|html|json|rst] [--audience developer|user|api-consumer] [--iterations N]"
 ---
 
 EXECUTE IMMEDIATELY — do not deliberate, do not ask clarifying questions before reading the protocol.
@@ -17,6 +17,7 @@ Extract these from $ARGUMENTS — the user may provide extensive context alongsi
 - `--scan` — force fresh scout in summarize mode
 - `--topics <list>` — focus summarize on specific topics
 - `--no-fix` — skip validation-fix loop
+- `--audience <type>` — tailor documentation tone: `developer` (technical, assumes codebase familiarity), `user` (end-user focused, no implementation details), `api-consumer` (integration-focused, request/response examples)
 - `--format <fmt>` — output format: markdown (default), html, json, rst
 - `Iterations:` or `--iterations N` — integer for bounded mode (CRITICAL: run exactly N iterations then stop)
 

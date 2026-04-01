@@ -1,7 +1,7 @@
 ---
 name: autoresearch
 description: Autonomous Goal-directed Iteration. Modify, verify, keep/discard, repeat. For git-backed codebases with deterministic verification commands.
-argument-hint: "[Goal: <text>] [Scope: <glob>] [Metric: <text>] [Verify: <cmd>] [Guard: <cmd>] [Target: <num>] [Timeout: <sec>] [--iterations N] [--resume] [--force-branch] [--no-limit]"
+argument-hint: "[Goal: <text>] [Scope: <glob>] [Metric: <text>] [Verify: <cmd>] [Guard: <cmd>] [Target: <num>] [Timeout: <sec>] [--iterations N] [--resume] [--force-branch] [--no-limit] [--dry-run] [--notify]"
 ---
 
 ## Step 0: Wizard vs. Direct Execution (check this FIRST)
@@ -33,15 +33,15 @@ Use `AskUserQuestion` with this prompt:
 ```
 What are you trying to accomplish?
 
-  [A] Optimize a metric — iteratively improve a measurable number (test pass rate, bundle size, perf score)
-  [B] Find bugs — systematic investigation using scientific method
-  [C] Fix errors — repair known failures until zero remain
-  [D] Generate documentation — analyze codebase and produce/update docs
-  [E] Explore scenarios — generate use cases, edge cases, test scenarios from a seed idea
-  [F] Security audit — STRIDE + OWASP + red-team analysis
-  [G] Expert analysis — multi-perspective code review from specialist personas
-  [H] Ship something — structured release workflow with checklists
-  [I] Not sure — describe your goal and get a recommendation
+  [A] Optimize a metric — iteratively improve a measurable number (e.g., test pass rate, bundle size, perf score). You provide a shell command that outputs the number.
+  [B] Find bugs — systematic investigation using scientific method. Surfaces multiple bugs, not just the first one.
+  [C] Fix errors — repair known failures one at a time, auto-reverting on regression, until zero remain.
+  [D] Generate documentation — analyze codebase and produce or update docs with a validate-and-fix loop.
+  [E] Explore scenarios — generate derivative use cases, edge cases, and test scenarios from a seed idea.
+  [F] Security audit — STRIDE threat model + OWASP Top 10 + red-team probing with adversarial personas.
+  [G] Expert analysis — specialist personas independently analyze your code, then debate and rank findings.
+  [H] Ship something — 8-phase checklist from readiness check to post-ship monitoring.
+  [I] Not sure — describe your goal in plain language and get a recommendation.
 
 Enter a letter (A-I):
 ```
@@ -204,6 +204,12 @@ Extract these from $ARGUMENTS — the user may provide extensive context alongsi
 - `Timeout:` — per-command timeout in seconds for Verify and Guard commands (default: 300). If a command exceeds this, the iteration is treated as a crash.
 - `--force-branch` — skip the branch safety check in Phase 0. When set, the loop will not verify it is off the default branch before proceeding. Defined in autonomous-loop-protocol.md.
 - `--resume` — resume a previous run from `autoresearch-state.json`. Skips Phase 0 setup; reads state file to restore iteration count, branch, previous_best, and config.
+- `--dry-run` — validate all configuration (parse arguments, check Verify command runs, validate Scope glob) without starting the iteration loop. Prints parsed config and baseline metric, then stops.
+- `--notify` — after loop completion, print a prominent summary to stdout. Useful for tmux/background runs.
+- `MetricPattern:` — optional regex to extract metric from Verify output. First capture group is used. Examples:
+  - `MetricPattern: "Tests: ([0-9]+) passed"` → extracts passing test count
+  - `MetricPattern: "score: ([0-9.]+)"` → extracts decimal score
+  - `MetricPattern: "Time: ([0-9.]+)s"` → extracts seconds
 
 If `Iterations: N` or `--iterations N` is found, set `max_iterations = N`. Track `current_iteration` starting at 0. After iteration N, print final summary and STOP.
 
@@ -214,6 +220,8 @@ If `Iterations: N` or `--iterations N` is found, set `max_iterations = N`. Track
    2.5. If `--resume` is set, read `autoresearch-state.json` from the project root. Validate the state file exists and the branch still exists. Checkout the branch, restore all loop state (iteration, previous_best, consecutive_discards, etc.), and skip Phase 0. Resume from the last completed phase.
 3. If Goal, Scope, Metric, and Verify are all extracted — proceed directly to loop setup
 4. If any critical field is missing — **FAIL FAST**: print a clear error listing the missing fields and a ready-to-paste example invocation, then STOP. Do NOT use `AskUserQuestion` — this command must run unattended.
+   4.5. If `--dry-run` is set, print the parsed configuration and baseline metric value, then STOP without entering the loop.
+   4.6. If the Verify command fails during baseline validation, print a diagnostic: the command, exit code, stdout, and stderr. Suggest fixes: "Check that the command works manually. Common issues: missing dependencies, wrong working directory, command not found, or no number in stdout."
 5. Execute the autonomous loop: Modify → Verify → Keep/Discard → Repeat
 6. If bounded: after each iteration, check `current_iteration < max_iterations`. If not, STOP and print summary.
 

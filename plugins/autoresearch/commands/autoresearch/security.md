@@ -1,7 +1,7 @@
 ---
 name: autoresearch:security
 description: Security audit — STRIDE threat model, OWASP Top 10 checks, and red-team probing with adversarial personas
-argument-hint: "[--diff] [--fix] [--fail-on <severity>] [--scope <glob>] [--depth <level>] [--iterations N]"
+argument-hint: "[--diff] [--fix] [--fail-on <severity>] [--scope <glob>] [--depth <level>] [--baseline <path>] [--iterations N]"
 ---
 
 EXECUTE IMMEDIATELY — do not deliberate, do not ask clarifying questions before reading the protocol.
@@ -15,6 +15,7 @@ Extract these from $ARGUMENTS — the user may provide extensive context alongsi
 - `--fail-on <severity>` — exit non-zero for CI/CD gating (critical/high/medium)
 - `--scope <glob>` or `Scope:` — file globs to audit
 - `--depth <level>` or `Depth:` — shallow (5 iterations), standard (15), deep (30+)
+- `--baseline <path>` — path to a previous security audit report. Produces a delta report showing new, resolved, and persistent findings.
 - `Focus:` — specific area to focus on (e.g., "authentication and authorization")
 - `Iterations:` or `--iterations N` — integer for bounded mode (CRITICAL: run exactly N iterations then stop)
 
