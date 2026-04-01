@@ -1,5 +1,16 @@
 # Autoresearch
 
+[![GitHub Release](https://img.shields.io/github/v/release/Maleick/claude-autoresearch?style=flat-square&label=release)](https://github.com/Maleick/claude-autoresearch/releases)
+[![License](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE)
+[![Language](https://img.shields.io/badge/language-Markdown-brightgreen?style=flat-square)](plugins/autoresearch/commands/autoresearch.md)
+[![Last Commit](https://img.shields.io/github/last-commit/Maleick/claude-autoresearch?style=flat-square)](https://github.com/Maleick/claude-autoresearch/commits/main)
+[![GitHub Stars](https://img.shields.io/github/stars/Maleick/claude-autoresearch?style=flat-square)](https://github.com/Maleick/claude-autoresearch/stargazers)
+[![Repo Size](https://img.shields.io/github/repo-size/Maleick/claude-autoresearch?style=flat-square)](.)
+[![Status](https://img.shields.io/badge/status-Active-green?style=flat-square)](CHANGELOG.md)
+[![Claude Code](https://img.shields.io/badge/compatible-Claude%20Code-blueviolet?style=flat-square)](https://claude.ai/download)
+[![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-blue?style=flat-square)](.)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen?style=flat-square)](CONTRIBUTING.md)
+
 > **v2.1.0** — [Issues](https://github.com/Maleick/claude-autoresearch/issues)
 
 Autonomous overnight iteration engine for [Claude Code](https://claude.ai/claude-code). Fire it before bed, review improvements in the morning.
