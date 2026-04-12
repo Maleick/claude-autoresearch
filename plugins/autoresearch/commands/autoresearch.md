@@ -203,7 +203,7 @@ Extract these from $ARGUMENTS — the user may provide extensive context alongsi
 - `MetricPattern:` — optional regex pattern to extract the metric from Verify output. If not set, the last number in stdout is used. Example: `MetricPattern: "score: ([0-9.]+)"`
 - `Timeout:` — per-command timeout in seconds for Verify and Guard commands (default: 300). If a command exceeds this, the iteration is treated as a crash.
 - `--force-branch` — skip the branch safety check in Phase 0. When set, the loop will not verify it is off the default branch before proceeding. Defined in autonomous-loop-protocol.md.
-- `--resume` — resume a previous run from `autoresearch-state.json`. Skips Phase 0 setup; reads state file to restore iteration count, branch, previous_best, and config.
+- `--resume` — resume a previous run from `autoresearch-state.json`. Skips Phase 0 setup; reads state file to restore iteration count, branch, and loop progress. **Security:** executable commands (`Verify:`/`Guard:`) are never trusted from the state file.
 - `--dry-run` — validate all configuration (parse arguments, check Verify command runs, validate Scope glob) without starting the iteration loop. Prints parsed config and baseline metric, then stops.
 - `--notify` — after loop completion, print a prominent summary to stdout. Useful for tmux/background runs.
 - `MetricPattern:` — optional regex to extract metric from Verify output. First capture group is used. Examples:
@@ -217,7 +217,8 @@ If `Iterations: N` or `--iterations N` is found, set `max_iterations = N`. Track
 
 1. Read the autonomous loop protocol: `.claude/skills/autoresearch/references/autonomous-loop-protocol.md`
 2. Read the results logging format: `.claude/skills/autoresearch/references/results-logging.md`
-   2.5. If `--resume` is set, read `autoresearch-state.json` from the project root. Validate the state file exists and the branch still exists. Checkout the branch, restore all loop state (iteration, previous_best, consecutive_discards, etc.), and skip Phase 0. Resume from the last completed phase.
+2.5. If `--resume` is set, read `autoresearch-state.json` from the project root. Validate the state file exists and the branch still exists. Checkout the branch, restore non-executable loop state (iteration, previous_best, consecutive_discards, etc.), and skip Phase 0. Resume from the last completed phase.
+2.6. On resume, source executable commands from the current invocation only: `Verify:` is required and `Guard:` is optional. Ignore `verify_cmd`/`guard_cmd` values in `autoresearch-state.json`. If the user does not provide `Verify:` when resuming, STOP with an error.
 3. If Goal, Scope, Metric, and Verify are all extracted — proceed directly to loop setup
 4. If any critical field is missing — **FAIL FAST**: print a clear error listing the missing fields and a ready-to-paste example invocation, then STOP. Do NOT use `AskUserQuestion` — this command must run unattended.
    4.5. If `--dry-run` is set, print the parsed configuration and baseline metric value, then STOP without entering the loop.

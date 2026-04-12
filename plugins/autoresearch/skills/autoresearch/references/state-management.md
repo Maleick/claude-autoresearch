@@ -54,8 +54,8 @@ The state file includes a `schema_version` field for forward compatibility. When
 | scope                | string         | File glob pattern                                 |
 | metric               | string         | Metric description                                |
 | direction            | string         | "maximize" or "minimize"                          |
-| verify_cmd           | string         | The Verify shell command                          |
-| guard_cmd            | string or null | The Guard shell command                           |
+| verify_cmd           | string         | Last run's Verify shell command (record only; never trusted on resume execution) |
+| guard_cmd            | string or null | Last run's Guard shell command (record only; never trusted on resume execution)  |
 | metric_pattern       | string or null | Optional regex for metric extraction              |
 | target               | number or null | Target metric value for goal-achieved stop        |
 | timeout_sec          | integer        | Per-command timeout in seconds                    |
@@ -83,13 +83,15 @@ When `--resume` is used:
 2. Read `autoresearch-state.json` from project root.
 3. Validate: file exists, status is "running", branch exists in git.
 4. Checkout the branch: `git checkout <branch>`.
-5. Restore all loop variables from the state file.
-6. **SHA validation and mismatch recovery:**
+5. Restore non-executable loop variables from the state file.
+6. Treat `verify_cmd` and `guard_cmd` as untrusted metadata. Do **not** execute commands loaded from state.
+7. Require command source from the current invocation: `Verify:` must be provided again, `Guard:` is optional. If omitted, STOP with an error.
+8. **SHA validation and mismatch recovery:**
    - Get current HEAD SHA via `git rev-parse HEAD`.
    - **(a) If working tree is dirty** (`git status --porcelain` is non-empty): run `git checkout -- .` and `git clean -fd`, then skip to the next iteration (Phase 1).
    - **(b) If clean but HEAD SHA is ahead of `last_commit_sha`:** run `git reset --hard <last_commit_sha>` to roll back to the last known-good state, then resume from Phase 1.
    - **(c) If HEAD SHA matches `last_commit_sha`:** resume from `current_phase` (the phase after `last_phase_completed`).
-7. If none of the above conditions can be resolved: warn and offer to start fresh instead.
+9. If none of the above conditions can be resolved: warn and offer to start fresh instead.
 
 ### Crash Recovery
 
