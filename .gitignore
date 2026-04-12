@@ -1,3 +1,9 @@
+# Local session context (not shared)
+.claude/
+.wolf/
+.serena/
+CLAUDE.md
+
 # Autoresearch runtime artifacts
 autoresearch-results.tsv
 autoresearch-report.md
