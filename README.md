@@ -127,15 +127,15 @@ flowchart TD
 ```mermaid
 flowchart LR
     subgraph Commands
-        AR[/autoresearch]
-        PL[/autoresearch:plan]
-        DB[/autoresearch:debug]
-        FX[/autoresearch:fix]
-        SC[/autoresearch:security]
-        LN[/autoresearch:learn]
-        PR[/autoresearch:predict]
-        SN[/autoresearch:scenario]
-        SH[/autoresearch:ship]
+        AR["/autoresearch"]
+        PL["/autoresearch:plan"]
+        DB["/autoresearch:debug"]
+        FX["/autoresearch:fix"]
+        SC["/autoresearch:security"]
+        LN["/autoresearch:learn"]
+        PR["/autoresearch:predict"]
+        SN["/autoresearch:scenario"]
+        SH["/autoresearch:ship"]
     end
 
     subgraph Skill["SKILL.md — shared invariants"]
