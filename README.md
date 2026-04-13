@@ -189,7 +189,7 @@ Runs at 1 AM daily. Writes report when done.
 - **Command timeouts** — `Verify:` and `Guard:` commands have a hard timeout (default 300s). Timeout is treated as a crash
 - **Bounded iterations** — default 50, soft cap at 100 (override with `--no-limit`)
 - **Duration limits** — set `Duration: 8h` to cap wall-clock time
-- **State persistence** — loop state is checkpointed to `autoresearch-state.json` after every phase, enabling `--resume` after crashes
+- **State persistence** — loop state is checkpointed to `autoresearch-state.json` after every phase, enabling `--resume` after crashes. On resume, executable commands come from the current invocation, not the state file.
 - **Fail-fast** — all non-plan commands fail immediately on missing required parameters (no interactive prompts mid-loop)
 
 ## Output Artifacts
@@ -235,7 +235,7 @@ All runtime artifacts are gitignored.
 | `MetricPattern:`                 | last number in stdout | Regex to extract the metric from Verify output (e.g., `"score: ([0-9.]+)"`)                             |
 | `Timeout:`                       | 300                   | Per-command timeout in seconds for Verify and Guard commands. Timeout = crash                           |
 | `--no-limit`                     | off                   | Remove the 100-iteration soft cap                                                                       |
-| `--resume`                       | off                   | Resume a previous run from `autoresearch-state.json`. Restores iteration count, branch, and best metric |
+| `--resume`                       | off                   | Resume a previous run from `autoresearch-state.json`. Restores iteration count, branch, and best metric; re-supply `Verify:` on resume |
 
 ### Stop Conditions
 
@@ -447,7 +447,7 @@ Guides code through an 8-phase checklist from readiness check to post-ship monit
 
 **State file corrupted** — Delete `autoresearch-state.json` and start fresh. The branch and commits are preserved in git.
 
-**Resuming after a crash** — Use `--resume` to pick up where the last run stopped. State is checkpointed after every phase.
+**Resuming after a crash** — Use `--resume` to pick up where the last run stopped. State is checkpointed after every phase, and executable commands are re-read from the current invocation. Re-supply `Verify:` when resuming; `Guard:` is optional.
 
 ---
 

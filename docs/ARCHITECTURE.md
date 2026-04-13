@@ -60,9 +60,9 @@ Sub-commands follow the same pattern: `commands/autoresearch/fix.md` → `SKILL.
 
 ## State Machine
 
-State is checkpointed to `autoresearch-state.json` after every phase. This enables `--resume` after crashes.
+State is checkpointed to `autoresearch-state.json` after every phase. This enables `--resume` after crashes. On resume, executable commands come from the current invocation; the state file only restores non-executable loop metadata.
 
-Schema fields: `run_id`, `schema_version`, `branch`, `iteration`, `max_iterations`, `best_metric`, `direction`, `goal`, `scope`, `verify_cmd`, `guard_cmd`, `start_time`, `duration_limit`, `discarded_descriptions`.
+Schema fields: `run_id`, `schema_version`, `branch`, `iteration`, `max_iterations`, `best_metric`, `direction`, `goal`, `scope`, `verify_cmd`, `guard_cmd`, `start_time`, `duration_limit`, `discarded_descriptions`. `verify_cmd` and `guard_cmd` are record-only metadata and are not executed from the state file on resume.
 
 ## Safety Invariants
 

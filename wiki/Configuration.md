@@ -21,7 +21,11 @@
 | `MetricPattern:`                 | last number in stdout | Regex to extract metric (e.g. `"score: ([0-9.]+)"`)       |
 | `Timeout:`                       | 300                   | Per-command timeout in seconds                            |
 | `--no-limit`                     | off                   | Remove 100-iteration soft cap                             |
-| `--resume`                       | off                   | Resume from `autoresearch-state.json`                     |
+| `--resume`                       | off                   | Resume from `autoresearch-state.json`. Re-supply `Verify:` on resume; `Guard:` remains optional. |
+
+## Resume Behavior
+
+When resuming a run, pass `Verify:` again. The state file is treated as run metadata only; `Verify:` and `Guard:` values stored on disk are not executed.
 
 ## Stop Conditions
 
