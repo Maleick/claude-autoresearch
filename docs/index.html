@@ -132,15 +132,17 @@
   </div>
 
   <script>
+    const copyBtn = document.getElementById('copy-btn');
+    const installCmd = document.getElementById('install-cmd');
+
     function copyInstall() {
-      const btn = document.getElementById('copy-btn');
-      const raw = document.getElementById('install-cmd').textContent;
+      const raw = installCmd.textContent;
       navigator.clipboard.writeText(raw).then(() => {
-        btn.textContent = 'Copied!';
-        btn.classList.add('copied');
+        copyBtn.textContent = 'Copied!';
+        copyBtn.classList.add('copied');
         setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
       }).catch(() => {
-        btn.textContent = 'Failed';
+        copyBtn.textContent = 'Failed';
         setTimeout(() => { btn.textContent = 'Copy'; }, 2000);
       });
     }
