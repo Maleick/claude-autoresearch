@@ -49,12 +49,13 @@ The body contains execution instructions that Claude Code follows when the comma
 
 ## Version Bumping
 
-When releasing a new version, update these files:
+When releasing a new version, update these 5 files:
 
-1. `plugins/autoresearch/.claude-plugin/plugin.json` — `version` field
-2. `.claude-plugin/marketplace.json` — `version` field
-3. `README.md` — version in the header line
-4. `CHANGELOG.md` — add new version section at the top
+1. `plugins/autoresearch/.claude-plugin/plugin.json` — `"version"` field
+2. `.claude-plugin/marketplace.json` — `"version"` field at root
+3. `README.md` — version badge and `> **vX.Y.Z**` line
+4. `CHANGELOG.md` — new `## [X.Y.Z] - YYYY-MM-DD` section at top
+5. `VERSION` — single line at repo root, no trailing newline: `X.Y.Z`
 
 ## Validation
 

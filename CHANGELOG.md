@@ -2,6 +2,24 @@
 
 All notable changes to the autoresearch plugin are documented in this file.
 
+## [2.2.0] - 2026-04-13
+
+### Added
+
+- One-liner install command — `claude plugin marketplace add && claude plugin install` in one shot
+- Auto-update enabled by default via `"autoUpdate": true` in plugin manifests
+- Hero graphic (`assets/autoresearch-loop.svg`) — night-mode SVG banner for README and GitHub Pages
+- GitHub Pages landing page (`docs/index.html`) — dark-theme project site with install one-liner, command table, and how-it-works section
+- GitHub Actions `release.yml` — auto-creates GitHub Releases from CHANGELOG on version tags
+- GitHub Actions `validate.yml` — PR checks for frontmatter, cross-references, and version consistency
+- GitHub Sponsors support — `.github/FUNDING.yml`, Sponsor badge in badge row, `☕ Keep the loop running` footer link
+- Architecture doc (`docs/ARCHITECTURE.md`) — current phase flow, state machine, invariants, artifact lifecycle
+- Wiki (`wiki/`) — 6-page reference covering installation, commands, configuration, safety, and contributing
+- `VERSION` file at repo root for cross-file version consistency checking
+- Mermaid flowcharts in README — core loop diagram and plugin architecture diagram
+- GitHub repo topics for discoverability
+- README restructured to match AutoShip layout: one-liner above the fold, How It Works + Architecture sections added
+
 ## [2.1.0] - 2026-03-31
 
 ### Added
