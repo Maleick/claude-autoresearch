@@ -3,6 +3,14 @@
 .wolf/
 .serena/
 CLAUDE.md
+AGENTS.md
+
+# Internal planning/spec docs
+docs/superpowers/
+docs/specs/
+
+# AutoShip runtime state
+.autoship/
 
 # Autoresearch runtime artifacts
 autoresearch-results.tsv
