@@ -1,6 +1,6 @@
 {
   "name": "autoresearch",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "owner": {
     "name": "Maleick",
     "email": ""
@@ -10,7 +10,8 @@
       "name": "autoresearch",
       "description": "Autonomous iteration engine for git-backed codebases. Set a goal and a verification command — autoresearch modifies code, measures results, keeps improvements, and discards regressions.",
       "source": "./plugins/autoresearch",
-      "category": "development"
+      "category": "development",
+      "autoUpdate": true
     }
   ]
 }

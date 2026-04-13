@@ -1,6 +1,7 @@
 {
   "name": "autoresearch",
-  "version": "2.1.0",
+  "version": "2.2.0",
+  "autoUpdate": true,
   "description": "Autonomous iteration engine for git-backed codebases. Set a goal and a verification command — autoresearch modifies code, measures results, keeps improvements, and discards regressions. Run it for 5 iterations or 500.",
   "author": {
     "name": "Maleick"
