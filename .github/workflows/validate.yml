@@ -1,0 +1,79 @@
+name: Validate Plugin
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check version consistency
+        run: |
+          PLUGIN_VER=$(python3 -c "import json; print(json.load(open('plugins/autoresearch/.claude-plugin/plugin.json'))['version'])")
+          FILE_VER=$(cat VERSION)
+          README_MATCH=$(grep -oP '(?<=\*\*v)\d+\.\d+\.\d+(?=\*\*)' README.md | head -1 || echo "")
+
+          ERRORS=0
+          if [ "$PLUGIN_VER" != "$FILE_VER" ]; then
+            echo "ERROR: plugin.json ($PLUGIN_VER) != VERSION file ($FILE_VER)"
+            ERRORS=$((ERRORS+1))
+          fi
+          if [ -n "$README_MATCH" ] && [ "$PLUGIN_VER" != "$README_MATCH" ]; then
+            echo "ERROR: plugin.json ($PLUGIN_VER) != README.md version badge ($README_MATCH)"
+            ERRORS=$((ERRORS+1))
+          fi
+          if [ "$ERRORS" -eq 0 ]; then
+            echo "Version consistency OK: $PLUGIN_VER"
+          else
+            exit 1
+          fi
+
+      - name: Check command frontmatter
+        run: |
+          ERRORS=0
+          for f in plugins/autoresearch/commands/autoresearch/*.md plugins/autoresearch/commands/autoresearch.md; do
+            [ -f "$f" ] || continue
+            if ! grep -qP '^name:' "$f"; then
+              echo "ERROR: $f missing 'name:'"
+              ERRORS=$((ERRORS+1))
+            fi
+            if ! grep -qP '^description:' "$f"; then
+              echo "ERROR: $f missing 'description:'"
+              ERRORS=$((ERRORS+1))
+            fi
+          done
+          for f in plugins/autoresearch/commands/autoresearch/*.md; do
+            [ -f "$f" ] || continue
+            if ! grep -qP '^argument-hint:' "$f"; then
+              echo "ERROR: $f missing 'argument-hint:'"
+              ERRORS=$((ERRORS+1))
+            fi
+          done
+          if [ "$ERRORS" -gt 0 ]; then
+            echo "$ERRORS frontmatter error(s) found"
+            exit 1
+          fi
+          echo "Frontmatter OK"
+
+      - name: Check workflow cross-references
+        run: |
+          ERRORS=0
+          for f in plugins/autoresearch/commands/autoresearch/*.md; do
+            [ -f "$f" ] || continue
+            CMD=$(basename "$f" .md)
+            REF="plugins/autoresearch/skills/autoresearch/references/${CMD}-workflow.md"
+            if [ ! -f "$REF" ]; then
+              echo "ERROR: command $CMD has no matching $REF"
+              ERRORS=$((ERRORS+1))
+            fi
+          done
+          if [ "$ERRORS" -gt 0 ]; then
+            echo "$ERRORS cross-reference error(s) found"
+            exit 1
+          fi
+          echo "Cross-references OK"
