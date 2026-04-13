@@ -201,8 +201,136 @@ Add the new `VERSION` file to the version-bump checklist (currently 4 files → 
 - Architecture doc (`docs/ARCHITECTURE.md`) — current phase flow, state machine, invariants, artifact lifecycle
 - Wiki (`wiki/`) — 6-page reference covering installation, commands, configuration, safety, and contributing
 - `VERSION` file at repo root for cross-file version consistency checking
+- Mermaid flowcharts in README — core loop diagram and plugin architecture diagram
+- GitHub Sponsors support — `.github/FUNDING.yml`, Sponsor badge in badge row, `☕ Keep the loop running` footer link
 - GitHub repo topics for discoverability
+- README restructured to match AutoShip section order (tagline → install → commands → how it works → architecture → safety)
 ```
+
+---
+
+## 11. Mermaid Charts
+
+Two diagrams added directly in `README.md` (GitHub renders Mermaid natively in markdown).
+
+### 11a. Core Loop Flowchart — "How It Works"
+
+Shows the Modify → Verify → Keep/Discard → Repeat cycle with all stop conditions branching off:
+
+```mermaid
+flowchart TD
+    A([Start]) --> B[Phase 0: Pre-flight\ngit status, params, branch]
+    B --> C[Phase 1: Baseline\nrun Verify command]
+    C --> D[Phase 2: Generate change\none atomic edit in Scope]
+    D --> E[Phase 3: Commit]
+    E --> F[Phase 4: Verify\nrun metric command]
+    F --> G{Improved?}
+    G -- yes --> H[Keep commit\nupdate best metric]
+    G -- no --> I[Discard\ngit reset --hard HEAD~1]
+    H --> J{Stop condition?}
+    I --> J
+    J -- iterations exhausted --> K([Write Report])
+    J -- duration exceeded --> K
+    J -- target reached --> K
+    J -- 10 consecutive discards --> K
+    J -- plateau detected --> K
+    J -- 5 crash loop --> K
+    J -- no --> D
+```
+
+### 11b. Architecture Flowchart — "Plugin Structure"
+
+Shows the command → skill → reference protocol chain:
+
+```mermaid
+flowchart LR
+    subgraph Commands
+        AR[/autoresearch]
+        PL[/autoresearch:plan]
+        DB[/autoresearch:debug]
+        FX[/autoresearch:fix]
+        SC[/autoresearch:security]
+        LN[/autoresearch:learn]
+        PR[/autoresearch:predict]
+        SN[/autoresearch:scenario]
+        SH[/autoresearch:ship]
+    end
+
+    subgraph Skill["SKILL.md (shared invariants)"]
+        SK[Safety rules\nStop conditions\nArtifact list]
+    end
+
+    subgraph References
+        LP[autonomous-loop-protocol]
+        SM[state-management]
+        RL[results-logging]
+        WF[*-workflow.md × 8]
+    end
+
+    AR --> SK
+    PL --> SK
+    DB --> SK
+    FX --> SK
+    SC --> SK
+    LN --> SK
+    PR --> SK
+    SN --> SK
+    SH --> SK
+    SK --> LP
+    SK --> SM
+    SK --> RL
+    SK --> WF
+```
+
+**Placement in README:** §11a under a new "How It Works" section (between Commands table and Running Overnight). §11b under a new "Architecture" section (between Running Overnight and Safety).
+
+---
+
+## 12. Sponsor / Funding
+
+Match AutoShip exactly.
+
+**`.github/FUNDING.yml`:**
+
+```yaml
+github: Maleick
+```
+
+**Sponsor badge** added to badge row in README:
+
+```markdown
+[![Sponsor](https://img.shields.io/github/sponsors/Maleick?label=Sponsor&logo=GitHub&color=EA4AAA&style=flat-square)](https://github.com/sponsors/Maleick)
+```
+
+**Footer line** at bottom of README (above License), matching AutoShip's tone:
+
+```markdown
+---
+
+☕ [Keep the loop running](https://github.com/sponsors/Maleick)
+```
+
+---
+
+## 13. README Section Order (Matching AutoShip Layout)
+
+Reorder README sections to mirror AutoShip's proven layout:
+
+1. Title + badge row (with Sponsor badge)
+2. Tagline: _"Fire it before bed. Review improvements in the morning."_
+3. One-liner install (prominent, above the fold)
+4. What It Does (existing)
+5. Commands table (existing)
+6. **How It Works** ← new section with core loop Mermaid chart
+7. **Architecture** ← new section with plugin structure Mermaid chart
+8. Running Overnight (existing, moved down)
+9. Safety (existing, moved down)
+10. Output Artifacts (existing)
+11. Configuration Reference (existing)
+12. Command Reference (existing)
+13. Troubleshooting (existing)
+14. Sponsor footer line
+15. License
 
 ---
 
@@ -212,17 +340,18 @@ Add the new `VERSION` file to the version-bump checklist (currently 4 files → 
 2. Create `assets/autoresearch-loop.svg` (hero graphic)
 3. Create `docs/index.html` (GitHub Pages landing page)
 4. Create `.github/workflows/release.yml` and `validate.yml`
-5. Create `docs/ARCHITECTURE.md`
-6. Create `wiki/` with all 6 pages
-7. Update `plugins/autoresearch/.claude-plugin/plugin.json` (version + autoUpdate)
-8. Update `.claude-plugin/marketplace.json` (autoUpdate)
-9. Update `README.md` (one-liner, graphic, version, links, auto-update section)
-10. Update `CONTRIBUTING.md` (VERSION file in checklist)
-11. Update `CLAUDE.md` (VERSION file in checklist)
-12. Write `CHANGELOG.md` v2.2.0 entry
-13. Set GitHub repo topics and homepage via `gh repo edit`
-14. Enable GitHub Pages via `gh api`
-15. Commit, tag `v2.2.0`, push — release workflow fires automatically
+5. Create `.github/FUNDING.yml` (GitHub Sponsors)
+6. Create `docs/ARCHITECTURE.md`
+7. Create `wiki/` with all 6 pages
+8. Update `plugins/autoresearch/.claude-plugin/plugin.json` (version + autoUpdate)
+9. Update `.claude-plugin/marketplace.json` (autoUpdate)
+10. Update `README.md` — reorder sections per §13, add one-liner, graphic, Mermaid charts, Sponsor badge + footer, version bump, auto-update section
+11. Update `CONTRIBUTING.md` (VERSION file in checklist)
+12. Update `CLAUDE.md` (VERSION file in checklist)
+13. Write `CHANGELOG.md` v2.2.0 entry
+14. Set GitHub repo topics and homepage via `gh repo edit`
+15. Enable GitHub Pages via `gh api`
+16. Commit, tag `v2.2.0`, push — release workflow fires automatically
 
 ---
 
