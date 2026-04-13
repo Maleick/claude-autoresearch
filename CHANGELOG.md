@@ -2,6 +2,14 @@
 
 All notable changes to the autoresearch plugin are documented in this file.
 
+## [2.2.1] - 2026-04-13
+
+### Fixed
+
+- `validate.yml`: all three CI checks now use `continue-on-error` with a final aggregator step — all validation errors surface in a single run instead of stopping at the first failure
+- `validate.yml`: added comment explaining why `autoresearch.md` is excluded from `argument-hint` frontmatter check
+- `docs/index.html`: copy button reads install string from DOM instead of a duplicate hardcoded string; hoisted button reference before promise branches
+
 ## [2.2.0] - 2026-04-13
 
 ### Added

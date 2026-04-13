@@ -19,9 +19,9 @@
   <text x="56" y="138" font-family="'Segoe UI',system-ui,sans-serif" font-size="46" font-weight="700" fill="#e6edf3">autoresearch</text>
   <text x="56" y="170" font-family="'Segoe UI',system-ui,sans-serif" font-size="14" fill="#8b949e">Autonomous iteration engine for Claude Code</text>
 
-  <!-- v2.2.0 pill -->
+  <!-- v2.2.1 pill -->
   <rect x="56" y="183" width="76" height="22" rx="11" fill="#1a2f1a"/>
-  <text x="94" y="198" font-family="'Segoe UI',system-ui,sans-serif" font-size="11" font-weight="600" fill="#30a14e" text-anchor="middle">v2.2.0</text>
+  <text x="94" y="198" font-family="'Segoe UI',system-ui,sans-serif" font-size="11" font-weight="600" fill="#30a14e" text-anchor="middle">v2.2.1</text>
 
   <!-- Tagline -->
   <text x="56" y="258" font-family="'Segoe UI',system-ui,sans-serif" font-size="15" fill="#c9d1d9">Fire it before bed.</text>

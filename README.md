@@ -14,7 +14,7 @@
 
 ![Autoresearch loop diagram](assets/autoresearch-loop.svg)
 
-> **v2.2.0** — [Website](https://maleick.github.io/claude-autoresearch/) · [Issues](https://github.com/Maleick/claude-autoresearch/issues)
+> **v2.2.1** — [Website](https://maleick.github.io/claude-autoresearch/) · [Issues](https://github.com/Maleick/claude-autoresearch/issues)
 
 Autonomous overnight iteration engine for [Claude Code](https://claude.ai/claude-code). Fire it before bed, review improvements in the morning.
 
