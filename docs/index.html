@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>autoresearch — Autonomous Iteration Engine for Claude Code</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0d1117; --bg2: #161b22; --bg3: #21262d;
+      --border: #30363d; --text: #e6edf3; --muted: #8b949e;
+      --green: #30a14e; --blue: #58a6ff; --pink: #ea4aaa;
+    }
+    body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; line-height: 1.6; }
+    a { color: var(--blue); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .container { max-width: 900px; margin: 0 auto; padding: 0 24px; }
+
+    header { padding: 56px 0 40px; text-align: center; border-bottom: 1px solid var(--border); }
+    header h1 { font-size: 2.8rem; font-weight: 700; letter-spacing: -1px; }
+    header .tagline { color: var(--muted); margin-top: 10px; font-size: 1.05rem; max-width: 520px; margin-left: auto; margin-right: auto; }
+    .badges { margin-top: 18px; display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+
+    .hero-img { margin: 40px 0 0; border-radius: 10px; border: 1px solid var(--border); overflow: hidden; }
+    .hero-img img { width: 100%; display: block; }
+
+    .install { margin: 48px 0; }
+    .install h2 { font-size: 1.25rem; font-weight: 600; margin-bottom: 14px; }
+    .install-box { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 14px 18px; display: flex; align-items: center; gap: 12px; }
+    .install-box code { font-family: 'Cascadia Code', 'Fira Code', 'Courier New', monospace; font-size: 0.88rem; color: var(--green); flex: 1; word-break: break-all; }
+    .copy-btn { flex-shrink: 0; background: var(--bg3); border: 1px solid var(--border); color: var(--text); border-radius: 6px; padding: 6px 14px; cursor: pointer; font-size: 0.82rem; transition: all 0.15s; }
+    .copy-btn:hover { background: var(--border); }
+    .copy-btn.copied { color: var(--green); border-color: var(--green); }
+
+    section { margin: 52px 0; }
+    section h2 { font-size: 1.35rem; font-weight: 600; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+
+    table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
+    th, td { padding: 10px 14px; text-align: left; border: 1px solid var(--border); }
+    th { background: var(--bg2); color: var(--muted); font-weight: 600; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; }
+    tr:hover td { background: var(--bg2); }
+    td code { font-family: 'Cascadia Code', 'Fira Code', monospace; font-size: 0.82rem; color: var(--blue); }
+
+    .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
+    .step { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 22px; }
+    .step .num { font-size: 2.2rem; font-weight: 700; color: var(--blue); line-height: 1; margin-bottom: 10px; }
+    .step h3 { font-size: 1rem; margin-bottom: 6px; }
+    .step p { color: var(--muted); font-size: 0.88rem; line-height: 1.5; }
+
+    footer { margin-top: 72px; padding: 36px 0; border-top: 1px solid var(--border); text-align: center; color: var(--muted); font-size: 0.88rem; }
+    footer .links { margin-bottom: 14px; display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; }
+    .sponsor { display: inline-flex; align-items: center; gap: 6px; color: var(--pink); font-size: 1rem; font-weight: 500; }
+    .sponsor:hover { color: var(--pink); opacity: 0.85; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>autoresearch</h1>
+      <p class="tagline">Autonomous iteration engine for Claude Code. Fire it before bed. Review improvements in the morning.</p>
+      <div class="badges">
+        <img src="https://img.shields.io/github/v/release/Maleick/claude-autoresearch?style=flat-square&label=release" alt="release">
+        <img src="https://img.shields.io/badge/license-MIT-blue?style=flat-square" alt="license">
+        <img src="https://img.shields.io/badge/status-Active-green?style=flat-square" alt="status">
+        <img src="https://img.shields.io/badge/compatible-Claude%20Code-blueviolet?style=flat-square" alt="claude code">
+        <img src="https://img.shields.io/github/sponsors/Maleick?label=Sponsor&logo=GitHub&color=EA4AAA&style=flat-square" alt="sponsor">
+      </div>
+    </header>
+
+    <div class="hero-img">
+      <img src="../assets/autoresearch-loop.svg" alt="Autoresearch — Modify, Verify, Keep or Discard, Repeat">
+    </div>
+
+    <div class="install">
+      <h2>Install</h2>
+      <div class="install-box">
+        <code id="install-cmd">claude plugin marketplace add Maleick/claude-autoresearch &amp;&amp; claude plugin install autoresearch@Maleick-claude-autoresearch</code>
+        <button class="copy-btn" id="copy-btn" onclick="copyInstall()">Copy</button>
+      </div>
+    </div>
+
+    <section id="commands">
+      <h2>Commands</h2>
+      <table>
+        <thead><tr><th>Command</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td><code>/autoresearch</code></td><td>Core autonomous loop — runs unattended</td></tr>
+          <tr><td><code>/autoresearch:plan</code></td><td>Interactive setup wizard — builds your config</td></tr>
+          <tr><td><code>/autoresearch:debug</code></td><td>Scientific-method bug hunting</td></tr>
+          <tr><td><code>/autoresearch:fix</code></td><td>Iterative error repair until zero remain</td></tr>
+          <tr><td><code>/autoresearch:security</code></td><td>STRIDE + OWASP Top 10 + red-team audit</td></tr>
+          <tr><td><code>/autoresearch:learn</code></td><td>Autonomous codebase documentation engine</td></tr>
+          <tr><td><code>/autoresearch:predict</code></td><td>Multi-persona expert swarm analysis</td></tr>
+          <tr><td><code>/autoresearch:scenario</code></td><td>Edge case and use-case generator</td></tr>
+          <tr><td><code>/autoresearch:ship</code></td><td>8-phase shipping workflow</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="how-it-works">
+      <h2>How It Works</h2>
+      <div class="steps">
+        <div class="step">
+          <div class="num">1</div>
+          <h3>Set a Goal</h3>
+          <p>Tell autoresearch what to optimize — bundle size, test speed, coverage — and supply a verification command that outputs a number.</p>
+        </div>
+        <div class="step">
+          <div class="num">2</div>
+          <h3>Run the Loop</h3>
+          <p>autoresearch makes one atomic change, measures it, keeps improvements, discards regressions, and repeats — all on an isolated branch, fully unattended.</p>
+        </div>
+        <div class="step">
+          <div class="num">3</div>
+          <h3>Review in the Morning</h3>
+          <p>Every kept change is a git commit. You wake up to a structured report and a branch ready to merge or discard.</p>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <div class="links">
+        <a href="https://github.com/Maleick/claude-autoresearch">GitHub</a>
+        <a href="https://github.com/Maleick/claude-autoresearch/blob/main/README.md">Docs</a>
+        <a href="https://github.com/Maleick/claude-autoresearch/blob/main/CHANGELOG.md">Changelog</a>
+        <a href="https://github.com/Maleick/claude-autoresearch/issues">Issues</a>
+        <a href="https://github.com/Maleick/claude-autoresearch/blob/main/LICENSE">MIT License</a>
+      </div>
+      <a href="https://github.com/sponsors/Maleick" class="sponsor">&#9749; Keep the loop running</a>
+      <p style="margin-top: 14px; font-size: 0.8rem;">Made for <a href="https://claude.ai/claude-code">Claude Code</a> · Team Operator Red</p>
+    </footer>
+  </div>
+
+  <script>
+    function copyInstall() {
+      const raw = 'claude plugin marketplace add Maleick/claude-autoresearch && claude plugin install autoresearch@Maleick-claude-autoresearch';
+      navigator.clipboard.writeText(raw).then(() => {
+        const btn = document.getElementById('copy-btn');
+        btn.textContent = 'Copied!';
+        btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+      }).catch(() => {
+        const btn = document.getElementById('copy-btn');
+        btn.textContent = 'Failed';
+        setTimeout(() => { btn.textContent = 'Copy'; }, 2000);
+      });
+    }
+  </script>
+</body>
+</html>
