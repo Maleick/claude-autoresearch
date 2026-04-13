@@ -140,10 +140,10 @@
       navigator.clipboard.writeText(raw).then(() => {
         copyBtn.textContent = 'Copied!';
         copyBtn.classList.add('copied');
-        setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+        setTimeout(() => { copyBtn.textContent = 'Copy'; copyBtn.classList.remove('copied'); }, 2000);
       }).catch(() => {
         copyBtn.textContent = 'Failed';
-        setTimeout(() => { btn.textContent = 'Copy'; }, 2000);
+        setTimeout(() => { copyBtn.textContent = 'Copy'; }, 2000);
       });
     }
   </script>

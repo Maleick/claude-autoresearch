@@ -12,7 +12,7 @@
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen?style=flat-square)](CONTRIBUTING.md)
 [![Sponsor](https://img.shields.io/github/sponsors/Maleick?label=Sponsor&logo=GitHub&color=EA4AAA&style=flat-square)](https://github.com/sponsors/Maleick)
 
-![Autoresearch loop diagram](assets/autoresearch-loop.svg)
+![Autoresearch loop diagram](docs/autoresearch-loop.svg)
 
 > **v2.2.1** — [Website](https://maleick.github.io/claude-autoresearch/) · [Issues](https://github.com/Maleick/claude-autoresearch/issues)
 
@@ -225,16 +225,16 @@ All runtime artifacts are gitignored.
 
 ### Optional Parameters
 
-| Parameter                        | Default               | Description                                                                                             |
-| -------------------------------- | --------------------- | ------------------------------------------------------------------------------------------------------- |
-| `Guard:`                         | none                  | Command that must exit 0 after each change                                                              |
-| `Iterations:` / `--iterations N` | 50                    | Max iterations (soft cap: 100, use `--no-limit` to override)                                            |
-| `Duration:`                      | none                  | Max wall-clock time (`6h`, `90m`, etc.)                                                                 |
-| `Direction:`                     | maximize              | `maximize` or `minimize` the metric                                                                     |
-| `Target:`                        | none                  | Numeric target value — loop stops when the metric reaches this value (respecting Direction)             |
-| `MetricPattern:`                 | last number in stdout | Regex to extract the metric from Verify output (e.g., `"score: ([0-9.]+)"`)                             |
-| `Timeout:`                       | 300                   | Per-command timeout in seconds for Verify and Guard commands. Timeout = crash                           |
-| `--no-limit`                     | off                   | Remove the 100-iteration soft cap                                                                       |
+| Parameter                        | Default               | Description                                                                                                                            |
+| -------------------------------- | --------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `Guard:`                         | none                  | Command that must exit 0 after each change                                                                                             |
+| `Iterations:` / `--iterations N` | 50                    | Max iterations (soft cap: 100, use `--no-limit` to override)                                                                           |
+| `Duration:`                      | none                  | Max wall-clock time (`6h`, `90m`, etc.)                                                                                                |
+| `Direction:`                     | maximize              | `maximize` or `minimize` the metric                                                                                                    |
+| `Target:`                        | none                  | Numeric target value — loop stops when the metric reaches this value (respecting Direction)                                            |
+| `MetricPattern:`                 | last number in stdout | Regex to extract the metric from Verify output (e.g., `"score: ([0-9.]+)"`)                                                            |
+| `Timeout:`                       | 300                   | Per-command timeout in seconds for Verify and Guard commands. Timeout = crash                                                          |
+| `--no-limit`                     | off                   | Remove the 100-iteration soft cap                                                                                                      |
 | `--resume`                       | off                   | Resume a previous run from `autoresearch-state.json`. Restores iteration count, branch, and best metric; re-supply `Verify:` on resume |
 
 ### Stop Conditions
