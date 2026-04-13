@@ -133,14 +133,13 @@
 
   <script>
     function copyInstall() {
-      const raw = 'claude plugin marketplace add Maleick/claude-autoresearch && claude plugin install autoresearch@Maleick-claude-autoresearch';
+      const btn = document.getElementById('copy-btn');
+      const raw = document.getElementById('install-cmd').textContent;
       navigator.clipboard.writeText(raw).then(() => {
-        const btn = document.getElementById('copy-btn');
         btn.textContent = 'Copied!';
         btn.classList.add('copied');
         setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
       }).catch(() => {
-        const btn = document.getElementById('copy-btn');
         btn.textContent = 'Failed';
         setTimeout(() => { btn.textContent = 'Copy'; }, 2000);
       });
