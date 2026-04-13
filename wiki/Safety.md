@@ -5,12 +5,14 @@
 - **Your default branch** — all work happens on `autoresearch/<timestamp>`, never on main/master
 - **Your commit history** — failed experiments are reset, not reverted. No commit spam
 - **Your verification integrity** — metrics come from running commands, never from LLM self-assessment
+- **Your resume command source** — `Verify:` is taken from the current invocation on `--resume`; state-file command values are metadata only and are not executed
 
 ## What autoresearch Does NOT Protect
 
 - **Side effects of your Verify/Guard commands** — if your Verify command writes files, calls APIs, or modifies a database, those effects happen. autoresearch only controls git state
 - **Untracked files** — `git clean -fd` runs during discard. Untracked files in the working directory may be removed
 - **External resources** — if your code calls out to external services during verify, those calls happen
+- **Tampered state files** — `autoresearch-state.json` is not a trusted source of executable commands when resuming
 
 ## The 10 Safety Invariants
 
