@@ -10,8 +10,11 @@
 [![Claude Code](https://img.shields.io/badge/compatible-Claude%20Code-blueviolet?style=flat-square)](https://claude.ai/download)
 [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-blue?style=flat-square)](.)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen?style=flat-square)](CONTRIBUTING.md)
+[![Sponsor](https://img.shields.io/github/sponsors/Maleick?label=Sponsor&logo=GitHub&color=EA4AAA&style=flat-square)](https://github.com/sponsors/Maleick)
 
-> **v2.1.0** — [Issues](https://github.com/Maleick/claude-autoresearch/issues)
+![Autoresearch loop diagram](assets/autoresearch-loop.svg)
+
+> **v2.2.0** — [Website](https://maleick.github.io/claude-autoresearch/) · [Issues](https://github.com/Maleick/claude-autoresearch/issues)
 
 Autonomous overnight iteration engine for [Claude Code](https://claude.ai/claude-code). Fire it before bed, review improvements in the morning.
 
@@ -57,6 +60,13 @@ Every kept change is a git commit on the isolated branch. Every discarded change
 ### Install
 
 ```bash
+claude plugin marketplace add Maleick/claude-autoresearch && claude plugin install autoresearch@Maleick-claude-autoresearch
+```
+
+<details>
+<summary>Manual steps</summary>
+
+```bash
 # Add the marketplace source
 /plugin marketplace add Maleick/claude-autoresearch
 
@@ -67,17 +77,17 @@ Every kept change is a git commit on the isolated branch. Every discarded change
 /reload-plugins
 ```
 
+</details>
+
 ### Update
 
-The marketplace caches the plugin at install time — it won't automatically detect new versions on the remote. To check for and install updates:
+Auto-update is enabled by default in v2.2.0 — the marketplace poller detects new versions automatically.
+
+To update manually:
 
 ```bash
 /plugin marketplace update Maleick/claude-autoresearch
 ```
-
-You'll be prompted to enable auto-update. With auto-update on, the marketplace checks for new versions periodically. Without it, run the update command manually when you want the latest version.
-
-You can verify your installed version in **Customize > Autoresearch** — the version number is shown at the top of the plugin panel.
 
 ### Use
 
@@ -88,6 +98,62 @@ You can verify your installed version in **Customize > Autoresearch** — the ve
 # Or configure directly
 /autoresearch Goal: "Reduce bundle size" Scope: "src/**/*.ts" Metric: "bundle size KB" Verify: "npm run build 2>&1 | grep 'bundle size' | awk '{print $3}'" Direction: minimize Iterations: 50
 ```
+
+## How It Works
+
+```mermaid
+flowchart TD
+    A([Start]) --> B[Phase 0: Pre-flight\ngit status · params · branch]
+    B --> C[Phase 1: Baseline\nrun Verify — record metric]
+    C --> D[Phase 2: Generate\none atomic change in Scope]
+    D --> E[Phase 3: Commit]
+    E --> F[Phase 4: Verify\nrun metric command]
+    F --> G{Improved?}
+    G -- yes --> H[Keep commit\nupdate best metric]
+    G -- no --> I[Discard\ngit reset --hard HEAD~1]
+    H --> J{Stop condition?}
+    I --> J
+    J -- iterations exhausted --> K([Write Report])
+    J -- duration exceeded --> K
+    J -- target reached --> K
+    J -- 10 consecutive discards --> K
+    J -- plateau detected --> K
+    J -- 5 crash loop --> K
+    J -- no --> D
+```
+
+## Architecture
+
+```mermaid
+flowchart LR
+    subgraph Commands
+        AR[/autoresearch]
+        PL[/autoresearch:plan]
+        DB[/autoresearch:debug]
+        FX[/autoresearch:fix]
+        SC[/autoresearch:security]
+        LN[/autoresearch:learn]
+        PR[/autoresearch:predict]
+        SN[/autoresearch:scenario]
+        SH[/autoresearch:ship]
+    end
+
+    subgraph Skill["SKILL.md — shared invariants"]
+        SK[Safety rules\nStop conditions\nArtifact list]
+    end
+
+    subgraph References
+        LP[autonomous-loop-protocol]
+        SM[state-management]
+        RL[results-logging]
+        WF["*-workflow.md × 8"]
+    end
+
+    AR & PL & DB & FX & SC & LN & PR & SN & SH --> SK
+    SK --> LP & SM & RL & WF
+```
+
+Each command reads `SKILL.md` for shared invariants, then reads its corresponding `*-workflow.md` for the specific execution protocol.
 
 ## Running Overnight
 
@@ -382,6 +448,10 @@ Guides code through an 8-phase checklist from readiness check to post-ship monit
 **State file corrupted** — Delete `autoresearch-state.json` and start fresh. The branch and commits are preserved in git.
 
 **Resuming after a crash** — Use `--resume` to pick up where the last run stopped. State is checkpointed after every phase.
+
+---
+
+☕ [Keep the loop running](https://github.com/sponsors/Maleick)
 
 ## License
 
