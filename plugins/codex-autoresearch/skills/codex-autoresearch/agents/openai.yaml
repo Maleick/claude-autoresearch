@@ -1,0 +1,8 @@
+interface:
+  display_name: "Auto Research"
+  short_description: "Subagent-first autonomous iteration with standing-pool orchestration and cross-platform packaging"
+  brand_color: "#0F766E"
+  default_prompt: "Use $codex-autoresearch to run Auto Research on this repository. Keep a standing pool of subagents, let the main agent orchestrate planning, verification, and consolidation, and route between plan, debug, fix, learn, predict, scenario, security, ship, or the default optimization loop. Start with the setup wizard when configuration is incomplete, ask one grounded clarification round, require a foreground or background choice, treat approval as a pre-launch boundary, then continue by default until the user stops the run, the configured stop condition is reached, or a real needs_human blocker appears."
+
+policy:
+  allow_implicit_invocation: true

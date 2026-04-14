@@ -18,7 +18,7 @@
 
   <!-- ===== LEFT: Title block ===== -->
   <text x="56" y="138" class="ui" font-size="46" font-weight="700" fill="#e6edf3">autoresearch</text>
-  <text x="56" y="170" class="ui" font-size="14" fill="#8b949e">Autonomous iteration engine for Claude Code</text>
+  <text x="56" y="170" class="ui" font-size="14" fill="#8b949e">Cross-platform autonomous iteration engine</text>
 
   <!-- v2.2.1 pill -->
   <rect x="56" y="183" width="76" height="22" rx="11" fill="#1a2f1a"/>

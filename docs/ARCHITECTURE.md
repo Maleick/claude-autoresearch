@@ -1,93 +1,96 @@
-# Autoresearch Architecture
+# Auto Research Architecture
 
-> Current reference for v2.2.0. The historical design spec is at `docs/specs/2026-03-30-autoresearch-design.md`.
+> Current reference for v3.0.0.
 
-## Plugin Structure
+Auto Research now has a root-centered source bundle and two distribution surfaces: a Claude compatibility package and a Codex plugin package.
 
-Autoresearch is a pure-markdown Claude Code plugin. There is no build step, no compilation, and no runtime binary. Claude Code reads the markdown files directly as commands and skills.
+## Source of truth
 
+The repository root is authoritative for the Codex-facing runtime contract:
+
+```text
+SKILL.md
+agents/openai.yaml
+references/
+scripts/
 ```
-.claude-plugin/marketplace.json        ← marketplace registry
+
+These files define:
+
+- the main Auto Research skill
+- the loop and mode-specific references
+- runtime state helpers
+- plugin sync and validation tooling
+
+## Distribution surfaces
+
+```text
+.claude-plugin/marketplace.json
 plugins/autoresearch/
-  .claude-plugin/plugin.json           ← plugin manifest (name, version, autoUpdate)
+  .claude-plugin/plugin.json
   commands/
-    autoresearch.md                    ← main command — wizard + direct execution
-    autoresearch/                      ← sub-commands
-      debug.md, fix.md, learn.md,
-      plan.md, predict.md, scenario.md,
-      security.md, ship.md
   skills/autoresearch/
-    SKILL.md                           ← shared invariants, stop conditions, artifact list
-    references/
-      autonomous-loop-protocol.md      ← core phase loop (Phases 0–8)
-      state-management.md              ← checkpoint/resume protocol
-      results-logging.md               ← TSV log format and schema
-      debug-workflow.md                ← 7-phase debug investigation
-      fix-workflow.md                  ← error repair loop
-      learn-workflow.md                ← documentation generation
-      plan-workflow.md                 ← setup wizard
-      predict-workflow.md              ← multi-persona analysis
-      scenario-workflow.md             ← edge case generation
-      security-workflow.md             ← STRIDE + OWASP audit
-      ship-workflow.md                 ← 8-phase shipping checklist
+
+.agents/plugins/marketplace.json
+plugins/codex-autoresearch/
+  .codex-plugin/plugin.json
+  skills/codex-autoresearch/
 ```
 
-## Execution Flow
+### Claude surface
 
-When a user runs `/autoresearch`, Claude Code:
+- Keeps the stable `/autoresearch*` command family.
+- Acts as a compatibility wrapper and install surface for Claude users.
+- Uses the legacy `autoresearch` identifiers where compatibility matters.
 
-1. Reads `commands/autoresearch.md` — parses arguments, decides wizard vs. direct
-2. Reads `skills/autoresearch/SKILL.md` — loads shared invariants (these apply to all commands)
-3. Reads `references/autonomous-loop-protocol.md` — executes phases 0–8
+### Codex surface
 
-Sub-commands follow the same pattern: `commands/autoresearch/fix.md` → `SKILL.md` → `references/fix-workflow.md`.
+- Uses the root bundle as source material.
+- Installs from the repo marketplace during local development.
+- Mirrors the root bundle into `plugins/codex-autoresearch/skills/codex-autoresearch/`.
 
-## Core Loop Phases
+## Mirroring model
 
-| Phase | Name             | Description                                                                          |
-| ----- | ---------------- | ------------------------------------------------------------------------------------ |
-| 0     | Pre-flight       | Validate params, check git status, create isolated branch                            |
-| 1     | Baseline         | Run Verify command on current state, record baseline metric                          |
-| 2     | Pre-flight check | Detect duplicate changes, check disk space, verify Guard passes                      |
-| 2.5   | Generate         | Make one atomic change in Scope files                                                |
-| 3     | Commit           | `git add -A && git commit`                                                           |
-| 4     | Verify           | Run Verify command, extract metric                                                   |
-| 4.5   | Reproduce        | Re-run Verify to confirm metric is stable (guards against flaky commands)            |
-| 5     | Guard            | Run Guard command if set, check exit 0                                               |
-| 6     | Evaluate         | Compare metric to best. Keep if improved; discard (`git reset --hard HEAD~1`) if not |
-| 7     | Log              | Append row to `autoresearch-results.tsv`                                             |
-| 8     | Loop             | Increment iteration counter, check all stop conditions, goto Phase 2 or stop         |
+The Codex plugin payload is generated, not hand-maintained.
 
-## State Machine
+```bash
+python3 scripts/sync_plugin_payload.py --repo .
+python3 scripts/check_plugin_distribution.py --repo .
+```
 
-State is checkpointed to `autoresearch-state.json` after every phase. This enables `--resume` after crashes. On resume, executable commands come from the current invocation; the state file only restores non-executable loop metadata.
+`sync_plugin_payload.py` copies:
 
-Schema fields: `run_id`, `schema_version`, `branch`, `iteration`, `max_iterations`, `best_metric`, `direction`, `goal`, `scope`, `verify_cmd`, `guard_cmd`, `start_time`, `duration_limit`, `discarded_descriptions`. `verify_cmd` and `guard_cmd` are record-only metadata and are not executed from the state file on resume.
+- `SKILL.md`
+- `agents/*.yaml`
+- `scripts/*.py`
+- `references/*.md`
 
-## Safety Invariants
+into the packaged Codex plugin payload.
 
-All 10 invariants are authoritative in `SKILL.md`. Summary:
+`check_plugin_distribution.py` validates:
 
-1. Branch isolation — work only on `autoresearch/<timestamp>`
-2. Clean discard — `git reset --hard HEAD~1` + `git clean -fd`, never revert commits
-3. Fail-fast — missing required params → error and stop immediately
-4. One atomic change per iteration
-5. Mechanical verification only — metrics from commands, never LLM self-assessment
-6. Guard enforcement — Guard must pass or change is discarded
-7. Command timeouts — 300s default, timeout = crash
-8. State persistence — checkpoint after every phase
-9. Git hygiene — `git status --porcelain` checked before every iteration
-10. Duplicate detection — skip changes matching previously discarded descriptions
+- plugin manifest metadata
+- repo marketplace metadata
+- root-to-plugin file parity
+- local install paths
 
-## Runtime Artifacts
+## Runtime artifacts
 
-All gitignored — never committed to the repo by the loop.
+Auto Research now preserves both result-log names:
 
-| File                             | Created by    | Purpose                                       |
-| -------------------------------- | ------------- | --------------------------------------------- |
-| `autoresearch-state.json`        | Every command | Checkpoint state for `--resume`               |
-| `autoresearch-results.tsv`       | Every command | Iteration log, TSV format, scoped by `run_id` |
-| `autoresearch-report.md`         | End of run    | Human-readable report                         |
-| `autoresearch-debug-findings.md` | `:debug`      | Bug findings                                  |
-| `autoresearch-security/`         | `:security`   | Audit artifacts and PoC directory             |
-| `.autoresearch-predict/`         | `:predict`    | Temporary persona files                       |
+| Artifact | Purpose |
+| --- | --- |
+| `research-results.tsv` | Primary Codex-facing results log |
+| `autoresearch-results.tsv` | Claude-compatible results log alias |
+| `autoresearch-state.json` | Current run checkpoint |
+| `autoresearch-launch.json` | Background launch request |
+| `autoresearch-report.md` | End-of-run report |
+| `autoresearch-memory.md` | Optional reusable run memory |
+
+## Validation model
+
+The rewrite uses three verification layers:
+
+1. Repo docs and manifests must use the Auto Research brand and the `Maleick/AutoResearch` repository.
+2. The Codex plugin payload must stay in sync with the root bundle.
+3. Compatibility tests must prove that dual results logs stay aligned.
