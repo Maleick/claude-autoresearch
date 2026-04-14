@@ -1,26 +1,28 @@
 # Security
 
-Autoresearch is an autonomous iteration engine that modifies code unattended. Safety is enforced through invariants built into the protocol.
+Auto Research can modify code unattended, so the project keeps explicit safety rules across both runtime surfaces.
 
-## Safety Invariants
+## Core safety model
 
-The authoritative list of all 10 safety invariants lives in [`SKILL.md`](plugins/autoresearch/skills/autoresearch/SKILL.md). Key points:
+- Branch isolation: keep experiments off the default branch.
+- Mechanical verification: do not keep a change without a verify command.
+- Guard enforcement: treat regressions as discard conditions, not optional warnings.
+- State persistence: record authoritative run state in `autoresearch-state.json`.
+- Artifact hygiene: treat run artifacts as generated state, not source files to commit.
 
-- All work on isolated `autoresearch/<timestamp>` branches — never on main/master
-- Failed experiments cleanly reset (`git reset --hard HEAD~1`), not reverted
-- Mechanical verification only — metrics from commands, never LLM self-assessment
-- Guard commands must pass or changes are discarded
-- All commands have a hard timeout (default 300s)
-- Duplicate changes are detected and skipped
+## Runtime artifacts
 
-## Branch Isolation
+The project now supports both the Codex-facing and Claude-facing results log names:
 
-Autoresearch never commits to the default branch. All changes are made on a timestamped branch (`autoresearch/YYYYMMDD-HHMM`). After the run completes, the user decides what to merge. The branch is disposable.
+- `research-results.tsv`
+- `autoresearch-results.tsv`
 
-## Guard Commands
+Both should describe the same experiment history for a given run.
 
-A Guard command is an optional secondary verification that must pass for any change to be kept. Even if the primary metric improves, a failing Guard causes the change to be discarded. This prevents metric gaming at the expense of other quality dimensions.
+## Source of truth
 
-## Reporting Vulnerabilities
+The root `SKILL.md` and `references/` directory define the Codex-facing runtime contract. The Claude compatibility package under `plugins/autoresearch/` preserves the stable `/autoresearch*` command family.
 
-If you find a security issue in the autoresearch plugin itself, please open a private security advisory on the [GitHub repository](https://github.com/Maleick/claude-autoresearch/security/advisories).
+## Reporting
+
+If you find a security issue in Auto Research itself, open a private security advisory on [GitHub](https://github.com/Maleick/claude-autoresearch/security/advisories).

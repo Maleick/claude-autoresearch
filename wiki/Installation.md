@@ -1,47 +1,25 @@
 # Installation
 
-## Requirements
-
-- [Claude Code](https://claude.ai/claude-code) with marketplace plugin support
-- A git-backed codebase with a clean working tree
-- A deterministic verification command that outputs a number
-
-## One-Liner Install
+## Claude
 
 ```bash
-claude plugin marketplace add Maleick/claude-autoresearch && claude plugin install autoresearch@Maleick-claude-autoresearch
+claude plugin marketplace add Maleick/claude-autoresearch
+claude plugin install autoresearch@Maleick-claude-autoresearch
 ```
 
-## Manual Steps
+The Claude package keeps stable `autoresearch` identifiers for compatibility.
 
-If the one-liner fails, run each step individually:
+## Codex
 
-```bash
-# 1. Add the marketplace source
-/plugin marketplace add Maleick/claude-autoresearch
+This repo includes a local marketplace at `.agents/plugins/marketplace.json`.
 
-# 2. Install the plugin
-/plugin install autoresearch@Maleick-claude-autoresearch
+1. Open Codex in this repository.
+2. Run `/plugins`.
+3. Choose the repo marketplace.
+4. Install `codex-autoresearch`.
 
-# 3. Reload to activate
-/reload-plugins
-```
-
-## Updating
-
-Auto-update is enabled by default in v2.2.0. Claude Code's marketplace poller will detect new versions automatically.
-
-To update manually:
+If you change the root bundle, re-sync the packaged plugin before testing:
 
 ```bash
-/plugin marketplace update Maleick/claude-autoresearch
-```
-
-To verify your installed version: **Customize > Autoresearch** — version shown at the top of the plugin panel.
-
-## Uninstalling
-
-```bash
-/plugin uninstall autoresearch
-/plugin marketplace remove Maleick/claude-autoresearch
+python3 scripts/sync_plugin_payload.py --repo .
 ```

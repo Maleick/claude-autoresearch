@@ -1,6 +1,6 @@
 {
-  "name": "autoresearch",
-  "version": "2.2.1",
+  "name": "auto-research",
+  "version": "3.0.0",
   "owner": {
     "name": "Maleick",
     "email": ""
@@ -8,7 +8,7 @@
   "plugins": [
     {
       "name": "autoresearch",
-      "description": "Autonomous iteration engine for git-backed codebases. Set a goal and a verification command — autoresearch modifies code, measures results, keeps improvements, and discards regressions.",
+      "description": "Auto Research for Claude. Cross-platform autonomous iteration with stable /autoresearch compatibility and a shared Codex-facing source bundle.",
       "source": "./plugins/autoresearch",
       "category": "development",
       "autoUpdate": true

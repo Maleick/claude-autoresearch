@@ -1,0 +1,39 @@
+{
+  "name": "codex-autoresearch",
+  "version": "3.0.0",
+  "description": "Auto Research for Codex. Run a structured autonomous iteration loop with a standing subagent pool, runtime controls, and specialized workflows.",
+  "author": {
+    "name": "Maleick",
+    "url": "https://github.com/Maleick"
+  },
+  "homepage": "https://github.com/Maleick/claude-autoresearch",
+  "repository": "https://github.com/Maleick/claude-autoresearch",
+  "license": "MIT",
+  "keywords": [
+    "autoresearch",
+    "codex",
+    "claude",
+    "automation",
+    "workflows"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Auto Research",
+    "shortDescription": "Cross-platform autonomous iteration for coding agents",
+    "longDescription": "Bundle root Auto Research skills, references, and helper scripts into a Codex-installable plugin while preserving compatibility with the existing Claude command surface.",
+    "developerName": "Maleick",
+    "category": "Productivity",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/Maleick/claude-autoresearch",
+    "privacyPolicyURL": "https://github.com/Maleick/claude-autoresearch/blob/main/SECURITY.md",
+    "termsOfServiceURL": "https://github.com/Maleick/claude-autoresearch/blob/main/LICENSE",
+    "defaultPrompt": [
+      "Use $codex-autoresearch to set up and run Auto Research on this repository.",
+      "Use $codex-autoresearch to plan a foreground or background improvement loop for this codebase."
+    ],
+    "brandColor": "#0F766E"
+  }
+}

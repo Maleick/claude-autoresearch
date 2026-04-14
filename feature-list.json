@@ -1,0 +1,14 @@
+[
+  {
+    "id": "auto-research-rebrand",
+    "name": "Auto Research rebrand and cross-platform rewrite",
+    "status": "blocked",
+    "acceptance_tests": [
+      "Public docs and metadata use the Auto Research brand while keeping functional repository links and install commands",
+      "Claude /autoresearch command family remains intact",
+      "Codex plugin package installs from the repo marketplace and mirrors the root skill bundle",
+      "Distribution validation and compatibility log tests pass"
+    ],
+    "notes": "Implementation is complete locally. Keep current web URLs live for the first rewrite. Maintain legacy autoresearch identifiers where compatibility matters. GitHub rename target is Maleick/AutoResearch, but the slug is currently blocked by the existing Maleick/autoresearch repo."
+  }
+]

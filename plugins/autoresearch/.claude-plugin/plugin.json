@@ -1,8 +1,8 @@
 {
   "name": "autoresearch",
-  "version": "2.2.1",
+  "version": "3.0.0",
   "autoUpdate": true,
-  "description": "Autonomous iteration engine for git-backed codebases. Set a goal and a verification command — autoresearch modifies code, measures results, keeps improvements, and discards regressions. Run it for 5 iterations or 500.",
+  "description": "Auto Research for Claude. Keep the stable /autoresearch command family while the project expands into a cross-platform workflow bundle for Claude and Codex.",
   "author": {
     "name": "Maleick"
   },

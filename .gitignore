@@ -14,9 +14,13 @@ docs/specs/
 
 # Autoresearch runtime artifacts
 autoresearch-results.tsv
+research-results.tsv
 autoresearch-report.md
 autoresearch-state.json
 autoresearch-state.json.tmp
+autoresearch-launch.json
+autoresearch-self-improvement.md
+autoresearch-memory.md
 autoresearch-debug-findings.md
 autoresearch-security/
 .autoresearch-predict/
@@ -27,6 +31,10 @@ Thumbs.db
 
 # Node
 node_modules/
+
+# Python
+__pycache__/
+*.pyc
 
 # Editor
 .vscode/

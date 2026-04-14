@@ -1,32 +1,20 @@
-# Autoresearch Wiki
+# Auto Research Wiki
 
-Autonomous iteration engine for Claude Code. **v2.2.0**
+Auto Research is a cross-platform autonomous iteration engine for coding agents.
 
-## Navigation
+## Pages
 
-| Page                              | Contents                                                  |
-| --------------------------------- | --------------------------------------------------------- |
-| [Installation](Installation.md)   | Install, update, auto-update, requirements                |
-| [Commands](Commands.md)           | All 9 commands with flags and examples                    |
-| [Configuration](Configuration.md) | Parameters, flags, stop conditions, metric patterns       |
-| [Safety](Safety.md)               | Invariants, branch isolation, side effects, what to avoid |
-| [Contributing](Contributing.md)   | Dev setup, version-bump procedure, PR checklist           |
+| Page | Purpose |
+| --- | --- |
+| [Installation](Installation.md) | Claude and Codex install paths |
+| [Commands](Commands.md) | Stable Claude command family and Codex entrypoints |
+| [Configuration](Configuration.md) | Core fields, artifacts, and compatibility notes |
+| [Safety](Safety.md) | Safety model and artifact discipline |
+| [Contributing](Contributing.md) | Source-of-truth and packaging workflow |
 
-## Quick Start
+## Current positioning
 
-```bash
-# Install
-claude plugin marketplace add Maleick/claude-autoresearch && claude plugin install autoresearch@Maleick-claude-autoresearch
-
-# Run the wizard
-/autoresearch:plan
-
-# Or run directly
-/autoresearch Goal: "Reduce bundle size" Scope: "src/**/*.ts" Metric: "bundle size KB" Verify: "npm run build 2>&1 | grep size | awk '{print \$3}'" Direction: minimize
-```
-
-## Core Loop
-
-**Modify → Verify → Keep/Discard → Repeat**
-
-autoresearch makes one small, atomic change, runs your verification command, keeps the change if the metric improved (strict improvement only), resets if it didn't, and repeats. Every kept change is a git commit on an isolated branch.
+- Public product name: **Auto Research**
+- Repository rename target: `Maleick/AutoResearch` (pending slug availability)
+- Claude compatibility identifiers remain under `autoresearch`
+- Codex uses the root skill bundle and the `codex-autoresearch` plugin package

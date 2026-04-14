@@ -3,9 +3,9 @@ name: autoresearch
 description: Autonomous Goal-directed Iteration engine. Compounds small improvements via Modify → Verify → Keep/Discard → Repeat.
 ---
 
-# Autoresearch Skill
+# Auto Research Claude Wrapper
 
-Autonomous iteration engine for Claude Code. Runs unattended on any git-backed codebase with a deterministic verification command.
+Claude compatibility wrapper for Auto Research. Keeps the stable `/autoresearch` command family for git-backed codebases with deterministic verification commands.
 
 ## Core Concept
 
