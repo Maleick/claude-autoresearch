@@ -6,8 +6,8 @@
     "name": "Maleick",
     "url": "https://github.com/Maleick"
   },
-  "homepage": "https://github.com/Maleick/claude-autoresearch",
-  "repository": "https://github.com/Maleick/claude-autoresearch",
+  "homepage": "https://github.com/Maleick/AutoResearch",
+  "repository": "https://github.com/Maleick/AutoResearch",
   "license": "MIT",
   "keywords": [
     "autoresearch",
@@ -27,9 +27,9 @@
       "Read",
       "Write"
     ],
-    "websiteURL": "https://github.com/Maleick/claude-autoresearch",
-    "privacyPolicyURL": "https://github.com/Maleick/claude-autoresearch/blob/main/SECURITY.md",
-    "termsOfServiceURL": "https://github.com/Maleick/claude-autoresearch/blob/main/LICENSE",
+    "websiteURL": "https://github.com/Maleick/AutoResearch",
+    "privacyPolicyURL": "https://github.com/Maleick/AutoResearch/blob/main/SECURITY.md",
+    "termsOfServiceURL": "https://github.com/Maleick/AutoResearch/blob/main/LICENSE",
     "defaultPrompt": [
       "Use $codex-autoresearch to set up and run Auto Research on this repository.",
       "Use $codex-autoresearch to plan a foreground or background improvement loop for this codebase."

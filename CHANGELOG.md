@@ -16,7 +16,7 @@ All notable changes to Auto Research are documented in this file.
 ### Changed
 
 - Public project brand renamed from `Autoresearch` / `claude-autoresearch` to `Auto Research`
-- Repository rename target set to `github.com/Maleick/AutoResearch`, but current functional links remain on `github.com/Maleick/claude-autoresearch` because `Maleick/autoresearch` already occupies the target slug
+- Repository renamed to `github.com/Maleick/AutoResearch`
 - README, wiki, Pages site, and architecture docs rewritten around cross-platform runtime support
 - Claude package reframed as a compatibility wrapper while keeping the stable `/autoresearch*` command family
 - Results logging now preserves both `research-results.tsv` and `autoresearch-results.tsv`

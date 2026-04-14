@@ -1,14 +1,14 @@
 # Auto Research
 
-[![GitHub Release](https://img.shields.io/github/v/release/Maleick/claude-autoresearch?style=flat-square&label=release)](https://github.com/Maleick/claude-autoresearch/releases)
+[![GitHub Release](https://img.shields.io/github/v/release/Maleick/AutoResearch?style=flat-square&label=release)](https://github.com/Maleick/AutoResearch/releases)
 [![License](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE)
-[![Last Commit](https://img.shields.io/github/last-commit/Maleick/claude-autoresearch?style=flat-square)](https://github.com/Maleick/claude-autoresearch/commits/main)
-[![GitHub Stars](https://img.shields.io/github/stars/Maleick/claude-autoresearch?style=flat-square)](https://github.com/Maleick/claude-autoresearch/stargazers)
+[![Last Commit](https://img.shields.io/github/last-commit/Maleick/AutoResearch?style=flat-square)](https://github.com/Maleick/AutoResearch/commits/main)
+[![GitHub Stars](https://img.shields.io/github/stars/Maleick/AutoResearch?style=flat-square)](https://github.com/Maleick/AutoResearch/stargazers)
 [![Runtime](https://img.shields.io/badge/runtime-Claude%20%7C%20Codex-0F766E?style=flat-square)](.)
 
 ![Auto Research loop diagram](docs/autoresearch-loop.svg)
 
-> **v3.0.0** — [Website](https://maleick.github.io/claude-autoresearch/) · [Issues](https://github.com/Maleick/claude-autoresearch/issues)
+> **v3.0.0** — [Website](https://maleick.github.io/claude-autoresearch/) · [Issues](https://github.com/Maleick/AutoResearch/issues)
 
 Auto Research is a cross-platform autonomous iteration engine for coding agents. It keeps the existing Claude `/autoresearch` command surface intact, adds a root-centered Codex skill bundle and local Codex plugin, and positions the project as a reusable workflow system instead of a single-runtime package.
 
@@ -19,7 +19,7 @@ Inspired by [Karpathy's autoresearch](https://github.com/karpathy/autoresearch).
 ## What changed in 3.0
 
 - Public brand renamed to **Auto Research**
-- Repository rename target: `Maleick/AutoResearch` (currently blocked because `Maleick/autoresearch` already exists)
+- Repository renamed to `Maleick/AutoResearch`
 - Root `SKILL.md`, `references/`, `scripts/`, and `agents/` now act as the Codex-facing source of truth
 - `plugins/codex-autoresearch` is generated from that root bundle
 - `plugins/autoresearch` remains the Claude compatibility package with the stable `/autoresearch*` command family
@@ -51,8 +51,8 @@ wiki/                                 # Reference docs
 ### Claude
 
 ```bash
-claude plugin marketplace add Maleick/claude-autoresearch
-claude plugin install autoresearch@Maleick-claude-autoresearch
+claude plugin marketplace add Maleick/AutoResearch
+claude plugin install autoresearch@Maleick-AutoResearch
 ```
 
 The Claude package keeps the existing `autoresearch` identifiers for compatibility.
@@ -98,4 +98,4 @@ python3 scripts/check_plugin_distribution.py --repo .
 pytest -q tests/test_plugin_distribution.py tests/test_results_compatibility.py
 ```
 
-The public website URL still uses the historical `/claude-autoresearch/` path during the transition. The GitHub repo rename to `Maleick/AutoResearch` is also pending because the `Maleick/autoresearch` slug is already taken, so current install commands and links still point at `Maleick/claude-autoresearch`.
+The public website URL still uses the historical `/claude-autoresearch/` path during the transition, but the GitHub repository and install references now point at `Maleick/AutoResearch`.

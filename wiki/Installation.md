@@ -3,8 +3,8 @@
 ## Claude
 
 ```bash
-claude plugin marketplace add Maleick/claude-autoresearch
-claude plugin install autoresearch@Maleick-claude-autoresearch
+claude plugin marketplace add Maleick/AutoResearch
+claude plugin install autoresearch@Maleick-AutoResearch
 ```
 
 The Claude package keeps stable `autoresearch` identifiers for compatibility.

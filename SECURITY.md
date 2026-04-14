@@ -25,4 +25,4 @@ The root `SKILL.md` and `references/` directory define the Codex-facing runtime 
 
 ## Reporting
 
-If you find a security issue in Auto Research itself, open a private security advisory on [GitHub](https://github.com/Maleick/claude-autoresearch/security/advisories).
+If you find a security issue in Auto Research itself, open a private security advisory on [GitHub](https://github.com/Maleick/AutoResearch/security/advisories).

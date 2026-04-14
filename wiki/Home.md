@@ -15,6 +15,6 @@ Auto Research is a cross-platform autonomous iteration engine for coding agents.
 ## Current positioning
 
 - Public product name: **Auto Research**
-- Repository rename target: `Maleick/AutoResearch` (pending slug availability)
+- Repository: `Maleick/AutoResearch`
 - Claude compatibility identifiers remain under `autoresearch`
 - Codex uses the root skill bundle and the `codex-autoresearch` plugin package

@@ -91,6 +91,6 @@ Auto Research now preserves both result-log names:
 
 The rewrite uses three verification layers:
 
-1. Repo docs and manifests must use the Auto Research brand while keeping functional repository links until the GitHub slug conflict is resolved.
+1. Repo docs and manifests must use the Auto Research brand and the `Maleick/AutoResearch` repository.
 2. The Codex plugin payload must stay in sync with the root bundle.
 3. Compatibility tests must prove that dual results logs stay aligned.
