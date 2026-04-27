@@ -159,12 +159,21 @@ cd ~/Projects/my-project
 | `autoresearch init` | Initialize a run |
 | `autoresearch wizard` | Generate setup summary |
 | `autoresearch status` | Print run status |
+| `autoresearch explain` | Human-readable run state |
+| `autoresearch history` | Show recent iteration log |
+| `autoresearch config` | Show runtime configuration |
+| `autoresearch report` | Generate markdown report |
+| `autoresearch summary` | Aggregate stats across runs |
+| `autoresearch suggest` | Suggest next goal from memory |
 | `autoresearch launch` | Launch background run |
 | `autoresearch stop` | Request stop |
 | `autoresearch resume` | Resume background run |
 | `autoresearch complete` | Mark run complete |
 | `autoresearch record` | Record iteration result |
+| `autoresearch export` | Export run data (json/md) |
+| `autoresearch completion` | Generate shell completions |
 | `autoresearch doctor` | Verify installation |
+| `autoresearch help` | Show usage |
 
 ## Architecture
 
