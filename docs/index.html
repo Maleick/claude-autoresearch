@@ -175,9 +175,9 @@
       <section class="hero">
         <div class="hero-grid">
           <div>
-            <div class="eyebrow">Cross-Platform Autonomous Iteration</div>
+            <div class="eyebrow">Subagent-First Autonomous Iteration &mdash; OpenCode</div>
             <h1>Auto <span class="accent">Research</span></h1>
-            <p>Auto Research is a reusable workflow system for coding agents. It keeps the stable Claude <code>/autoresearch</code> command family, adds a root-centered Codex skill bundle, and treats the repository as a shared source of truth instead of a single-runtime package.</p>
+            <p>Auto Research is a subagent-first autonomous iteration engine for OpenCode. It keeps the stable <code>/autoresearch</code> command family, adds mode-specific workflows, and ships as an npm package.</p>
             <div class="links">
               <a href="https://github.com/Maleick/AutoResearch">GitHub</a>
               <a href="https://github.com/Maleick/AutoResearch/releases">Releases</a>
@@ -186,38 +186,41 @@
             </div>
           </div>
           <div class="panel">
-            <p><strong>Claude install</strong></p>
-            <pre><code>claude plugin marketplace add Maleick/AutoResearch
-claude plugin install autoresearch@Maleick-AutoResearch</code></pre>
-            <p class="section"><strong>Codex install</strong></p>
-            <pre><code>Open /plugins in this repo
-Choose the repo marketplace
-Install codex-autoresearch</code></pre>
+            <p><strong>OpenCode install</strong></p>
+            <pre><code>npm install -g opencode-autoresearch
+opencode-autoresearch doctor</code></pre>
+            <p class="section"><strong>CLI commands</strong></p>
+            <pre><code>autoresearch init --goal "..." --verify "npm test"
+autoresearch status
+autoresearch stop
+autoresearch resume
+autoresearch complete</code></pre>
           </div>
         </div>
       </section>
 
       <section class="grid">
         <article class="panel">
-          <h2>Runtimes</h2>
+          <h2>Runtime</h2>
           <table>
             <tr><th>Surface</th><th>Entry point</th></tr>
-            <tr><td>Claude</td><td><code>/autoresearch*</code></td></tr>
-            <tr><td>Codex</td><td><code>$codex-autoresearch</code></td></tr>
+            <tr><td>OpenCode</td><td><code>/autoresearch*</code></td></tr>
+            <tr><td>CLI</td><td><code>autoresearch</code></td></tr>
           </table>
         </article>
         <article class="panel">
           <h2>Source Layout</h2>
-          <pre><code>SKILL.md
-agents/
-references/
-scripts/
-plugins/autoresearch/
-plugins/codex-autoresearch/</code></pre>
+          <pre><code>src/
+commands/
+skills/autoresearch/
+hooks/
+docs/
+.opencode-plugin/</code></pre>
         </article>
         <article class="panel">
-          <h2>Compatibility</h2>
-          <p>Claude command names stay stable. Result logs preserve both <code>research-results.tsv</code> and <code>autoresearch-results.tsv</code> so older workflows keep working.</p>
+          <h2>Package</h2>
+          <pre><code>npm install -g opencode-autoresearch</code></pre>
+          <p>Node.js ESM. TypeScript runtime. No Python in the shipped artifact.</p>
         </article>
       </section>
 
@@ -234,10 +237,10 @@ plugins/codex-autoresearch/</code></pre>
           <h2>Artifacts</h2>
           <table>
             <tr><th>Artifact</th><th>Purpose</th></tr>
-            <tr><td><code>autoresearch-state.json</code></td><td>Run checkpoint</td></tr>
-            <tr><td><code>research-results.tsv</code></td><td>Primary results log</td></tr>
-            <tr><td><code>autoresearch-results.tsv</code></td><td>Compatibility log alias</td></tr>
+            <tr><td><code>.autoresearch/state.json</code></td><td>Run checkpoint</td></tr>
+            <tr><td><code>autoresearch-results.tsv</code></td><td>Iteration log</td></tr>
             <tr><td><code>autoresearch-report.md</code></td><td>End-of-run report</td></tr>
+            <tr><td><code>autoresearch-memory.md</code></td><td>Reusable memory</td></tr>
           </table>
         </article>
       </section>

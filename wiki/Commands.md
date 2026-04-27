@@ -1,34 +1,40 @@
 # Commands
 
-## Claude compatibility surface
+## OpenCode Command Surface
 
-The stable command family remains:
+The command family is fully supported in OpenCode:
 
-- `/autoresearch`
-- `/autoresearch:plan`
-- `/autoresearch:debug`
-- `/autoresearch:fix`
-- `/autoresearch:learn`
-- `/autoresearch:predict`
-- `/autoresearch:scenario`
-- `/autoresearch:security`
-- `/autoresearch:ship`
+- `/autoresearch` — Default improve-verify loop
+- `/autoresearch:plan` — Planning workflow
+- `/autoresearch:debug` — Debugging workflow
+- `/autoresearch:fix` — Fix workflow
+- `/autoresearch:learn` — Learning workflow
+- `/autoresearch:predict` — Prediction workflow
+- `/autoresearch:scenario` — Scenario expansion
+- `/autoresearch:security` — Security review
+- `/autoresearch:ship` — Ship-readiness workflow
 
-## Codex surface
+## CLI
 
-Codex uses the root skill bundle and packaged plugin:
+The `autoresearch` CLI provides background and foreground run control:
 
-- `$codex-autoresearch`
-- `plugins/codex-autoresearch`
+- `autoresearch init` — Initialize a run
+- `autoresearch wizard` — Generate setup summary
+- `autoresearch status` — Print run status
+- `autoresearch launch` — Launch background run
+- `autoresearch stop` — Request stop
+- `autoresearch resume` — Resume background run
+- `autoresearch complete` — Mark run complete
+- `autoresearch record` — Record iteration result
 
-The root bundle routes between:
+## Mode Routing
 
-- the default optimization loop
-- plan
-- debug
-- fix
-- learn
-- predict
-- scenario
-- security
-- ship
+- **default**: Improve-verify loop with metric tracking
+- **plan**: Setup planning before iteration
+- **debug**: Debugging workflow
+- **fix**: Targeted repair workflow
+- **learn**: Knowledge acquisition
+- **predict**: Outcome prediction
+- **scenario**: Scenario comparison
+- **security**: Security review
+- **ship**: Ship-readiness check

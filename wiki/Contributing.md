@@ -1,24 +1,45 @@
 # Contributing
 
-The root bundle is the source of truth for the Codex plugin payload.
+`src/` is the source of truth for runtime behavior. `commands/` and `skills/` define the OpenCode surfaces.
 
-## When you change the root bundle
-
-Run:
+## When you change the runtime
 
 ```bash
-python3 scripts/sync_plugin_payload.py --repo .
-python3 scripts/check_plugin_distribution.py --repo .
-pytest -q tests/test_plugin_distribution.py tests/test_results_compatibility.py
+npm run build
+npm run typecheck
+npm pack --dry-run
 ```
 
 ## When you change metadata or docs
 
 Make sure these surfaces stay aligned:
 
+- `package.json` (canonical version)
+- `src/constants.ts` (VERSION constant)
 - `README.md`
-- `CHANGELOG.md`
-- `VERSION`
-- `.claude-plugin/marketplace.json`
-- `plugins/autoresearch/.claude-plugin/plugin.json`
-- `plugins/codex-autoresearch/.codex-plugin/plugin.json`
+- `docs/ARCHITECTURE.md`
+- `.opencode-plugin/plugin.json`
+
+## Releasing
+
+See [docs/RELEASE.md](docs/RELEASE.md) for the full release process.
+
+## Testing
+
+```bash
+npm run build
+npm run typecheck
+```
+
+## Package Contents
+
+The shipped npm package includes:
+
+- `dist/` — Compiled TypeScript
+- `commands/` — OpenCode command surfaces
+- `skills/autoresearch/` — Skill bundle
+- `hooks/` — Shell hooks
+- `docs/` — Install and architecture docs
+- `.opencode-plugin/plugin.json` — Plugin manifest
+
+Python scripts are **not** included.
