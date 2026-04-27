@@ -1,0 +1,1 @@
+{"schema_version":1,"run_id":"test-run","status":"running","mode":"foreground","goal":"test","stats":{"kept":0,"discarded":0,"needs_human":0,"consecutive_discards":0,"total_iterations":0},"flags":{"stop_requested":false,"needs_human":false,"background_active":true,"stop_ready":false}}

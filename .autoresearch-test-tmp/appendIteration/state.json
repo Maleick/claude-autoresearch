@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "run_id": "test-run",
+  "status": "running",
+  "mode": "background",
+  "goal": "test",
+  "stats": {
+    "kept": 1,
+    "discarded": 0,
+    "needs_human": 0,
+    "consecutive_discards": 0,
+    "total_iterations": 1
+  },
+  "flags": {
+    "stop_requested": false,
+    "needs_human": false,
+    "background_active": true,
+    "stop_ready": true
+  },
+  "updated_at": "2026-04-27T17:47:22.725Z",
+  "last_iteration": {
+    "iteration": 1,
+    "decision": "keep",
+    "metric_value": "95",
+    "change_summary": "persist test",
+    "labels": [
+      "fix"
+    ],
+    "timestamp": "2026-04-27T17:47:22.725Z",
+    "keep_labels_satisfied": true,
+    "stop_labels_satisfied": true,
+    "missing_keep_labels": [],
+    "missing_stop_labels": []
+  }
+}

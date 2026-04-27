@@ -398,6 +398,95 @@ async function main(): Promise<number> {
         console.log(`\n${patterns.length} patterns available. Use 'autoresearch init --goal "..."' to start a new run.`);
         break;
       }
+      case "export": {
+        const { resolvePath } = await import("./helpers.js");
+        const { RESULTS_DEFAULT, STATE_DEFAULT } = await import("./constants.js");
+        const resultsPath = resolvePath(grouped.repo as string | undefined, grouped["results-path"] as string | undefined, RESULTS_DEFAULT);
+        const statePath = resolvePath(grouped.repo as string | undefined, grouped["state-path"] as string | undefined, STATE_DEFAULT);
+        const format = grouped.format as string || "json";
+        
+        if (!existsSync(resultsPath) || !existsSync(statePath)) {
+          console.error("No run data found. Run 'autoresearch init' first.");
+          return 1;
+        }
+        
+        const results = readFileSync(resultsPath, "utf-8");
+        const state = readFileSync(statePath, "utf-8");
+        const lines = results.trim().split("\n");
+        const headers = lines[0].split("\t");
+        const records = lines.slice(1).filter(Boolean).map((r: string) => {
+          const cols = r.split("\t");
+          const obj: Record<string, string> = {};
+          headers.forEach((h: string, i: number) => { obj[h] = cols[i] ?? ""; });
+          return obj;
+        });
+        
+        const exportData = {
+          exported_at: new Date().toISOString(),
+          state: JSON.parse(state),
+          iterations: records,
+          summary: {
+            total: records.length,
+            kept: records.filter((r: Record<string, string>) => r.decision === "keep").length,
+            discarded: records.filter((r: Record<string, string>) => r.decision === "discard").length,
+          },
+        };
+        
+        if (format === "json") {
+          console.log(JSON.stringify(exportData, null, 2));
+        } else if (format === "md" || format === "markdown") {
+          console.log(`# Auto Research Export`);
+          console.log(`\n**Run:** ${exportData.state.run_id}`);
+          console.log(`**Goal:** ${exportData.state.goal}`);
+          console.log(`**Exported:** ${exportData.exported_at}`);
+          console.log(`\n## Summary`);
+          console.log(`- Total iterations: ${exportData.summary.total}`);
+          console.log(`- Kept: ${exportData.summary.kept}`);
+          console.log(`- Discarded: ${exportData.summary.discarded}`);
+          console.log(`\n## Iterations`);
+          console.log(`| # | Decision | Metric | Summary |`);
+          console.log(`|---|----------|--------|---------|`);
+          for (const r of records) {
+            console.log(`| ${r.iteration} | ${r.decision} | ${r.metric_value || "—"} | ${r.change_summary?.substring(0, 50) || "—"} |`);
+          }
+        } else {
+          console.error(`Unknown format: ${format}. Supported: json, md`);
+          return 1;
+        }
+        break;
+      }
+      case "completion": {
+        const shell = grouped.shell as string || "bash";
+        const commands = ["init", "wizard", "status", "explain", "history", "config", "summary", "suggest", "launch", "complete", "stop", "resume", "record", "doctor", "export", "completion", "help"];
+        const options = ["--repo", "--goal", "--metric", "--direction", "--verify", "--guard", "--mode", "--scope", "--iterations", "--duration", "--json", "--results-path", "--state-path", "--fresh-start", "--memory-path", "--format", "--shell"];
+        
+        if (shell === "bash" || shell === "zsh") {
+          console.log(`# Auto Research CLI completion for ${shell}`);
+          console.log(`_autoresearch() {`);
+          console.log(`  local cur="\${COMP_WORDS[COMP_CWORD]}"`);
+          console.log(`  local cmds="${commands.join(" ")}"`);
+          console.log(`  local opts="${options.join(" ")}"`);
+          console.log(`  if [ $COMP_CWORD -eq 1 ]; then`);
+          console.log(`    COMPREPLY=($(compgen -W "$cmds" -- "$cur"))`);
+          console.log(`  else`);
+          console.log(`    COMPREPLY=($(compgen -W "$opts" -- "$cur"))`);
+          console.log(`  fi`);
+          console.log(`}`);
+          console.log(`complete -F _autoresearch autoresearch`);
+        } else if (shell === "fish") {
+          console.log(`# Auto Research CLI completion for fish`);
+          for (const cmd of commands) {
+            console.log(`complete -c autoresearch -n '__fish_use_subcommand' -a '${cmd}'`);
+          }
+          for (const opt of options) {
+            console.log(`complete -c autoresearch -n '__fish_seen_subcommand_from ${commands.join(" ")}' -l ${opt.slice(2)}`);
+          }
+        } else {
+          console.error(`Unknown shell: ${shell}. Supported: bash, zsh, fish`);
+          return 1;
+        }
+        break;
+      }
       case "launch": {
         const { resolvePath } = await import("./helpers.js");
         const { initializeRun } = await import("./run-manager.js");
