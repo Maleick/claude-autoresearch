@@ -66,6 +66,33 @@ describe("CLI Commands", () => {
     });
   });
 
+  describe("export command", () => {
+    it("requires existing run data", () => {
+      expect(() => {
+        execSync(`node ${CLI} export --repo /tmp/nonexistent`, { encoding: "utf-8" });
+      }).toThrow("No run data found");
+    });
+  });
+
+  describe("completion command", () => {
+    it("generates bash completion", () => {
+      const out = execSync(`node ${CLI} completion --shell bash`, { encoding: "utf-8" });
+      expect(out).toContain("_autoresearch()");
+      expect(out).toContain("complete -F _autoresearch");
+    });
+
+    it("generates fish completion", () => {
+      const out = execSync(`node ${CLI} completion --shell fish`, { encoding: "utf-8" });
+      expect(out).toContain("complete -c autoresearch");
+    });
+
+    it("rejects unknown shell", () => {
+      expect(() => {
+        execSync(`node ${CLI} completion --shell powershell`, { encoding: "utf-8" });
+      }).toThrow("Unknown shell");
+    });
+  });
+
   describe("unknown command", () => {
     it("exits with error for unknown command", () => {
       expect(() => {

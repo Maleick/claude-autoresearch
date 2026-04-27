@@ -381,6 +381,54 @@ async function main() {
                 console.log(`  Distinct runs:      ${runIds.size}`);
                 break;
             }
+            case "report": {
+                const { resolvePath, readJsonFile } = await import("./helpers.js");
+                const { STATE_DEFAULT, RESULTS_DEFAULT } = await import("./constants.js");
+                const statePath = resolvePath(grouped.repo, grouped["state-path"], STATE_DEFAULT);
+                const resultsPath = resolvePath(grouped.repo, grouped["results-path"], RESULTS_DEFAULT);
+                if (!existsSync(statePath)) {
+                    console.log("No run state found. Run 'autoresearch init' first.");
+                    break;
+                }
+                const state = readJsonFile(statePath);
+                let results = [];
+                if (existsSync(resultsPath)) {
+                    const content = readFileSync(resultsPath, "utf-8");
+                    results = content.trim().split("\n").slice(1).filter(Boolean);
+                }
+                if (useJson) {
+                    printJson({ state, results_count: results.length });
+                    break;
+                }
+                console.log(`# Auto Research Report`);
+                console.log(`\n**Run:** ${state.run_id}`);
+                console.log(`**Goal:** ${state.goal}`);
+                console.log(`**Status:** ${state.status}`);
+                console.log(`**Mode:** ${state.mode}`);
+                if (state.metric) {
+                    const m = state.metric;
+                    console.log(`**Metric:** ${m.name} (${m.direction})`);
+                    console.log(`**Best:** ${m.best} | **Latest:** ${m.latest}`);
+                }
+                if (state.stats) {
+                    const s = state.stats;
+                    console.log(`\n## Stats`);
+                    console.log(`- Iterations: ${s.total_iterations}`);
+                    console.log(`- Kept: ${s.kept}`);
+                    console.log(`- Discarded: ${s.discarded}`);
+                    console.log(`- Needs human: ${s.needs_human}`);
+                }
+                if (results.length > 0) {
+                    console.log(`\n## Iterations`);
+                    for (const r of results) {
+                        const cols = r.split("\t");
+                        if (cols.length >= 8) {
+                            console.log(`- ${cols[1]}: ${cols[2]} (${cols[3]}) — ${cols[7].substring(0, 60)}`);
+                        }
+                    }
+                }
+                break;
+            }
             case "suggest": {
                 const { resolvePath } = await import("./helpers.js");
                 const { MEMORY_DEFAULT } = await import("./constants.js");
