@@ -1,4 +1,5 @@
 const ROLE_LIMIT = 6;
+let poolKeyCounter = 0;
 const RESOURCE_TIERS: Record<string, string[]> = {
   lite: ["orchestrator", "scout", "verifier"],
   balanced: ["orchestrator", "scout", "analyst", "verifier"],
@@ -35,7 +36,10 @@ const SPECIAL_ROLES: RoleTemplate[] = [
 
 function chooseSpecialRole(goal: string, scope: string | undefined, mode: string): RoleTemplate | undefined {
   const lowered = `${goal} ${scope ?? ""} ${mode}`.toLowerCase();
-  return SPECIAL_ROLES.find((r) => r.triggers?.some((t) => lowered.includes(t)));
+  return SPECIAL_ROLES.find((r) => r.triggers?.some((t) => {
+    const re = new RegExp("\\b" + t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\b", "i");
+    return re.test(lowered);
+  }));
 }
 
 function chooseResourceTier(
@@ -72,7 +76,7 @@ export function buildSubagentPoolPlan(params: {
   return {
     kind: "autoresearch_subagent_pool",
     version: 1,
-    pool_key: `autoresearch-pool-${Date.now().toString(36)}`,
+    pool_key: `autoresearch-pool-${Date.now().toString(36)}-${poolKeyCounter++}`,
     role_limit: ROLE_LIMIT,
     standing_pool: true,
     reuse_across_iterations: true,
