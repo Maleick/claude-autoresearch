@@ -109,17 +109,15 @@ export function parseDurationSeconds(value) {
 }
 export function inferVerifyCommand(repo) {
     const base = repo ?? ".";
-    const pyFile = resolve(base, "pytest.ini");
-    const testsDir = resolve(base, "tests");
-    const hasPy = existsSync(pyFile) || existsSync(testsDir);
-    if (hasPy)
-        return "pytest";
-    const hasMake = existsSync(resolve(base, "Makefile"));
-    if (hasMake)
-        return "make test";
     const hasPkg = existsSync(resolve(base, "package.json"));
     if (hasPkg)
         return "npm test";
+    const makeFile = resolve(base, "Makefile");
+    if (existsSync(makeFile))
+        return "make test";
+    const hasPy = existsSync(resolve(base, "pytest.ini")) || existsSync(resolve(base, "tests"));
+    if (hasPy)
+        return "pytest";
     return "<set verify command>";
 }
 export function normalizeLabels(values) {

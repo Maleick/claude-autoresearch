@@ -15,7 +15,7 @@ export function buildSetupSummary(repo, config) {
     const missingRequired = [];
     if (!config.goal)
         missingRequired.push("goal");
-    if (!config.verify)
+    if (verify === "<set verify command>")
         missingRequired.push("verify");
     const stopReasons = [];
     if (verify !== "<set verify command>") {
