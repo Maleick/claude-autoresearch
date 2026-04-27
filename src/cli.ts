@@ -2,11 +2,12 @@
 import { existsSync, readFileSync, readdirSync } from "fs";
 import { resolve } from "path";
 import { printJson, resolveRepo } from "./helpers.js";
+import type { RunState } from "./types.js";
 
 const VERSION_FLAGS = ["--version", "-v"];
 const HELP_FLAGS = ["--help", "-h", "help"];
 
-function usage(): void {
+const usage = (): void => {
   console.error("Usage: autoresearch <command> [options]");
   console.error("");
   console.error("Commands:");
@@ -54,9 +55,9 @@ function usage(): void {
   console.error("  autoresearch status");
   console.error("  autoresearch explain");
   console.error("  autoresearch history");
-}
+};
 
-function parseArgs(args: string[]): Record<string, string> {
+const parseArgs = (args: string[]): Record<string, string> => {
   const result: Record<string, string> = {};
   for (let i = 0; i < args.length; i++) {
     if (args[i].startsWith("--")) {
@@ -66,7 +67,7 @@ function parseArgs(args: string[]): Record<string, string> {
       } else {
         result[key] = "true";
       }
-    } else if (args[i].startsWith("-") && args[i].length === 2 && args[i] !== "-h") {
+    } else if (args[i].startsWith("-") && args[i].length === 2 && args[i] !== "--") {
       const shortToLong: Record<string, string> = {
         r: "repo", g: "goal", m: "metric", d: "direction",
         v: "verify", n: "guard", o: "mode", s: "scope",
@@ -81,23 +82,23 @@ function parseArgs(args: string[]): Record<string, string> {
     }
   }
   return result;
-}
+};
 
-function formatMetricValue(val: unknown): string {
+const formatMetricValue = (val: unknown): string => {
   if (val === undefined || val === null) return "—";
   return String(val);
-}
+};
 
-function formatTimestamp(ts: string): string {
+const formatTimestamp = (ts: string): string => {
   try {
     const d = new Date(ts);
     return d.toLocaleString();
   } catch {
     return ts;
   }
-}
+};
 
-async function main(): Promise<number> {
+const main = async (): Promise<number> => {
   const args = process.argv.slice(2);
 
   // Handle standalone flags
@@ -206,14 +207,14 @@ async function main(): Promise<number> {
         if (useJson) {
           printJson(snapshot);
         } else {
-          const s = snapshot as Record<string, unknown>;
-          const stats = s.stats as Record<string, unknown> | undefined;
+          const s = snapshot;
+          const stats = s.stats;
           console.log(`Run:     ${s.run_id}`);
           console.log(`Status:  ${s.status}`);
           console.log(`Mode:    ${s.mode}`);
           console.log(`Goal:    ${s.goal}`);
           if (s.metric) {
-            const m = s.metric as Record<string, unknown>;
+            const m = s.metric;
             console.log(`Metric:  ${m.name} (${m.direction})`);
             console.log(`  best:  ${formatMetricValue(m.best)}`);
             console.log(`  latest: ${formatMetricValue(m.latest)}`);
@@ -222,11 +223,11 @@ async function main(): Promise<number> {
             console.log(`Stats:   ${stats.total_iterations} iterations, ${stats.kept} kept, ${stats.discarded} discarded`);
           }
           console.log(`Results: ${s.results_rows} rows`);
-          const lastIter = s.last_iteration as Record<string, unknown> | undefined;
+          const lastIter = s.last_iteration;
           if (lastIter && lastIter.iteration) {
             console.log(`Last:    iter ${lastIter.iteration} — ${lastIter.decision} (${lastIter.metric_value})`);
           }
-          const flags = s.flags as Record<string, unknown> | undefined;
+          const flags = s.flags;
           if (flags?.needs_human) console.log("⚠  Needs human input");
           if (flags?.stop_requested) console.log("⏹  Stop requested");
         }
@@ -239,10 +240,10 @@ async function main(): Promise<number> {
           grouped["results-path"] as string | undefined,
           grouped["state-path"] as string | undefined,
         );
-        const s = snapshot as Record<string, unknown>;
-        const stats = s.stats as Record<string, unknown> | undefined;
-        const lastIter = s.last_iteration as Record<string, unknown> | undefined;
-        const flags = s.flags as Record<string, unknown> | undefined;
+        const s = snapshot;
+        const stats = s.stats;
+        const lastIter = s.last_iteration;
+        const flags = s.flags;
 
         if (useJson) {
           printJson(snapshot);
@@ -257,7 +258,7 @@ async function main(): Promise<number> {
         console.log(`   Status:    ${s.status}`);
         console.log(`   Mode:      ${s.mode}`);
         if (s.metric) {
-          const m = s.metric as Record<string, unknown>;
+          const m = s.metric;
           console.log(`   Metric:    ${m.name} → ${formatMetricValue(m.latest)} (best: ${formatMetricValue(m.best)}, dir: ${m.direction})`);
         }
         if (stats) {
@@ -293,7 +294,9 @@ async function main(): Promise<number> {
           const parsed = records.map((r: string) => {
             const cols = r.split("\t");
             const obj: Record<string, string> = {};
-            headers.forEach((h: string, i: number) => { obj[h] = cols[i] ?? ""; });
+            for (let i = 0; i < headers.length; i++) {
+              obj[headers[i]!] = cols[i] ?? "";
+            }
             return obj;
           });
           printJson({ count: records.length, records: parsed });
@@ -317,7 +320,7 @@ async function main(): Promise<number> {
           console.log("No run state found. Run 'autoresearch init' first.");
           break;
         }
-        const state = readJsonFile(statePath);
+        const state = readJsonFile(statePath) as unknown as RunState;
         if (useJson) {
           printJson({
             goal: state.goal,
@@ -337,7 +340,7 @@ async function main(): Promise<number> {
         console.log(`  Goal:     ${state.goal ?? "—"}`);
         console.log(`  Mode:     ${state.mode ?? "—"}`);
         if (state.metric) {
-          const m = state.metric as Record<string, unknown>;
+          const m = state.metric;
           console.log(`  Metric:   ${m.name} (${m.direction})`);
         }
         console.log(`  Scope:    ${state.scope ?? "—"}`);
@@ -447,7 +450,7 @@ async function main(): Promise<number> {
           break;
         }
         
-        const state = readJsonFile(statePath);
+        const state = readJsonFile(statePath) as unknown as RunState;
         let results: string[] = [];
         if (existsSync(resultsPath)) {
           const content = readFileSync(resultsPath, "utf-8");
@@ -465,12 +468,12 @@ async function main(): Promise<number> {
         console.log(`**Status:** ${state.status}`);
         console.log(`**Mode:** ${state.mode}`);
         if (state.metric) {
-          const m = state.metric as Record<string, unknown>;
+          const m = state.metric;
           console.log(`**Metric:** ${m.name} (${m.direction})`);
           console.log(`**Best:** ${m.best} | **Latest:** ${m.latest}`);
         }
         if (state.stats) {
-          const s = state.stats as Record<string, unknown>;
+          const s = state.stats;
           console.log(`\n## Stats`);
           console.log(`- Iterations: ${s.total_iterations}`);
           console.log(`- Kept: ${s.kept}`);
@@ -528,7 +531,9 @@ async function main(): Promise<number> {
         const records = lines.slice(1).filter(Boolean).map((r: string) => {
           const cols = r.split("\t");
           const obj: Record<string, string> = {};
-          headers.forEach((h: string, i: number) => { obj[h] = cols[i] ?? ""; });
+          for (let i = 0; i < headers.length; i++) {
+            obj[headers[i]!] = cols[i] ?? "";
+          }
           return obj;
         });
         

@@ -1,4 +1,4 @@
-import type { RunConfig, RunState } from "./types.js";
+import type { RunConfig, RunState, SupervisorSnapshot } from "./types.js";
 import {
   utcNow,
   ensureParent,
@@ -256,7 +256,7 @@ export async function buildSupervisorSnapshot(
   repo: string | undefined,
   resultsPathValue: string | undefined,
   statePathValue: string | undefined,
-): Promise<Record<string, unknown>> {
+): Promise<SupervisorSnapshot> {
   const resultsPath = resolvePath(repo, resultsPathValue, RESULTS_DEFAULT);
   const statePath = resolvePath(repo, statePathValue, STATE_DEFAULT);
   const state = readJsonFile(statePath) as unknown as RunState;

@@ -4,9 +4,8 @@ import { fileURLToPath } from "url";
 
 const REPO_ROOT = resolve(fileURLToPath(import.meta.url), "..", "..");
 
-function readJson(filePath: string): Record<string, unknown> {
-  return JSON.parse(readFileSync(filePath, "utf-8")) as Record<string, unknown>;
-}
+const readJson = (filePath: string): Record<string, unknown> =>
+  JSON.parse(readFileSync(filePath, "utf-8")) as Record<string, unknown>;
 
 describe("package.json", () => {
   it("declares name as opencode-autoresearch", () => {

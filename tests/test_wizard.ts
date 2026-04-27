@@ -3,9 +3,7 @@ import { fileURLToPath } from "url";
 
 const REPO_ROOT = resolve(fileURLToPath(import.meta.url), "..", "..");
 
-async function importWizard() {
-  return await import(resolve(REPO_ROOT, "dist/wizard.js"));
-}
+const importWizard = async () => await import(resolve(REPO_ROOT, "dist/wizard.js"));
 
 describe("buildSetupSummary", () => {
   let mod: any;

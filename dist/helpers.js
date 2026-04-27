@@ -18,7 +18,7 @@ export function resolveRepo(repo) {
 export function ensureParent(filePath) {
     mkdirSync(dirname(filePath), { recursive: true });
 }
-export function atomicWriteText(filePath, content) {
+function atomicWriteText(filePath, content) {
     ensureParent(filePath);
     const tmp = filePath + ".tmp." + Date.now();
     writeFileSync(tmp, content, "utf-8");

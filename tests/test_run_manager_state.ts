@@ -1,41 +1,62 @@
 import { resolve } from "path";
 import { fileURLToPath } from "url";
 import { writeFileSync, readFileSync, mkdirSync, rmSync, existsSync } from "fs";
+import type { RunState, RunStats, RunFlags, Metric, LabelRequirements, ArtifactPaths } from "../src/types.js";
 
 const REPO_ROOT = resolve(fileURLToPath(import.meta.url), "..", "..");
 const TMP_DIR = resolve(REPO_ROOT, ".autoresearch-test-tmp");
 
-interface RunState {
-  schema_version: number;
-  run_id: string;
-  status: string;
-  mode: string;
-  goal: string;
-  stats: { kept: number; discarded: number; needs_human: number; consecutive_discards: number; total_iterations: number };
-  flags: { stop_requested: boolean; needs_human: boolean; background_active: boolean; stop_ready: boolean };
-  label_requirements?: { keep: string[]; stop: string[] };
-  last_iteration?: Record<string, unknown>;
-  iterations_cap?: number;
-  updated_at?: string;
-  deadline_at?: string;
-  [key: string]: unknown;
-}
+const minimalMetric: Metric = {
+  name: "test",
+  direction: "lower",
+};
+
+const minimalStats: RunStats = {
+  total_iterations: 0,
+  kept: 0,
+  discarded: 0,
+  needs_human: 0,
+  consecutive_discards: 0,
+};
+
+const minimalFlags: RunFlags = {
+  stop_requested: false,
+  needs_human: false,
+  background_active: true,
+  stop_ready: false,
+};
+
+const minimalLabelReqs: LabelRequirements = {
+  keep: [],
+  stop: [],
+};
+
+const minimalArtifactPaths: ArtifactPaths = {
+  results: "results.tsv",
+  state: "state.json",
+};
 
 function createMinimalState(overrides: Partial<RunState> = {}): RunState {
   return {
     schema_version: 1,
     run_id: "test-run",
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
     status: "running",
     mode: "background",
     goal: "test",
-    stats: { kept: 0, discarded: 0, needs_human: 0, consecutive_discards: 0, total_iterations: 0 },
-    flags: { stop_requested: false, needs_human: false, background_active: true, stop_ready: false },
+    scope: "test",
+    metric: minimalMetric,
+    verify: "npm test",
+    label_requirements: minimalLabelReqs,
+    artifact_paths: minimalArtifactPaths,
+    stats: minimalStats,
+    flags: minimalFlags,
     ...overrides,
-  } as RunState;
+  };
 }
 
 async function importRunManager() {
-  // run-manager imports from helpers which imports from fs -- all ESM native
   return await import(resolve(REPO_ROOT, "dist/run-manager.js"));
 }
 

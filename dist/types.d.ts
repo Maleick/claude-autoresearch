@@ -1,3 +1,11 @@
+export interface LabelRequirements {
+    keep: string[];
+    stop: string[];
+}
+export interface ArtifactPaths {
+    results: string;
+    state: string;
+}
 export interface RunConfig {
     goal: string;
     metric: string;
@@ -15,23 +23,10 @@ export interface RunConfig {
     stop_condition?: string;
     baseline?: string;
 }
-export interface WizardConfig {
-    goal?: string;
-    scope?: string;
-    metric?: string;
-    direction?: string;
-    verify?: string;
-    guard?: string;
-    mode?: string;
-    iterations?: number;
-    duration?: string;
-    memory_path?: string;
-    required_keep_labels?: string[];
-    required_stop_labels?: string[];
-    stop_condition?: string;
+export type WizardConfig = Partial<Omit<RunConfig, 'baseline'>> & {
     rollback_strategy?: string;
-}
-export interface Metric {
+};
+export interface Metric extends Record<string, unknown> {
     name: string;
     direction: string;
     baseline?: string;
@@ -83,15 +78,9 @@ export interface RunState {
     memory?: Record<string, unknown>;
     subagent_pool?: Record<string, unknown>;
     continuation_policy?: Record<string, unknown>;
-    label_requirements: {
-        keep: string[];
-        stop: string[];
-    };
+    label_requirements: LabelRequirements;
     stop_condition?: string;
-    artifact_paths: {
-        results: string;
-        state: string;
-    };
+    artifact_paths: ArtifactPaths;
     stats: RunStats;
     flags: RunFlags;
     last_iteration?: LastIteration;
@@ -107,23 +96,11 @@ export interface SupervisorSnapshot {
     stats: RunStats;
     last_iteration?: LastIteration;
     results_rows: number;
-    artifact_paths: Record<string, string>;
+    artifact_paths: ArtifactPaths;
     flags: RunFlags;
-    label_requirements: Record<string, string[]>;
+    label_requirements: LabelRequirements;
     subagent_pool?: Record<string, unknown>;
     continuation_policy?: Record<string, unknown>;
     subagent_guidance?: Record<string, unknown>;
-}
-export interface Result {
-    timestamp: string;
-    iteration: string;
-    decision: string;
-    metric_value: string;
-    verify_status: string;
-    guard_status: string;
-    hypothesis: string;
-    change_summary: string;
-    labels: string;
-    note: string;
 }
 //# sourceMappingURL=types.d.ts.map

@@ -7,8 +7,8 @@ trap 'rm -rf "$TMP_DIR"' EXIT
 PACK_JSON="$TMP_DIR/npm-pack-dry-run.json"
 npm pack --dry-run --json --ignore-scripts > "$PACK_JSON"
 
-node - "$PACK_JSON" <<'NODE'
-const fs = require("fs");
+node --input-type=module - "$PACK_JSON" <<'NODE'
+import fs from "fs";
 
 const packJsonPath = process.argv[2];
 const raw = fs.readFileSync(packJsonPath, "utf8");
@@ -25,22 +25,13 @@ const requiredFiles = [
   "commands/autoresearch.md",
 ];
 
-function normalizePath(filePath) {
-  return filePath.replace(/^package\//, "");
-}
-
-function isForbidden(filePath) {
-  return filePath === ".autoresearch" || filePath.startsWith(".autoresearch/");
-}
-
-function isAllowed(filePath) {
-  if (allowedFiles.has(filePath)) {
-    return true;
-  }
-
+const normalizePath = (filePath) => filePath.replace(/^package\//, "");
+const isForbidden = (filePath) => filePath === ".autoresearch" || filePath.startsWith(".autoresearch/");
+const isAllowed = (filePath) => {
+  if (allowedFiles.has(filePath)) return true;
   const [root] = filePath.split("/");
   return allowedRoots.has(root);
-}
+};
 
 const violations = [];
 const packageJson = JSON.parse(fs.readFileSync("package.json", "utf8"));
@@ -55,9 +46,7 @@ if (packageJson.repository?.url !== "git+https://github.com/Maleick/AutoResearch
 
 for (const file of files) {
   const filePath = normalizePath(String(file.path || ""));
-  if (!filePath) {
-    continue;
-  }
+  if (!filePath) continue;
 
   if (isForbidden(filePath)) {
     violations.push(`${filePath} is runtime state and must not be published`);

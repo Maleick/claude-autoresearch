@@ -1,3 +1,9 @@
+export interface RoleTemplate {
+    id: string;
+    name: string;
+    focus: string;
+    triggers?: string[];
+}
 export declare function buildSubagentPoolPlan(params: {
     goal: string;
     scope?: string;

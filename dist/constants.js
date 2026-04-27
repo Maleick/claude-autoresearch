@@ -1,13 +1,9 @@
 export const VERSION = "3.2.0";
 export const PACKAGE_NAME = "opencode-autoresearch";
 export const SKILL_NAME = "autoresearch";
-export const COMMAND_NAMESPACE = "autoresearch";
 export const PRODUCT_BRAND = "Auto Research";
-export const RUNTIME_DIR = ".autoresearch";
 export const RESULTS_DEFAULT = "autoresearch-results.tsv";
 export const STATE_DEFAULT = ".autoresearch/state.json";
 export const LAUNCH_DEFAULT = ".autoresearch/launch.json";
-export const REPORT_DEFAULT = "autoresearch-report.md";
-export const SELF_IMPROVEMENT_DEFAULT = ".autoresearch/self-improvement.md";
 export const MEMORY_DEFAULT = "autoresearch-memory.md";
 //# sourceMappingURL=constants.js.map

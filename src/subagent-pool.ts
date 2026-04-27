@@ -6,7 +6,7 @@ const RESOURCE_TIERS: Record<string, string[]> = {
   full: ["orchestrator", "scout", "analyst", "verifier", "synthesizer"],
 };
 
-interface RoleTemplate {
+export interface RoleTemplate {
   id: string;
   name: string;
   focus: string;

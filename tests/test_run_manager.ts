@@ -4,11 +4,11 @@ import { mkdirSync, rmSync, existsSync } from "fs";
 
 const REPO_ROOT = resolve(fileURLToPath(import.meta.url), "..", "..");
 
-async function initializeRun(repo: string, config: { goal: string; metric: string; direction: string; verify: string; mode: string }): Promise<void> {
+const initializeRun = async (repo: string, config: { goal: string; metric: string; direction: string; verify: string; mode: string }): Promise<void> => {
   const { initializeRun } = await import(resolve(REPO_ROOT, "dist/run-manager.js"));
   const state = await initializeRun(repo, undefined, undefined, config, false);
   expect(state.status).toBe("initialized");
-}
+};
 
 describe("run-manager", () => {
   const tmpDir = resolve(REPO_ROOT, ".autoresearch-test-tmp");

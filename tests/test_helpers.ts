@@ -4,9 +4,7 @@ import { writeFileSync, unlinkSync, existsSync, mkdirSync, rmSync } from "fs";
 
 const REPO_ROOT = resolve(fileURLToPath(import.meta.url), "..", "..");
 
-async function importHelpers() {
-  return await import(resolve(REPO_ROOT, "dist/helpers.js"));
-}
+const importHelpers = async () => await import(resolve(REPO_ROOT, "dist/helpers.js"));
 
 describe("normalizeDirection", () => {
   let mod: any;
@@ -237,15 +235,15 @@ describe("inferVerifyCommand", () => {
 
   const tmpBase = resolve(REPO_ROOT, ".autoresearch-test-infer");
 
-  function createDir(name: string): string {
+  const createDir = (name: string): string => {
     const d = resolve(tmpBase, name);
     mkdirSync(d, { recursive: true });
     return d;
-  }
+  };
 
-  function cleanup() {
+  const cleanup = () => {
     try { rmSync(tmpBase, { recursive: true }); } catch {}
-  }
+  };
 
   beforeAll(cleanup);
   afterAll(cleanup);

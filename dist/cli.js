@@ -4,7 +4,7 @@ import { resolve } from "path";
 import { printJson, resolveRepo } from "./helpers.js";
 const VERSION_FLAGS = ["--version", "-v"];
 const HELP_FLAGS = ["--help", "-h", "help"];
-function usage() {
+const usage = () => {
     console.error("Usage: autoresearch <command> [options]");
     console.error("");
     console.error("Commands:");
@@ -52,8 +52,8 @@ function usage() {
     console.error("  autoresearch status");
     console.error("  autoresearch explain");
     console.error("  autoresearch history");
-}
-function parseArgs(args) {
+};
+const parseArgs = (args) => {
     const result = {};
     for (let i = 0; i < args.length; i++) {
         if (args[i].startsWith("--")) {
@@ -65,7 +65,7 @@ function parseArgs(args) {
                 result[key] = "true";
             }
         }
-        else if (args[i].startsWith("-") && args[i].length === 2 && args[i] !== "-h") {
+        else if (args[i].startsWith("-") && args[i].length === 2 && args[i] !== "--") {
             const shortToLong = {
                 r: "repo", g: "goal", m: "metric", d: "direction",
                 v: "verify", n: "guard", o: "mode", s: "scope",
@@ -81,13 +81,13 @@ function parseArgs(args) {
         }
     }
     return result;
-}
-function formatMetricValue(val) {
+};
+const formatMetricValue = (val) => {
     if (val === undefined || val === null)
         return "—";
     return String(val);
-}
-function formatTimestamp(ts) {
+};
+const formatTimestamp = (ts) => {
     try {
         const d = new Date(ts);
         return d.toLocaleString();
@@ -95,8 +95,8 @@ function formatTimestamp(ts) {
     catch {
         return ts;
     }
-}
-async function main() {
+};
+const main = async () => {
     const args = process.argv.slice(2);
     // Handle standalone flags
     if (args.length === 0) {
@@ -280,7 +280,9 @@ async function main() {
                     const parsed = records.map((r) => {
                         const cols = r.split("\t");
                         const obj = {};
-                        headers.forEach((h, i) => { obj[h] = cols[i] ?? ""; });
+                        for (let i = 0; i < headers.length; i++) {
+                            obj[headers[i]] = cols[i] ?? "";
+                        }
                         return obj;
                     });
                     printJson({ count: records.length, records: parsed });
@@ -512,7 +514,9 @@ async function main() {
                 const records = lines.slice(1).filter(Boolean).map((r) => {
                     const cols = r.split("\t");
                     const obj = {};
-                    headers.forEach((h, i) => { obj[h] = cols[i] ?? ""; });
+                    for (let i = 0; i < headers.length; i++) {
+                        obj[headers[i]] = cols[i] ?? "";
+                    }
                     return obj;
                 });
                 const exportData = {
@@ -683,7 +687,7 @@ async function main() {
         return 2;
     }
     return 0;
-}
+};
 main().then((code) => process.exit(code)).catch((err) => {
     console.error(err);
     process.exit(1);

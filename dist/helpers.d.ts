@@ -5,7 +5,6 @@ export declare function printJson(payload: unknown): void;
 export declare function utcNow(): string;
 export declare function resolveRepo(repo?: string): string;
 export declare function ensureParent(filePath: string): void;
-export declare function atomicWriteText(filePath: string, content: string): void;
 export declare function atomicWriteJson(filePath: string, payload: unknown): void;
 export declare function readJsonFile(filePath: string): Record<string, unknown>;
 export declare function resolvePath(repo: string | undefined, value: string | undefined, defaultName: string): string;

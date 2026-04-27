@@ -3,9 +3,7 @@ import { fileURLToPath } from "url";
 
 const REPO_ROOT = resolve(fileURLToPath(import.meta.url), "..", "..");
 
-async function importSubagentPool() {
-  return await import(resolve(REPO_ROOT, "dist/subagent-pool.js"));
-}
+const importSubagentPool = async () => await import(resolve(REPO_ROOT, "dist/subagent-pool.js"));
 
 describe("buildContinuationPolicy", () => {
   let mod: any;
