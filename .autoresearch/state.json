@@ -1,0 +1,141 @@
+{
+  "schema_version": 1,
+  "run_id": "run-mohdpts1",
+  "created_at": "2026-04-27T15:55:51.168Z",
+  "updated_at": "2026-04-27T15:59:44.239Z",
+  "status": "running",
+  "mode": "foreground",
+  "goal": "improve opencode-autoresearch CLI and docs",
+  "scope": "current repository",
+  "metric": {
+    "name": "features",
+    "direction": "higher"
+  },
+  "verify": "npm run typecheck",
+  "label_requirements": {
+    "keep": [],
+    "stop": []
+  },
+  "artifact_paths": {
+    "results": "/Users/maleick/Projects/AutoResearch/autoresearch-results.tsv",
+    "state": "/Users/maleick/Projects/AutoResearch/.autoresearch/state.json"
+  },
+  "stats": {
+    "total_iterations": 4,
+    "kept": 4,
+    "discarded": 0,
+    "needs_human": 0,
+    "consecutive_discards": 0
+  },
+  "flags": {
+    "stop_requested": false,
+    "needs_human": false,
+    "background_active": false,
+    "stop_ready": true
+  },
+  "subagent_pool": {
+    "kind": "autoresearch_subagent_pool",
+    "version": 1,
+    "pool_key": "autoresearch-pool-mohdpts1",
+    "role_limit": 6,
+    "standing_pool": true,
+    "reuse_across_iterations": true,
+    "orchestrator_role_id": "orchestrator",
+    "state_owner": "orchestrator",
+    "fallback_mode": "serial",
+    "resource_tier": "full",
+    "recommended_active_role_ids": [
+      "orchestrator",
+      "scout",
+      "analyst",
+      "verifier",
+      "synthesizer"
+    ],
+    "activation": {
+      "during_setup": true,
+      "during_iterations": true,
+      "during_resume": true,
+      "reason": "Goal needs Research Tracker coverage."
+    },
+    "handoff_contract": [
+      "Only the orchestrator records iterations or mutates state.",
+      "Non-orchestrator roles return evidence and concise recommendations.",
+      "Keep the pool stable across iterations."
+    ],
+    "reanchor_checklist": [
+      "Restate the goal, scope, metric, and verify command before the next handoff.",
+      "Summarize the latest kept or discarded iteration before asking the pool for more work.",
+      "Reuse current role ownership unless drift or repeated discards force a reset."
+    ],
+    "goal": "improve opencode-autoresearch CLI and docs",
+    "scope": "current repository",
+    "mode": "foreground",
+    "roles": [
+      {
+        "id": "orchestrator",
+        "name": "Orchestrator",
+        "focus": "Keep the goal, scope, and mode aligned; route work and merge results.",
+        "active_by_default": true,
+        "handoff_prompt": "You are the Orchestrator. Focus: Keep the goal, scope, and mode aligned; route work and merge results. Goal: improve opencode-autoresearch CLI and docs. Scope: current repository. Mode: foreground. Do not mutate autoresearch state. Return evidence and one next-step recommendation."
+      },
+      {
+        "id": "scout",
+        "name": "Scout",
+        "focus": "Locate relevant files, docs, commands, and prior context in the repo.",
+        "active_by_default": true,
+        "handoff_prompt": "You are the Scout. Focus: Locate relevant files, docs, commands, and prior context in the repo. Goal: improve opencode-autoresearch CLI and docs. Scope: current repository. Mode: foreground. Do not mutate autoresearch state. Return evidence and one next-step recommendation."
+      },
+      {
+        "id": "analyst",
+        "name": "Analyst",
+        "focus": "Turn evidence into options, tradeoffs, and a clear next-step recommendation.",
+        "active_by_default": true,
+        "handoff_prompt": "You are the Analyst. Focus: Turn evidence into options, tradeoffs, and a clear next-step recommendation. Goal: improve opencode-autoresearch CLI and docs. Scope: current repository. Mode: foreground. Do not mutate autoresearch state. Return evidence and one next-step recommendation."
+      },
+      {
+        "id": "verifier",
+        "name": "Verifier",
+        "focus": "Check claims with commands, tests, or log reads before the pool settles.",
+        "active_by_default": true,
+        "handoff_prompt": "You are the Verifier. Focus: Check claims with commands, tests, or log reads before the pool settles. Goal: improve opencode-autoresearch CLI and docs. Scope: current repository. Mode: foreground. Do not mutate autoresearch state. Return evidence and one next-step recommendation."
+      },
+      {
+        "id": "synthesizer",
+        "name": "Synthesizer",
+        "focus": "Condense the best evidence into a stable summary the orchestrator can reuse.",
+        "active_by_default": true,
+        "handoff_prompt": "You are the Synthesizer. Focus: Condense the best evidence into a stable summary the orchestrator can reuse. Goal: improve opencode-autoresearch CLI and docs. Scope: current repository. Mode: foreground. Do not mutate autoresearch state. Return evidence and one next-step recommendation."
+      },
+      {
+        "id": "research_tracker",
+        "name": "Research Tracker",
+        "focus": "Collect background, comparisons, and scenario coverage for the loop.",
+        "active_by_default": false,
+        "handoff_prompt": "You are the Research Tracker. Focus: Collect background, comparisons, and scenario coverage for the loop. Goal: improve opencode-autoresearch CLI and docs. Scope: current repository. Mode: foreground. Do not mutate autoresearch state. Return evidence and one next-step recommendation."
+      }
+    ],
+    "specialization": "research_tracker"
+  },
+  "continuation_policy": {
+    "approval_boundary": "pre_launch",
+    "post_launch_default": "continue",
+    "completion_requires_review": true,
+    "stop_conditions": [
+      "user_stop",
+      "configured_stop_condition",
+      "needs_human"
+    ]
+  },
+  "last_iteration": {
+    "iteration": 4,
+    "decision": "keep",
+    "metric_value": "4 features",
+    "change_summary": "Cleaned up dead dist files from removed entry points, ran typecheck - passes clean",
+    "labels": [],
+    "timestamp": "2026-04-27T15:59:44.239Z",
+    "keep_labels_satisfied": true,
+    "stop_labels_satisfied": true,
+    "missing_keep_labels": [],
+    "missing_stop_labels": []
+  }
+}

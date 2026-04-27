@@ -1,4 +1,4 @@
-export declare const VERSION = "3.1.0-beta.1";
+export declare const VERSION = "3.1.0-beta.2";
 export declare const PACKAGE_NAME = "opencode-autoresearch";
 export declare const SKILL_NAME = "autoresearch";
 export declare const COMMAND_NAMESPACE = "autoresearch";

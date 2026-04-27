@@ -2,7 +2,7 @@
 
 `research-results.tsv` is the primary append-only results log per run.
 
-For Claude compatibility, the runtime also maintains `autoresearch-results.tsv` as a synchronized alias.
+The runtime maintains `autoresearch-results.tsv` as the canonical iteration log.
 
 ## Required Columns
 

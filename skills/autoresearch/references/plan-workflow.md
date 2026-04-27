@@ -1,6 +1,6 @@
 # Plan Workflow
 
-Use this when the user invokes `$codex-autoresearch` without a complete setup or explicitly asks for a wizard.
+Use this when the user invokes `/autoresearch:plan` without a complete setup or explicitly asks for a wizard.
 
 ## Goal
 
