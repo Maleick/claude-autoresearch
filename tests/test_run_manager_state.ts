@@ -13,6 +13,11 @@ interface RunState {
   goal: string;
   stats: { kept: number; discarded: number; needs_human: number; consecutive_discards: number; total_iterations: number };
   flags: { stop_requested: boolean; needs_human: boolean; background_active: boolean; stop_ready: boolean };
+  label_requirements?: { keep: string[]; stop: string[] };
+  last_iteration?: Record<string, unknown>;
+  iterations_cap?: number;
+  updated_at?: string;
+  deadline_at?: string;
   [key: string]: unknown;
 }
 
@@ -229,6 +234,16 @@ describe("buildSupervisorSnapshot", () => {
     expect(snapshot.reason).toBe("state_completed");
   });
 
+  it("returns stop when deadline elapsed", async () => {
+    const pastDeadline = new Date(Date.now() - 3600000).toISOString();
+    writeFileSync(resolve(stateDir, "state.json"), JSON.stringify(createMinimalState({
+      deadline_at: pastDeadline,
+    })), "utf-8");
+    const snapshot = await mod.buildSupervisorSnapshot(stateDir, undefined, "state.json");
+    expect(snapshot.decision).toBe("stop");
+    expect(snapshot.reason).toBe("duration_elapsed");
+  });
+
   it("returns relaunch for healthy running state", async () => {
     writeFileSync(resolve(stateDir, "state.json"), JSON.stringify(createMinimalState()), "utf-8");
     const snapshot = await mod.buildSupervisorSnapshot(stateDir, undefined, "state.json");
@@ -251,5 +266,109 @@ describe("buildSupervisorSnapshot", () => {
     writeFileSync(resolve(stateDir, "autoresearch-results.tsv"), header, "utf-8");
     const snapshot = await mod.buildSupervisorSnapshot(stateDir, "autoresearch-results.tsv", "state.json");
     expect(snapshot.results_rows).toBe(0);
+  });
+});
+
+describe("appendIteration", () => {
+  let mod: any;
+  beforeAll(async () => { mod = await importRunManager(); });
+
+  const stateDir = resolve(TMP_DIR, "appendIteration");
+  const stateFile = resolve(stateDir, "state.json");
+  const resultsFile = resolve(stateDir, "autoresearch-results.tsv");
+
+  function initState(overrides: Partial<RunState> = {}) {
+    rmSync(stateDir, { recursive: true, force: true });
+    mkdirSync(stateDir, { recursive: true });
+    writeFileSync(stateFile, JSON.stringify(createMinimalState(overrides)), "utf-8");
+    if (!existsSync(resultsFile)) {
+      const header = "timestamp\titeration\tdecision\tmetric_value\tverify_status\tguard_status\thypothesis\tchange_summary\tlabels\tnote\n";
+      writeFileSync(resultsFile, header, "utf-8");
+    }
+  }
+
+  it("appends a keep iteration and increments kept count", async () => {
+    initState();
+    const result = await mod.appendIteration(stateDir, "autoresearch-results.tsv", "state.json", "keep", "42", "pass", "pass", "hypothesis test", "change summary", ["fix"], "note");
+    expect(result.stats.total_iterations).toBe(1);
+    expect(result.stats.kept).toBe(1);
+    expect(result.stats.discarded).toBe(0);
+    expect(result.flags.stop_ready).toBe(true);
+    expect(result.last_iteration.decision).toBe("keep");
+    expect(result.last_iteration.metric_value).toBe("42");
+  });
+
+  it("appends a discard iteration and increments discard count", async () => {
+    initState();
+    const result = await mod.appendIteration(stateDir, "autoresearch-results.tsv", "state.json", "discard", "30", "fail", "pass", "hypothesis test", "change summary", ["fix"], "note");
+    expect(result.stats.total_iterations).toBe(1);
+    expect(result.stats.discarded).toBe(1);
+    expect(result.stats.kept).toBe(0);
+    expect(result.stats.consecutive_discards).toBe(1);
+    expect(result.flags.stop_ready).toBe(false);
+  });
+
+  it("appends a needs_human iteration and sets flag", async () => {
+    initState();
+    const result = await mod.appendIteration(stateDir, "autoresearch-results.tsv", "state.json", "needs_human", "", "skip", "skip", "", "needs review", [], "");
+    expect(result.stats.needs_human).toBe(1);
+    expect(result.flags.needs_human).toBe(true);
+  });
+
+  it("tracks consecutive discards", async () => {
+    initState();
+    await mod.appendIteration(stateDir, "autoresearch-results.tsv", "state.json", "discard", "", "pass", "pass", "", "bad change", [], "");
+    await mod.appendIteration(stateDir, "autoresearch-results.tsv", "state.json", "discard", "", "pass", "pass", "", "another bad", [], "");
+    const result = await mod.appendIteration(stateDir, "autoresearch-results.tsv", "state.json", "discard", "", "fail", "pass", "", "third bad", [], "");
+    expect(result.stats.discarded).toBe(3);
+    expect(result.stats.consecutive_discards).toBe(3);
+  });
+
+  it("resets consecutive discards on keep", async () => {
+    initState();
+    await mod.appendIteration(stateDir, "autoresearch-results.tsv", "state.json", "discard", "", "pass", "pass", "", "bad", [], "");
+    const result = await mod.appendIteration(stateDir, "autoresearch-results.tsv", "state.json", "keep", "80", "pass", "pass", "", "good", ["fix"], "");
+    expect(result.stats.consecutive_discards).toBe(0);
+    expect(result.stats.kept).toBe(1);
+  });
+
+  it("enforces required keep labels", async () => {
+    initState({
+      label_requirements: { keep: ["reviewed", "approved"], stop: [] },
+    });
+    await expect(mod.appendIteration(stateDir, "autoresearch-results.tsv", "state.json", "keep", "", "pass", "pass", "", "missing labels", [], "")).rejects.toThrow("Keep requires labels");
+  });
+
+  it("sets stop_ready false when stop labels are missing on keep", async () => {
+    initState({
+      label_requirements: { keep: [], stop: ["blocker_fixed"] },
+    });
+    const result = await mod.appendIteration(stateDir, "autoresearch-results.tsv", "state.json", "keep", "50", "pass", "pass", "", "missing stop label", ["fix"], "");
+    expect(result.flags.stop_ready).toBe(false);
+    expect(result.last_iteration.stop_labels_satisfied).toBe(false);
+  });
+
+  it("writes a tab-separated row to the results file", async () => {
+    initState();
+    await mod.appendIteration(stateDir, "autoresearch-results.tsv", "state.json", "keep", "90", "pass", "pass", "hyp", "change", ["test"], "note");
+    const content = readFileSync(resultsFile, "utf-8");
+    const lines = content.trim().split("\n");
+    expect(lines.length).toBe(2); // header + 1 row
+    expect(lines[1]).toContain("\tkeep\t90\tpass\tpass\t");
+  });
+
+  it("uses explicit iteration number when provided", async () => {
+    initState();
+    const result = await mod.appendIteration(stateDir, "autoresearch-results.tsv", "state.json", "keep", "10", "pass", "pass", "", "explicit iter", [], "", 42);
+    expect(result.stats.total_iterations).toBe(42);
+    expect(result.last_iteration.iteration).toBe(42);
+  });
+
+  it("persists state to disk", async () => {
+    initState();
+    await mod.appendIteration(stateDir, "autoresearch-results.tsv", "state.json", "keep", "95", "pass", "pass", "", "persist test", ["fix"], "");
+    const diskState = JSON.parse(readFileSync(stateFile, "utf-8"));
+    expect(diskState.stats.kept).toBe(1);
+    expect(diskState.stats.total_iterations).toBe(1);
   });
 });

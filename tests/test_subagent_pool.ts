@@ -136,6 +136,27 @@ describe("buildSubagentPoolPlan", () => {
     }
   });
 
+  it("does not activate special roles for unrelated goals", () => {
+    const plan = mod.buildSubagentPoolPlan({ goal: "simple cleanup", mode: "foreground" });
+    expect(plan.specialization).toBeNull();
+    const ids = plan.roles.map((r: any) => r.id);
+    expect(ids).toEqual(["orchestrator", "scout", "analyst", "verifier", "synthesizer"]);
+  });
+
+  it("activates only one specialist even when multiple triggers match", () => {
+    const plan = mod.buildSubagentPoolPlan({ goal: "fix security bug in auth system", mode: "foreground" });
+    const ids = plan.roles.map((r: any) => r.id);
+    const specialistCount = ids.filter((id: string) => !["orchestrator", "scout", "analyst", "verifier", "synthesizer"].includes(id)).length;
+    expect(specialistCount).toBe(1);
+  });
+
+  it("uses word boundary matching to prevent partial trigger matches", () => {
+    const plan1 = mod.buildSubagentPoolPlan({ goal: "improve the research process", mode: "foreground" });
+    expect(plan1.specialization).toBe("research_tracker");
+    const plan2 = mod.buildSubagentPoolPlan({ goal: "optimize autoresearch engine performance", mode: "foreground" });
+    expect(plan2.specialization).toBeNull();
+  });
+
   it("carries goal, scope, and mode in output", () => {
     const plan = mod.buildSubagentPoolPlan({ goal: "my goal", scope: "src/", mode: "background" });
     expect(plan.goal).toBe("my goal");

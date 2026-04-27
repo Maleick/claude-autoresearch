@@ -1,6 +1,6 @@
 import { resolve } from "path";
 import { fileURLToPath } from "url";
-import { writeFileSync, unlinkSync, existsSync } from "fs";
+import { writeFileSync, unlinkSync, existsSync, mkdirSync, rmSync } from "fs";
 
 const REPO_ROOT = resolve(fileURLToPath(import.meta.url), "..", "..");
 
@@ -81,11 +81,23 @@ describe("parseDurationSeconds", () => {
   it("parses compound durations", () => {
     expect(mod.parseDurationSeconds("1h30m")).toBe(5400);
   });
+  it("parses compound with all units", () => {
+    expect(mod.parseDurationSeconds("1d6h30m15s")).toBe(86400 + 21600 + 1800 + 15);
+  });
   it("throws on zero", () => {
     expect(() => mod.parseDurationSeconds("0")).toThrow();
   });
   it("throws on negative", () => {
     expect(() => mod.parseDurationSeconds("-5m")).toThrow();
+  });
+  it("throws on invalid format", () => {
+    expect(() => mod.parseDurationSeconds("abc")).toThrow();
+  });
+  it("throws on non-contiguous units", () => {
+    expect(() => mod.parseDurationSeconds("1h30x")).toThrow();
+  });
+  it("throws on zero total from compound", () => {
+    expect(() => mod.parseDurationSeconds("0h0m")).toThrow();
   });
 });
 
@@ -120,6 +132,12 @@ describe("normalizeLabels", () => {
   it("returns empty array for null", () => {
     expect(mod.normalizeLabels(null)).toEqual([]);
   });
+  it("returns empty array for empty string", () => {
+    expect(mod.normalizeLabels("")).toEqual([]);
+  });
+  it("returns empty array for empty array", () => {
+    expect(mod.normalizeLabels([])).toEqual([]);
+  });
   it("splits comma string", () => {
     expect(mod.normalizeLabels("a,b,c")).toEqual(["a", "b", "c"]);
   });
@@ -134,6 +152,9 @@ describe("normalizeLabels", () => {
   });
   it("normalizes arrays", () => {
     expect(mod.normalizeLabels([" a ", " b "])).toEqual(["a", "b"]);
+  });
+  it("preserves order of first occurrence", () => {
+    expect(mod.normalizeLabels(["b", "a", "b"])).toEqual(["b", "a"]);
   });
 });
 
@@ -214,6 +235,21 @@ describe("inferVerifyCommand", () => {
   let mod: any;
   beforeAll(async () => { mod = await importHelpers(); });
 
+  const tmpBase = resolve(REPO_ROOT, ".autoresearch-test-infer");
+
+  function createDir(name: string): string {
+    const d = resolve(tmpBase, name);
+    mkdirSync(d, { recursive: true });
+    return d;
+  }
+
+  function cleanup() {
+    try { rmSync(tmpBase, { recursive: true }); } catch {}
+  }
+
+  beforeAll(cleanup);
+  afterAll(cleanup);
+
   it("returns '<set verify command>' for cwd with no test setup", () => {
     const result = mod.inferVerifyCommand("/tmp");
     expect(result).toBe("<set verify command>");
@@ -221,5 +257,46 @@ describe("inferVerifyCommand", () => {
   it("returns 'npm test' when package.json has test script", () => {
     const result = mod.inferVerifyCommand(resolve(REPO_ROOT));
     expect(result).toBe("npm test");
+  });
+  it("returns 'npm test' when package.json exists with any test script", () => {
+    const d = createDir("with-pkg-test");
+    writeFileSync(resolve(d, "package.json"), JSON.stringify({ scripts: { test: "jest" } }), "utf-8");
+    expect(mod.inferVerifyCommand(d)).toBe("npm test");
+  });
+  it("returns '<set verify command>' when package.json has no test script", () => {
+    const d = createDir("with-pkg-no-test");
+    writeFileSync(resolve(d, "package.json"), JSON.stringify({}), "utf-8");
+    expect(mod.inferVerifyCommand(d)).toBe("<set verify command>");
+  });
+  it("returns 'make test' when Makefile exists", () => {
+    const d = createDir("with-makefile");
+    writeFileSync(resolve(d, "Makefile"), "test:\n\techo test\n", "utf-8");
+    expect(mod.inferVerifyCommand(d)).toBe("make test");
+  });
+  it("returns 'go test' when go.mod exists", () => {
+    const d = createDir("with-gomod");
+    writeFileSync(resolve(d, "go.mod"), "module test\n", "utf-8");
+    expect(mod.inferVerifyCommand(d)).toBe("go test ./...");
+  });
+  it("returns 'cargo test' when Cargo.toml exists", () => {
+    const d = createDir("with-cargo");
+    writeFileSync(resolve(d, "Cargo.toml"), "[package]\n", "utf-8");
+    expect(mod.inferVerifyCommand(d)).toBe("cargo test");
+  });
+  it("returns 'pytest' when pytest.ini exists", () => {
+    const d = createDir("with-pytest");
+    writeFileSync(resolve(d, "pytest.ini"), "[pytest]\n", "utf-8");
+    expect(mod.inferVerifyCommand(d)).toBe("pytest");
+  });
+  it("returns 'pytest' when tests/ dir exists without other indicators", () => {
+    const d = createDir("with-tests-dir");
+    mkdirSync(resolve(d, "tests"));
+    expect(mod.inferVerifyCommand(d)).toBe("pytest");
+  });
+  it("prioritizes package.json over Makefile", () => {
+    const d = createDir("pkg-over-makefile");
+    writeFileSync(resolve(d, "package.json"), JSON.stringify({ scripts: { test: "jest" } }), "utf-8");
+    writeFileSync(resolve(d, "Makefile"), "test:\n\techo\n", "utf-8");
+    expect(mod.inferVerifyCommand(d)).toBe("npm test");
   });
 });
