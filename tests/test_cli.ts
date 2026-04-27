@@ -6,6 +6,22 @@ const REPO_ROOT = resolve(fileURLToPath(import.meta.url), "..", "..");
 const CLI = resolve(REPO_ROOT, "dist/cli.js");
 
 describe("CLI Commands", () => {
+  describe("--verbose flag", () => {
+    it("shows verbose output during init", () => {
+      const out = execSync(`node ${CLI} init --goal "test" --metric "test" --verify "echo test" --verbose --dry-run 2>&1`, { encoding: "utf-8", cwd: REPO_ROOT });
+      expect(out).toContain("[verbose]");
+      expect(out).toContain("[dry-run]");
+    });
+  });
+
+  describe("--dry-run flag", () => {
+    it("prevents file creation in init", () => {
+      const out = execSync(`node ${CLI} init --goal "test" --metric "test" --verify "echo" --dry-run 2>&1`, { encoding: "utf-8", cwd: REPO_ROOT });
+      expect(out).toContain("Would initialize");
+      expect(out).toContain("test");
+    });
+  });
+
   describe("--version flag", () => {
     it("outputs version info", () => {
       const out = execSync(`node ${CLI} --version`, { encoding: "utf-8" });

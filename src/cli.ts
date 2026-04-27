@@ -45,6 +45,8 @@ function usage(): void {
   console.error("Flags:");
   console.error("  -h, --help      Show this help");
   console.error("  -v, --version   Show version");
+  console.error("  --verbose       Enable verbose output");
+  console.error("  --dry-run       Preview changes without executing");
   console.error("");
   console.error("Examples:");
   console.error("  autoresearch wizard --goal \"optimize response time\"");
@@ -119,6 +121,8 @@ async function main(): Promise<number> {
   const [cmd, ...cmdArgs] = args;
   const pargs = parseArgs(cmdArgs);
   const useJson = pargs.json === "true";
+  const verbose = pargs.verbose === "true";
+  const dryRun = pargs["dry-run"] === "true";
 
   const grouped: Record<string, string | string[]> = {};
   for (const [k, v] of Object.entries(pargs)) {
@@ -153,6 +157,17 @@ async function main(): Promise<number> {
         break;
       }
       case "init": {
+        if (verbose) console.error(`[verbose] Initializing run with goal: ${grouped.goal}`);
+        if (dryRun) {
+          console.log("[dry-run] Would initialize run with config:");
+          console.log(JSON.stringify({
+            goal: grouped.goal,
+            metric: grouped.metric,
+            direction: grouped.direction || "lower",
+            mode: grouped.mode || "foreground",
+          }, null, 2));
+          return 0;
+        }
         const { initializeRun } = await import("./run-manager.js");
         const config = {
           goal: grouped.goal as string,
