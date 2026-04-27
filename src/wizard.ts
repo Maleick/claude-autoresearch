@@ -1,4 +1,5 @@
 import type { WizardConfig } from "./types.js";
+import { basename } from "path";
 import {
   resolveRepo,
   normalizeDirection,
@@ -17,7 +18,7 @@ export function buildSetupSummary(
   const direction = normalizeDirection(config.direction);
   const mode = normalizeMode(config.mode);
   const durationSeconds = parseDurationSeconds(config.duration);
-  const scope = config.scope ?? resolveRepo(repo).split("/").pop() ?? "current repository";
+  const scope = config.scope ?? (basename(resolveRepo(repo)) || "current repository");
   const subagentPool = buildSubagentPoolPlan({
     goal: config.goal ?? "pending",
     scope,

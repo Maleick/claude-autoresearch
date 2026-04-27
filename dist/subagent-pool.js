@@ -16,6 +16,12 @@ const SPECIAL_ROLES = [
     { id: "debugger", name: "Debugger", focus: "Reproduce failures, isolate causes, and narrow the repair path.", triggers: ["debug", "fix", "bug", "error", "fail", "failing"] },
     { id: "release_guard", name: "Release Guard", focus: "Check ship-readiness, rollout risk, and user-visible regressions.", triggers: ["ship", "release", "deploy", "rollout"] },
     { id: "research_tracker", name: "Research Tracker", focus: "Collect background, comparisons, and scenario coverage for the loop.", triggers: ["learn", "research", "predict", "scenario"] },
+    { id: "meta_orchestrator", name: "Meta Orchestrator", focus: "Owns meta-goal and child loop decisions for self-improvement runs.", triggers: ["self-improve", "recursive", "meta", "improve itself", "improve auto"] },
+    { id: "pattern_analyst", name: "Pattern Analyst", focus: "Extract reusable patterns from child loop results across meta-iterations.", triggers: ["self-improve", "recursive", "meta", "pattern"] },
+    { id: "strategy_advisor", name: "Strategy Advisor", focus: "Recommend tactic changes when repeated discards occur across meta-iterations.", triggers: ["self-improve", "recursive", "meta", "adapt", "strategy"] },
+    { id: "regression_guard", name: "Regression Guard", focus: "Extra verification for self-modification scenarios to catch regressions.", triggers: ["self-improve", "recursive", "meta", "regression", "guard"] },
+    { id: "doc_reviewer", name: "Doc Reviewer", focus: "Review documentation changes for accuracy, clarity, and completeness.", triggers: ["doc", "docs", "documentation", "wiki", "readme"] },
+    { id: "test_designer", name: "Test Designer", focus: "Design tests for new functionality and identify coverage gaps.", triggers: ["test", "coverage", "tdd"] },
 ];
 function chooseSpecialRole(goal, scope, mode) {
     const lowered = `${goal} ${scope ?? ""} ${mode}`.toLowerCase();
