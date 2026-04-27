@@ -1,7 +1,10 @@
 #!/usr/bin/env node
-import { existsSync } from "fs";
+import { existsSync, readFileSync, readdirSync } from "fs";
 import { resolve } from "path";
 import { printJson, resolveRepo } from "./helpers.js";
+
+const VERSION_FLAGS = ["--version", "-v"];
+const HELP_FLAGS = ["--help", "-h", "help"];
 
 function usage(): void {
   console.error("Usage: autoresearch <command> [options]");
@@ -10,6 +13,11 @@ function usage(): void {
   console.error("  init       Initialize a run");
   console.error("  wizard     Generate a setup summary");
   console.error("  status     Print run status");
+  console.error("  explain    Human-readable run state");
+  console.error("  history    Show recent iteration log");
+  console.error("  config     Show runtime configuration");
+  console.error("  summary    Aggregate stats across runs");
+  console.error("  suggest    Suggest next goal from memory");
   console.error("  launch     Launch a background run");
   console.error("  complete   Mark a run complete");
   console.error("  stop       Request a background run stop");
@@ -24,18 +32,26 @@ function usage(): void {
   console.error("  --metric        Metric name to track");
   console.error("  --direction     lower or higher");
   console.error("  --verify        Mechanical verification command");
+  console.error("  --guard         Guard command for regression catch");
   console.error("  --mode          foreground or background");
   console.error("  --scope         In-scope files or subsystem");
   console.error("  --iterations    Iteration cap");
   console.error("  --duration      Wall-clock cap (e.g., 5h or 300m)");
+  console.error("  --json          Output raw JSON (default: human-readable)");
   console.error("  --results-path  Custom results TSV path");
   console.error("  --state-path    Custom state JSON path");
   console.error("  --fresh-start   Archive previous artifacts before starting");
+  console.error("");
+  console.error("Flags:");
+  console.error("  -h, --help      Show this help");
+  console.error("  -v, --version   Show version");
   console.error("");
   console.error("Examples:");
   console.error("  autoresearch wizard --goal \"optimize response time\"");
   console.error("  autoresearch init --goal \"reduce errors\" --metric errors --direction lower --verify \"npm test\"");
   console.error("  autoresearch status");
+  console.error("  autoresearch explain");
+  console.error("  autoresearch history");
 }
 
 function parseArgs(args: string[]): Record<string, string> {
@@ -43,7 +59,19 @@ function parseArgs(args: string[]): Record<string, string> {
   for (let i = 0; i < args.length; i++) {
     if (args[i].startsWith("--")) {
       const key = args[i].slice(2);
-      if (i + 1 < args.length && !args[i + 1].startsWith("--")) {
+      if (i + 1 < args.length && !args[i + 1].startsWith("--") && !args[i + 1].startsWith("-")) {
+        result[key] = args[++i];
+      } else {
+        result[key] = "true";
+      }
+    } else if (args[i].startsWith("-") && args[i].length === 2 && args[i] !== "-h") {
+      const shortToLong: Record<string, string> = {
+        r: "repo", g: "goal", m: "metric", d: "direction",
+        v: "verify", n: "guard", o: "mode", s: "scope",
+        i: "iterations", t: "duration",
+      };
+      const key = shortToLong[args[i][1]] ?? args[i].slice(1);
+      if (i + 1 < args.length && !args[i + 1].startsWith("-")) {
         result[key] = args[++i];
       } else {
         result[key] = "true";
@@ -53,17 +81,45 @@ function parseArgs(args: string[]): Record<string, string> {
   return result;
 }
 
+function formatMetricValue(val: unknown): string {
+  if (val === undefined || val === null) return "—";
+  return String(val);
+}
+
+function formatTimestamp(ts: string): string {
+  try {
+    const d = new Date(ts);
+    return d.toLocaleString();
+  } catch {
+    return ts;
+  }
+}
+
 async function main(): Promise<number> {
   const args = process.argv.slice(2);
-  if (args.length === 0 || args[0] === "--help" || args[0] === "-h" || args[0] === "help") {
+
+  // Handle standalone flags
+  if (args.length === 0) {
+    usage();
+    return 0;
+  }
+
+  const first = args[0];
+  if (VERSION_FLAGS.includes(first)) {
+    const { VERSION, PACKAGE_NAME, SKILL_NAME } = await import("./constants.js");
+    console.log(`${SKILL_NAME} ${VERSION} (${PACKAGE_NAME})`);
+    console.log("Runtime: Node.js " + process.version);
+    return 0;
+  }
+  if (HELP_FLAGS.includes(first)) {
     usage();
     return 0;
   }
 
   const [cmd, ...cmdArgs] = args;
   const pargs = parseArgs(cmdArgs);
+  const useJson = pargs.json === "true";
 
-  // Group args by collecting multi-word options (like required-keep-labels)
   const grouped: Record<string, string | string[]> = {};
   for (const [k, v] of Object.entries(pargs)) {
     if (k === "required-keep-labels" || k === "required-stop-labels" || k === "labels") {
@@ -132,7 +188,214 @@ async function main(): Promise<number> {
           grouped["results-path"] as string | undefined,
           grouped["state-path"] as string | undefined,
         );
-        printJson(snapshot);
+        if (useJson) {
+          printJson(snapshot);
+        } else {
+          const s = snapshot as Record<string, unknown>;
+          const stats = s.stats as Record<string, unknown> | undefined;
+          console.log(`Run:     ${s.run_id}`);
+          console.log(`Status:  ${s.status}`);
+          console.log(`Mode:    ${s.mode}`);
+          console.log(`Goal:    ${s.goal}`);
+          if (s.metric) {
+            const m = s.metric as Record<string, unknown>;
+            console.log(`Metric:  ${m.name} (${m.direction})`);
+            console.log(`  best:  ${formatMetricValue(m.best)}`);
+            console.log(`  latest: ${formatMetricValue(m.latest)}`);
+          }
+          if (stats) {
+            console.log(`Stats:   ${stats.total_iterations} iterations, ${stats.kept} kept, ${stats.discarded} discarded`);
+          }
+          console.log(`Results: ${s.results_rows} rows`);
+          const lastIter = s.last_iteration as Record<string, unknown> | undefined;
+          if (lastIter && lastIter.iteration) {
+            console.log(`Last:    iter ${lastIter.iteration} — ${lastIter.decision} (${lastIter.metric_value})`);
+          }
+          const flags = s.flags as Record<string, unknown> | undefined;
+          if (flags?.needs_human) console.log("⚠  Needs human input");
+          if (flags?.stop_requested) console.log("⏹  Stop requested");
+        }
+        break;
+      }
+      case "explain": {
+        const { buildSupervisorSnapshot } = await import("./run-manager.js");
+        const snapshot = await buildSupervisorSnapshot(
+          grouped.repo as string | undefined,
+          grouped["results-path"] as string | undefined,
+          grouped["state-path"] as string | undefined,
+        );
+        const s = snapshot as Record<string, unknown>;
+        const stats = s.stats as Record<string, unknown> | undefined;
+        const lastIter = s.last_iteration as Record<string, unknown> | undefined;
+        const flags = s.flags as Record<string, unknown> | undefined;
+
+        if (useJson) {
+          printJson(snapshot);
+          break;
+        }
+
+        const statusEmoji: Record<string, string> = {
+          running: "🔄", completed: "✅", initialized: "📋", stopping: "⏹", stopped: "⏸",
+        };
+        console.log(`${statusEmoji[s.status as string] ?? "⚪"} Auto Research Run: ${s.run_id}`);
+        console.log(`   Goal:      ${s.goal ?? "—"}`);
+        console.log(`   Status:    ${s.status}`);
+        console.log(`   Mode:      ${s.mode}`);
+        if (s.metric) {
+          const m = s.metric as Record<string, unknown>;
+          console.log(`   Metric:    ${m.name} → ${formatMetricValue(m.latest)} (best: ${formatMetricValue(m.best)}, dir: ${m.direction})`);
+        }
+        if (stats) {
+          console.log(`   Progress:  ${stats.total_iterations} iterations | ${stats.kept} kept | ${stats.discarded} discarded`);
+        }
+        if (lastIter && lastIter.iteration) {
+          console.log(`   Last iter: #${lastIter.iteration} — ${lastIter.decision}`);
+          if (lastIter.change_summary) console.log(`   Change:    ${lastIter.change_summary}`);
+        }
+        if (flags?.needs_human) console.log("   ⚠  Needs human review");
+        if (flags?.stop_requested) console.log("   ⏹  Stop was requested");
+        if (flags?.background_active) console.log("   📡  Background active — `autoresearch status` to check");
+        break;
+      }
+      case "history": {
+        const { resolvePath } = await import("./helpers.js");
+        const { RESULTS_DEFAULT } = await import("./constants.js");
+        const resultsPath = resolvePath(grouped.repo as string | undefined, grouped["results-path"] as string | undefined, RESULTS_DEFAULT);
+        if (!existsSync(resultsPath)) {
+          console.log("No results file found.");
+          break;
+        }
+        const content = readFileSync(resultsPath, "utf-8");
+        const lines = content.trim().split("\n");
+        if (lines.length <= 1) {
+          console.log("No iteration records yet.");
+          break;
+        }
+        const limit = grouped.limit ? parseInt(grouped.limit as string) : 10;
+        const records = lines.slice(1).reverse().slice(0, limit);
+        if (useJson) {
+          const headers = lines[0].split("\t");
+          const parsed = records.map((r: string) => {
+            const cols = r.split("\t");
+            const obj: Record<string, string> = {};
+            headers.forEach((h: string, i: number) => { obj[h] = cols[i] ?? ""; });
+            return obj;
+          });
+          printJson({ count: records.length, records: parsed });
+          break;
+        }
+        for (const r of records) {
+          const cols = r.split("\t");
+          if (cols.length >= 8) {
+            const emoji = cols[2] === "keep" ? "✓" : cols[2] === "discard" ? "✗" : "⚠";
+            console.log(`${emoji}  #${cols[1]}  ${cols[2]}  (${formatMetricValue(cols[3])})  ${cols[7].substring(0, 60)}`);
+          }
+        }
+        console.log(`\nShowing ${Math.min(limit, records.length)} of ${lines.length - 1} records.`);
+        break;
+      }
+      case "config": {
+        const { resolvePath, readJsonFile } = await import("./helpers.js");
+        const { STATE_DEFAULT } = await import("./constants.js");
+        const statePath = resolvePath(grouped.repo as string | undefined, grouped["state-path"] as string | undefined, STATE_DEFAULT);
+        if (!existsSync(statePath)) {
+          console.log("No run state found. Run 'autoresearch init' first.");
+          break;
+        }
+        const state = readJsonFile(statePath);
+        if (useJson) {
+          printJson({
+            goal: state.goal,
+            mode: state.mode,
+            metric: state.metric,
+            scope: state.scope,
+            iterations_cap: state.iterations_cap,
+            deadline_at: state.deadline_at,
+            verify: state.verify,
+            guard: state.guard,
+            subagent_pool: state.subagent_pool ? "configured" : "none",
+            label_requirements: state.label_requirements,
+          });
+          break;
+        }
+        console.log("Run Configuration:");
+        console.log(`  Goal:     ${state.goal ?? "—"}`);
+        console.log(`  Mode:     ${state.mode ?? "—"}`);
+        if (state.metric) {
+          const m = state.metric as Record<string, unknown>;
+          console.log(`  Metric:   ${m.name} (${m.direction})`);
+        }
+        console.log(`  Scope:    ${state.scope ?? "—"}`);
+        console.log(`  Iter cap: ${state.iterations_cap ?? "—"}`);
+        console.log(`  Deadline: ${state.deadline_at ? formatTimestamp(state.deadline_at as string) : "—"}`);
+        console.log(`  Verify:   ${state.verify ?? "—"}`);
+        console.log(`  Guard:    ${state.guard ?? "—"}`);
+        console.log(`  Pool:     ${state.subagent_pool ? "configured" : "none"}`);
+        break;
+      }
+      case "summary": {
+        const { resolvePath } = await import("./helpers.js");
+        const { RESULTS_DEFAULT } = await import("./constants.js");
+        const resultsPath = resolvePath(grouped.repo as string | undefined, grouped["results-path"] as string | undefined, RESULTS_DEFAULT);
+        if (!existsSync(resultsPath)) {
+          console.log("No results file found. No runs completed yet.");
+          break;
+        }
+        const content = readFileSync(resultsPath, "utf-8");
+        const lines = content.trim().split("\n");
+        const records = lines.slice(1).filter(Boolean);
+
+        let totalKept = 0, totalDiscarded = 0, totalNeedsHuman = 0;
+        const runIds = new Set<string>();
+        for (const r of records) {
+          const cols = r.split("\t");
+          const dec = cols[2];
+          if (dec === "keep") totalKept++;
+          else if (dec === "discard") totalDiscarded++;
+          else if (dec === "needs_human") totalNeedsHuman++;
+          const iterTags = cols[1].split(":");
+          if (iterTags.length >= 2) runIds.add(iterTags[0]);
+        }
+
+        if (useJson) {
+          printJson({
+            total_records: records.length,
+            total_kept: totalKept,
+            total_discarded: totalDiscarded,
+            total_needs_human: totalNeedsHuman,
+            keep_rate: records.length > 0 ? (totalKept / records.length * 100).toFixed(1) + "%" : "0%",
+            distinct_run_ids: Array.from(runIds),
+          });
+          break;
+        }
+        console.log("Auto Research Summary");
+        console.log(`  Total iterations:   ${records.length}`);
+        console.log(`  Kept:               ${totalKept}`);
+        console.log(`  Discarded:          ${totalDiscarded}`);
+        console.log(`  Needs human:        ${totalNeedsHuman}`);
+        console.log(`  Keep rate:          ${records.length > 0 ? (totalKept / records.length * 100).toFixed(1) : 0}%`);
+        console.log(`  Distinct runs:      ${runIds.size}`);
+        break;
+      }
+      case "suggest": {
+        const { resolvePath } = await import("./helpers.js");
+        const { MEMORY_DEFAULT } = await import("./constants.js");
+        const memoryPath = resolvePath(grouped.repo as string | undefined, grouped["memory-path"] as string | undefined, MEMORY_DEFAULT);
+        if (!existsSync(memoryPath)) {
+          console.log("No memory file found. Run a self-improvement cycle first.");
+          break;
+        }
+        const memory = readFileSync(memoryPath, "utf-8");
+        const patterns = memory.match(/### Pattern: [^\n]+/g) ?? [];
+        if (useJson) {
+          printJson({ patterns_found: patterns.length, suggestions: patterns.map((p: string) => p.replace("### Pattern: ", "")) });
+          break;
+        }
+        console.log("Memory Patterns — candidate next goals:");
+        for (const p of patterns) {
+          console.log(`  → ${p.replace("### Pattern: ", "")}`);
+        }
+        console.log(`\n${patterns.length} patterns available. Use 'autoresearch init --goal "..."' to start a new run.`);
         break;
       }
       case "launch": {
@@ -215,24 +478,42 @@ async function main(): Promise<number> {
         console.log("Runtime: Node.js " + process.version);
 
         const base = resolveRepo(grouped.repo as string | undefined);
-        const checks: Array<{ name: string; ok: boolean }> = [];
-        checks.push({ name: "commands", ok: existsSync(resolve(base, "commands/autoresearch.md")) });
-        checks.push({ name: "skills", ok: existsSync(resolve(base, "skills/autoresearch/SKILL.md")) });
-        checks.push({ name: "hooks", ok: existsSync(resolve(base, "hooks/init.sh")) });
+        const checks: Array<{ name: string; ok: boolean; detail?: string }> = [];
+        const cmdDir = resolve(base, "commands");
+        const skillsDir = resolve(base, "skills/autoresearch");
+        const hooksDir = resolve(base, "hooks");
+
+        const cmdFiles = existsSync(cmdDir) ? readdirSync(cmdDir).filter((f: string) => f.endsWith(".md")) : [];
+        const skillFiles = existsSync(skillsDir) ? readdirSync(skillsDir) : [];
+        const hookFiles = existsSync(hooksDir) ? readdirSync(hooksDir).filter((f: string) => f.endsWith(".sh")) : [];
+
+        checks.push({ name: "commands", ok: cmdFiles.length > 0, detail: `${cmdFiles.length} command files` });
+        checks.push({ name: "skills", ok: skillFiles.length > 0, detail: `${skillFiles.length} skill files` });
+        checks.push({ name: "hooks", ok: hookFiles.length > 0, detail: `${hookFiles.length} hook scripts` });
+        checks.push({ name: "dist", ok: existsSync(resolve(base, "dist/cli.js")), detail: "dist/cli.js" });
+        checks.push({ name: "plugin", ok: existsSync(resolve(base, ".opencode-plugin/plugin.json")), detail: "plugin manifest" });
+        checks.push({ name: "VERSION", ok: existsSync(resolve(base, "VERSION")), detail: "version marker" });
+
+        let maxNameLen = 0;
+        for (const c of checks) maxNameLen = Math.max(maxNameLen, c.name.length);
+
         for (const c of checks) {
-          console.log(`${c.name}: ${c.ok ? "OK" : "MISSING"}`);
+          const padded = c.name.padEnd(maxNameLen + 2);
+          console.log(`  ${c.ok ? "✓" : "✗"} ${padded}${c.detail ?? (c.ok ? "present" : "missing")}`);
         }
         const failed = checks.filter((c) => !c.ok).length;
         if (failed > 0) {
-          console.error(`${failed} checks failed. Reinstall with 'npm install -g opencode-autoresearch'.`);
+          console.error(`\n${failed} check(s) failed. Reinstall with 'npm install -g opencode-autoresearch'.`);
           return 1;
         }
+        console.log(`\nAll ${checks.length} checks passed.`);
         break;
       }
-      default:
+      default: {
         console.error(`Unknown command: ${cmd}`);
         console.error("Run 'autoresearch --help' for usage.");
         return 1;
+      }
     }
   } catch (exc) {
     console.error((exc as Error).message);
