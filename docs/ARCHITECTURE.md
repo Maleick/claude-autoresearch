@@ -92,7 +92,7 @@ flowchart TD
 | --- | --- |
 | `.autoresearch/state.json` | Current run checkpoint |
 | `autoresearch-results.tsv` | Iteration log |
-| `autoresearch-launch.json` | Background launch request |
+| `.autoresearch/launch.json` | Background launch request |
 | `autoresearch-report.md` | End-of-run report |
 | `autoresearch-memory.md` | Reusable run memory |
 | `.autoresearch/self-improvement.md` | Self-improvement run state |

@@ -190,7 +190,7 @@ flowchart LR
 | `autoresearch-results.tsv` | Iteration log |
 | `autoresearch-report.md` | End-of-run report |
 | `autoresearch-memory.md` | Reusable memory for later runs |
-| `autoresearch-launch.json` | Background launch manifest |
+| `.autoresearch/launch.json` | Background launch manifest |
 
 ## Self-Improvement Mode
 

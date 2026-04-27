@@ -37,7 +37,7 @@ Common optional fields:
 flowchart TD
     A[Auto Research Run] --> B[.autoresearch/state.json]
     A --> C[autoresearch-results.tsv]
-    A --> D[autoresearch-launch.json]
+    A --> D[.autoresearch/launch.json]
     A --> E[autoresearch-report.md]
     A --> F[autoresearch-memory.md]
 ```
@@ -46,7 +46,7 @@ flowchart TD
 | --- | --- |
 | `.autoresearch/state.json` | Current run checkpoint |
 | `autoresearch-results.tsv` | Iteration log |
-| `autoresearch-launch.json` | Background launch manifest |
+| `.autoresearch/launch.json` | Background launch manifest |
 | `autoresearch-report.md` | End-of-run report |
 | `autoresearch-memory.md` | Reusable memory |
 
