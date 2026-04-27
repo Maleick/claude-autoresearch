@@ -14,7 +14,7 @@
   {
     "id": "opencode-only-conversion",
     "name": "Convert Auto Research to OpenCode-only npm package",
-    "status": "in_progress",
+    "status": "complete",
     "acceptance_tests": [
       "npm run typecheck passes",
       "npm pack --dry-run includes dist/, commands/, skills/, hooks/, docs/, .opencode-plugin/",
