@@ -1,0 +1,1 @@
+{"version":3,"file":"subagent-pool.d.ts","sourceRoot":"","sources":["../src/subagent-pool.ts"],"names":[],"mappings":"AAoDA,wBAAgB,qBAAqB,CAAC,MAAM,EAAE;IAC5C,IAAI,EAAE,MAAM,CAAC;IACb,KAAK,CAAC,EAAE,MAAM,CAAC;IACf,IAAI,EAAE,MAAM,CAAC;CACd,GAAG,MAAM,CAAC,MAAM,EAAE,OAAO,CAAC,CAiD1B;AAED,wBAAgB,uBAAuB,CAAC,IAAI,EAAE,MAAM,GAAG,MAAM,CAAC,MAAM,EAAE,OAAO,CAAC,CAW7E"}

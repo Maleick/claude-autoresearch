@@ -1,0 +1,37 @@
+{
+  "name": "autoresearch",
+  "version": "3.1.0",
+  "description": "Auto Research for OpenCode. Run a structured autonomous iteration loop with a standing subagent pool.",
+  "author": {
+    "name": "Maleick",
+    "url": "https://github.com/Maleick"
+  },
+  "homepage": "https://github.com/Maleick/AutoResearch",
+  "repository": "https://github.com/Maleick/AutoResearch",
+  "license": "MIT",
+  "keywords": [
+    "opencode",
+    "autoresearch",
+    "automation",
+    "workflows"
+  ],
+  "skills": "./skills/",
+  "commands": "./commands/",
+  "hooks": "./hooks/",
+  "interface": {
+    "displayName": "Auto Research",
+    "shortDescription": "Subagent-first autonomous iteration loop for OpenCode",
+    "longDescription": "Run a structured improve-verify loop using a standing subagent pool, mode-specific workflows, and mechanical verification. Activate with /autoresearch or specialized modes like /autoresearch:plan, /autoresearch:debug, /autoresearch:fix, /autoresearch:learn, /autoresearch:predict, /autoresearch:scenario, /autoresearch:security, /autoresearch:ship.",
+    "developerName": "Maleick",
+    "category": "Productivity",
+    "capabilities": [
+      "Read",
+      "Write",
+      "Run"
+    ],
+    "websiteURL": "https://github.com/Maleick/AutoResearch",
+    "privacyPolicyURL": "https://github.com/Maleick/AutoResearch/blob/main/SECURITY.md",
+    "termsOfServiceURL": "https://github.com/Maleick/AutoResearch/blob/main/LICENSE",
+    "brandColor": "#0F766E"
+  }
+}
