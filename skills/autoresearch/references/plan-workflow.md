@@ -19,7 +19,7 @@ Turn a vague request into a launch-ready setup summary with:
 
 1. Read the repo before asking anything.
 2. Infer defaults where the repo makes them obvious.
-3. Generate the setup summary with `python scripts/autoresearch_wizard.py`.
+3. Generate the setup summary with `autoresearch wizard`.
 4. Ask only the missing or risky questions.
 5. Let the user correct the setup once before launch.
 6. If the user approves, initialize artifacts and start the loop.
@@ -38,5 +38,5 @@ Ask these in order when missing:
 ## Defaults
 
 - If the repo has `pytest.ini` or a `tests/` directory, default `verify` to `pytest`.
-- If the repo contains `scripts/autoresearch_supervisor_status.py`, offer it as the default guard.
+- If the repo contains `autoresearch status`, offer it as the default guard.
 - Default metric direction to `lower` unless the user clearly wants to maximize a score.

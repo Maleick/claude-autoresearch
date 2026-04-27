@@ -119,7 +119,7 @@ After each child loop completes:
 Persist learnings across meta-iterations:
 
 1. Append successful patterns to `autoresearch-memory.md`.
-2. Update `autoresearch-state.json` with meta-run progress.
+2. Update `.autoresearch/state.json` with meta-run progress.
 3. Record meta-iteration in `autoresearch-results.tsv` with `meta:` prefix.
 
 ## Memory Format
@@ -196,12 +196,12 @@ autoresearch init \
 autoresearch launch
 ```
 
-The background supervisor (`scripts/autoresearch_supervisor_status.py`) will:
+The background supervisor (`autoresearch status`) will:
 
 1. Check child loop status periodically.
 2. Spawn new child loops when previous ones complete.
 3. Stop if meta-stop conditions are met.
-4. Resume from `autoresearch-state.json` on restart.
+4. Resume from `.autoresearch/state.json` on restart.
 
 ## Safety
 
@@ -209,7 +209,7 @@ Self-improvement loops have additional guardrails:
 
 1. **Scope enforcement**: Only modify files within declared scope.
 2. **Guard command**: Must pass before any keep decision.
-3. **Backup state**: Archive `autoresearch-state.json` before each meta-iteration.
+3. **Backup state**: Archive `.autoresearch/state.json` before each meta-iteration.
 4. **Human checkpoint**: Optional `needs_human` flag after N meta-iterations.
 5. **Rollback strategy**: Documented in memory for each pattern.
 

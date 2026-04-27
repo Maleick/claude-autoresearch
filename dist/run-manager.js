@@ -1,7 +1,7 @@
 import { utcNow, ensureParent, atomicWriteJson, readJsonFile, resolvePath, normalizeDirection, parseDurationSeconds, normalizeLabels, missingRequiredLabels, AutoresearchError, } from "./helpers.js";
 import { RESULTS_DEFAULT, STATE_DEFAULT } from "./constants.js";
 import { buildSubagentPoolPlan, buildContinuationPolicy } from "./subagent-pool.js";
-import { writeFileSync, appendFileSync, existsSync } from "fs";
+import { writeFileSync, readFileSync, appendFileSync, existsSync } from "fs";
 export async function initializeRun(repo, resultsPathValue, statePathValue, config, freshStart) {
     const resultsPath = resolvePath(repo, resultsPathValue, RESULTS_DEFAULT);
     const statePath = resolvePath(repo, statePathValue, STATE_DEFAULT);
@@ -13,11 +13,8 @@ export async function initializeRun(repo, resultsPathValue, statePathValue, conf
     if (!existsSync(resultsPath)) {
         writeFileSync(resultsPath, header, "utf-8");
     }
-    else {
-        appendFileSync(resultsPath, header, "utf-8");
-    }
     const state = makeStatePayload(config, resultsPath, statePath);
-    await atomicWriteJson(statePath, state);
+    atomicWriteJson(statePath, state);
     return state;
 }
 export async function appendIteration(repo, resultsPathValue, statePathValue, decision, metricValue, verifyStatus, guardStatus, hypothesis, changeSummary, labels, note, iteration) {
@@ -62,15 +59,15 @@ export async function appendIteration(repo, resultsPathValue, statePathValue, de
         },
     };
     if (decision === "keep") {
-        newState.stats.kept = (newState.stats.kept ?? 0) + 1;
+        newState.stats.kept = newState.stats.kept + 1;
         newState.stats.consecutive_discards = 0;
     }
     else if (decision === "discard") {
-        newState.stats.discarded = (newState.stats.discarded ?? 0) + 1;
-        newState.stats.consecutive_discards = (newState.stats.consecutive_discards ?? 0) + 1;
+        newState.stats.discarded = newState.stats.discarded + 1;
+        newState.stats.consecutive_discards = newState.stats.consecutive_discards + 1;
     }
     else if (decision === "needs_human") {
-        newState.stats.needs_human = (newState.stats.needs_human ?? 0) + 1;
+        newState.stats.needs_human = newState.stats.needs_human + 1;
         newState.flags.needs_human = true;
         newState.stats.consecutive_discards = 0;
     }
@@ -86,7 +83,7 @@ export async function appendIteration(repo, resultsPathValue, statePathValue, de
         missing_keep_labels: missingKeep,
         missing_stop_labels: missingStop,
     };
-    await atomicWriteJson(statePath, newState);
+    atomicWriteJson(statePath, newState);
     return newState;
 }
 export function makeStatePayload(config, resultsPath, statePath) {
@@ -160,7 +157,7 @@ export async function setStopRequested(repo, statePathValue) {
     state.flags.stop_requested = true;
     state.flags.background_active = false;
     state.status = "stopping";
-    await atomicWriteJson(statePath, state);
+    atomicWriteJson(statePath, state);
     return state;
 }
 export async function resumeBackgroundRun(repo, statePathValue) {
@@ -177,7 +174,7 @@ export async function resumeBackgroundRun(repo, statePathValue) {
     state.flags.needs_human = false;
     state.flags.background_active = true;
     state.status = "running";
-    await atomicWriteJson(statePath, state);
+    atomicWriteJson(statePath, state);
     return state;
 }
 export async function completeRun(repo, statePathValue) {
@@ -191,13 +188,18 @@ export async function completeRun(repo, statePathValue) {
     state.flags.needs_human = false;
     state.flags.stop_requested = false;
     state.flags.stop_ready = false;
-    await atomicWriteJson(statePath, state);
+    atomicWriteJson(statePath, state);
     return state;
 }
-export async function buildSupervisorSnapshot(repo, _resultsPath, statePathValue) {
+export async function buildSupervisorSnapshot(repo, resultsPathValue, statePathValue) {
+    const resultsPath = resolvePath(repo, resultsPathValue, RESULTS_DEFAULT);
     const statePath = resolvePath(repo, statePathValue, STATE_DEFAULT);
     const state = readJsonFile(statePath);
-    void _resultsPath; // used for snapshot, results path tracked separately
+    let resultsRows = 0;
+    if (existsSync(resultsPath)) {
+        const content = readFileSync(resultsPath, "utf-8");
+        resultsRows = content.split("\n").filter((l) => l.trim() && !l.startsWith("timestamp")).length;
+    }
     let decision = "relaunch";
     let reason = "ready_for_next_iteration";
     if (state.flags.stop_requested) {
@@ -230,7 +232,7 @@ export async function buildSupervisorSnapshot(repo, _resultsPath, statePathValue
         metric: state.metric,
         stats: state.stats,
         last_iteration: state.last_iteration,
-        results_rows: 0,
+        results_rows: resultsRows,
         artifact_paths: state.artifact_paths,
         flags: state.flags,
         label_requirements: state.label_requirements,

@@ -1,6 +1,6 @@
 # Results Logging
 
-`research-results.tsv` is the primary append-only results log per run.
+`autoresearch-results.tsv` is the primary append-only results log per run.
 
 The runtime maintains `autoresearch-results.tsv` as the canonical iteration log.
 

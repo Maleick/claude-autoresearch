@@ -7,8 +7,9 @@ set -e
 STATUS_FILE="${AUTORESEARCH_STATE:-.autoresearch/state.json}"
 
 if [ -f "$STATUS_FILE" ]; then
-  node -e "
-    const s = require('$STATUS_FILE');
+  node --input-type=module -e "
+    import { readFileSync } from 'fs';
+    const s = JSON.parse(readFileSync('$STATUS_FILE', 'utf8'));
     console.log('Auto Research run: ' + s.run_id);
     console.log('Status: ' + s.status);
     console.log('Mode: ' + s.mode);

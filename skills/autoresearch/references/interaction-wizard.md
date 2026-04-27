@@ -14,7 +14,7 @@ Confirm or infer:
 6. Should the run stay in `foreground` or move to `background`?
 7. Which standing subagent pool should stay active for the run?
 
-Use `python scripts/autoresearch_wizard.py` to build the first setup summary, then only ask about fields that are still missing or risky.
+Use `autoresearch wizard` to build the first setup summary, then only ask about fields that are still missing or risky.
 
 ## Launch Rule
 

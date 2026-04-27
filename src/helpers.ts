@@ -24,7 +24,7 @@ export function ensureParent(filePath: string): void {
   mkdirSync(dirname(filePath), { recursive: true });
 }
 
-export async function atomicWriteText(filePath: string, content: string): Promise<void> {
+export function atomicWriteText(filePath: string, content: string): void {
   ensureParent(filePath);
   const tmp = filePath + ".tmp." + Date.now();
   writeFileSync(tmp, content, "utf-8");
@@ -36,15 +36,18 @@ export async function atomicWriteText(filePath: string, content: string): Promis
   }
 }
 
-export async function atomicWriteJson(filePath: string, payload: unknown): Promise<void> {
-  await atomicWriteText(filePath, JSON.stringify(payload, null, 2) + "\n");
+export function atomicWriteJson(filePath: string, payload: unknown): void {
+  atomicWriteText(filePath, JSON.stringify(payload, null, 2) + "\n");
 }
 
 export function readJsonFile(filePath: string): Record<string, unknown> {
+  if (!existsSync(filePath)) {
+    throw new AutoresearchError("Missing file: " + filePath);
+  }
   try {
     return JSON.parse(readFileSync(filePath, "utf-8")) as Record<string, unknown>;
-  } catch {
-    throw new AutoresearchError("Missing file: " + filePath);
+  } catch (err) {
+    throw new AutoresearchError("Invalid JSON in " + filePath + ": " + (err as Error).message);
   }
 }
 
@@ -101,7 +104,7 @@ export function parseDurationSeconds(value: string | undefined | null): number |
     const amount = parseInt(match[1] as string);
     const unit = match[2] as string;
     const multiplier: Record<string, number> = { s: 1, m: 60, h: 3600, d: 86400 };
-    total += amount * (multiplier[unit] ?? 0);
+    total += amount * multiplier[unit];
     pos += (match[0] as string).length;
   }
   if (pos !== normalized.length || total <= 0) {
@@ -113,11 +116,15 @@ export function parseDurationSeconds(value: string | undefined | null): number |
 export function inferVerifyCommand(repo?: string): string {
   const base = repo ?? ".";
   const hasPkg = existsSync(resolve(base, "package.json"));
-  if (hasPkg) return "npm test";
+  if (hasPkg) {
+    const pkg = JSON.parse(readFileSync(resolve(base, "package.json"), "utf-8"));
+    if (pkg.scripts?.test) return "npm test";
+  }
   const makeFile = resolve(base, "Makefile");
   if (existsSync(makeFile)) return "make test";
-  const hasPy = existsSync(resolve(base, "pytest.ini")) || existsSync(resolve(base, "tests"));
-  if (hasPy) return "pytest";
+  if (existsSync(resolve(base, "go.mod"))) return "go test ./...";
+  if (existsSync(resolve(base, "Cargo.toml"))) return "cargo test";
+  if (existsSync(resolve(base, "pytest.ini")) || existsSync(resolve(base, "tests"))) return "pytest";
   return "<set verify command>";
 }
 

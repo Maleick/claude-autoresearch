@@ -1,6 +1,6 @@
 # State Management
 
-`autoresearch-state.json` is the run checkpoint.
+`.autoresearch/state.json` is the run checkpoint.
 
 ## Core Fields
 
@@ -28,7 +28,7 @@
 
 ## Resume Semantics
 
-- `python scripts/autoresearch_runtime_ctl.py resume` clears `stop_requested` and marks the background run active again.
+- `autoresearch resume` clears `stop_requested` and marks the background run active again.
 - Resume does not create a new run; it continues the existing state snapshot.
 - Resume should re-anchor the standing pool with the latest metric, last iteration, and active role guidance before the next handoff.
 - Completed runs are not resumable; return to the previous state by starting a new run.
@@ -36,4 +36,4 @@
 
 ## Completion Semantics
 
-- `python scripts/autoresearch_runtime_ctl.py complete` moves a background run to `completed`, clears `background_active`, and ends the detached session lifecycle.
+- `autoresearch complete` moves a background run to `completed`, clears `background_active`, and ends the detached session lifecycle.

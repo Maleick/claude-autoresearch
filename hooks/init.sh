@@ -14,7 +14,11 @@ checklist() {
 }
 
 if [ -f ".autoresearch/state.json" ]; then
-  status=$(node -e "try{const s=require('.autoresearch/state.json');console.log(s.status||'')}catch{e}''" 2>/dev/null || true)
+  status=$(node --input-type=module -e "
+    import { readFileSync } from 'fs';
+    const s = JSON.parse(readFileSync('.autoresearch/state.json', 'utf8'));
+    console.log(s.status || '');
+  " 2>/dev/null || true)
   if [ "$status" = "running" ] || [ "$status" = "initialized" ]; then
     checklist
   fi

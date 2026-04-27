@@ -13,8 +13,8 @@ The loop exists to make disciplined progress, not noisy activity.
 
 ## Artifact Discipline
 
-- `autoresearch-state.json` is the current run snapshot.
-- `research-results.tsv` is the append-only experiment log.
-- `autoresearch-launch.json` is the last background launch request.
+- `.autoresearch/state.json` is the current run snapshot.
+- `autoresearch-results.tsv` is the append-only experiment log.
+- `.autoresearch/launch.json` is the last background launch request.
 
 Only helper scripts should mutate these files when possible.

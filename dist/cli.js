@@ -1,5 +1,7 @@
 #!/usr/bin/env node
-import { printJson } from "./helpers.js";
+import { existsSync } from "fs";
+import { resolve } from "path";
+import { printJson, resolveRepo } from "./helpers.js";
 function usage() {
     console.error("Usage: autoresearch <command> [options]");
     console.error("");
@@ -178,9 +180,19 @@ async function main() {
                 const { VERSION, PACKAGE_NAME, SKILL_NAME } = await import("./constants.js");
                 console.log(`${SKILL_NAME} ${VERSION} (${PACKAGE_NAME})`);
                 console.log("Runtime: Node.js " + process.version);
-                console.log("Commands: OK");
-                console.log("Skills: OK");
-                console.log("Hooks: OK");
+                const base = resolveRepo(grouped.repo);
+                const checks = [];
+                checks.push({ name: "commands", ok: existsSync(resolve(base, "commands/autoresearch.md")) });
+                checks.push({ name: "skills", ok: existsSync(resolve(base, "skills/autoresearch/SKILL.md")) });
+                checks.push({ name: "hooks", ok: existsSync(resolve(base, "hooks/init.sh")) });
+                for (const c of checks) {
+                    console.log(`${c.name}: ${c.ok ? "OK" : "MISSING"}`);
+                }
+                const failed = checks.filter((c) => !c.ok).length;
+                if (failed > 0) {
+                    console.error(`${failed} checks failed. Reinstall with 'npm install -g opencode-autoresearch'.`);
+                    return 1;
+                }
                 break;
             }
             default:

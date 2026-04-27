@@ -26,7 +26,7 @@ Use this reference when a run should be subagent-first.
 
 ## State Ownership
 
-- Only the orchestrator records iterations, mutates `autoresearch-state.json`, and decides whether the latest step is `keep`, `discard`, or `needs_human`.
+- Only the orchestrator records iterations, mutates `.autoresearch/state.json`, and decides whether the latest step is `keep`, `discard`, or `needs_human`.
 - Subagents may disagree, critique, or verify, but their output is supporting evidence.
 - If several subagents contribute to one change, roll that evidence into one orchestrator-owned iteration result.
 

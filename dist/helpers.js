@@ -18,7 +18,7 @@ export function resolveRepo(repo) {
 export function ensureParent(filePath) {
     mkdirSync(dirname(filePath), { recursive: true });
 }
-export async function atomicWriteText(filePath, content) {
+export function atomicWriteText(filePath, content) {
     ensureParent(filePath);
     const tmp = filePath + ".tmp." + Date.now();
     writeFileSync(tmp, content, "utf-8");
@@ -33,15 +33,18 @@ export async function atomicWriteText(filePath, content) {
         throw new AutoresearchError("Failed to write " + filePath);
     }
 }
-export async function atomicWriteJson(filePath, payload) {
-    await atomicWriteText(filePath, JSON.stringify(payload, null, 2) + "\n");
+export function atomicWriteJson(filePath, payload) {
+    atomicWriteText(filePath, JSON.stringify(payload, null, 2) + "\n");
 }
 export function readJsonFile(filePath) {
+    if (!existsSync(filePath)) {
+        throw new AutoresearchError("Missing file: " + filePath);
+    }
     try {
         return JSON.parse(readFileSync(filePath, "utf-8"));
     }
-    catch {
-        throw new AutoresearchError("Missing file: " + filePath);
+    catch (err) {
+        throw new AutoresearchError("Invalid JSON in " + filePath + ": " + err.message);
     }
 }
 export function resolvePath(repo, value, defaultName) {
@@ -99,7 +102,7 @@ export function parseDurationSeconds(value) {
         const amount = parseInt(match[1]);
         const unit = match[2];
         const multiplier = { s: 1, m: 60, h: 3600, d: 86400 };
-        total += amount * (multiplier[unit] ?? 0);
+        total += amount * multiplier[unit];
         pos += match[0].length;
     }
     if (pos !== normalized.length || total <= 0) {
@@ -110,13 +113,19 @@ export function parseDurationSeconds(value) {
 export function inferVerifyCommand(repo) {
     const base = repo ?? ".";
     const hasPkg = existsSync(resolve(base, "package.json"));
-    if (hasPkg)
-        return "npm test";
+    if (hasPkg) {
+        const pkg = JSON.parse(readFileSync(resolve(base, "package.json"), "utf-8"));
+        if (pkg.scripts?.test)
+            return "npm test";
+    }
     const makeFile = resolve(base, "Makefile");
     if (existsSync(makeFile))
         return "make test";
-    const hasPy = existsSync(resolve(base, "pytest.ini")) || existsSync(resolve(base, "tests"));
-    if (hasPy)
+    if (existsSync(resolve(base, "go.mod")))
+        return "go test ./...";
+    if (existsSync(resolve(base, "Cargo.toml")))
+        return "cargo test";
+    if (existsSync(resolve(base, "pytest.ini")) || existsSync(resolve(base, "tests")))
         return "pytest";
     return "<set verify command>";
 }

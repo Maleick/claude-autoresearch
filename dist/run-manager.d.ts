@@ -5,5 +5,5 @@ export declare function makeStatePayload(config: RunConfig, resultsPath: string,
 export declare function setStopRequested(repo: string | undefined, statePathValue: string | undefined): Promise<RunState>;
 export declare function resumeBackgroundRun(repo: string | undefined, statePathValue: string | undefined): Promise<RunState>;
 export declare function completeRun(repo: string | undefined, statePathValue: string | undefined): Promise<RunState>;
-export declare function buildSupervisorSnapshot(repo: string | undefined, _resultsPath: string | undefined, statePathValue: string | undefined): Promise<Record<string, unknown>>;
+export declare function buildSupervisorSnapshot(repo: string | undefined, resultsPathValue: string | undefined, statePathValue: string | undefined): Promise<Record<string, unknown>>;
 //# sourceMappingURL=run-manager.d.ts.map
