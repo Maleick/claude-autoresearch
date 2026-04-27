@@ -1,6 +1,6 @@
 import { resolve } from "path";
 import { fileURLToPath } from "url";
-import { readFileSync, writeFileSync, mkdirSync, rmSync, existsSync } from "fs";
+import { mkdirSync, rmSync, existsSync } from "fs";
 
 const REPO_ROOT = resolve(fileURLToPath(import.meta.url), "..", "..");
 
@@ -31,7 +31,7 @@ describe("run-manager", () => {
         mode: "foreground",
       };
       await initializeRun(tmpDir, config);
-      expect(existsSync(resolve(tmpDir, "autoresearch-state.json"))).toBe(true);
+      expect(existsSync(resolve(tmpDir, ".autoresearch/state.json"))).toBe(true);
       expect(existsSync(resolve(tmpDir, "autoresearch-results.tsv"))).toBe(true);
     });
 

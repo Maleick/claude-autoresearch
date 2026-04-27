@@ -1,56 +1,81 @@
 # Release Process
 
-This package uses npm publish for releases.
+This package uses npm publish for releases. GitHub Actions automates the full release pipeline.
 
 ## Version Alignment
 
-`VERSION` in `src/constants.ts` and `version` in `package.json` must stay aligned. The `package.json` version is the canonical source of truth for npm.
+`VERSION`, `package.json`, `src/constants.ts`, and `.opencode-plugin/plugin.json` must all stay aligned. The `VERSION` file is the canonical source of truth.
 
 ## Release Steps
 
 ### 1. Update version
 
-Bump the version in `package.json` and `src/constants.ts`.
-
 ```bash
-# Update package.json
-npm version patch  # or minor, major
+# Update VERSION file
+echo "3.2.0" > VERSION
+
+# Sync to package.json
+npm version 3.2.0 --no-git-tag-version
 
 # Sync to src/constants.ts
-sed -i '' 's/"3\.\([0-9]\+\)\.[0-9]*"/"3.\1.\1"/' src/constants.ts
+# Update the VERSION export manually or use sed
 ```
 
-### 2. Build
+### 2. Build and verify
+
+```bash
+npm ci
+npm run build
+npm run typecheck
+npm run verify:pack
+npm test
+```
+
+### 3. Update CHANGELOG
+
+Add a new section for the version in `CHANGELOG.md`:
+
+```markdown
+## [3.2.0] - YYYY-MM-DD
+
+### Added
+- Recursive self-improvement loop support
+- Mermaid diagrams in documentation
+- Enhanced subagent pool with meta-orchestrator role
+
+### Changed
+- Updated README with banner and visual diagrams
+- Improved wiki pages with architecture charts
+```
+
+### 4. Commit and tag
+
+```bash
+git add -A
+git commit -m "Release v3.2.0"
+git tag v3.2.0
+git push origin main v3.2.0
+```
+
+### 5. Automated release
+
+GitHub Actions will:
+
+1. Build and type-check
+2. Verify package contents
+3. Run tests
+4. Create a GitHub Release with CHANGELOG section
+5. Publish to npm
+
+## Manual publish (fallback)
+
+If you need to publish manually:
 
 ```bash
 npm run build
-```
-
-### 3. Test
-
-```bash
 npm run typecheck
-```
-
-### 4. Dry-run pack
-
-```bash
-npm pack --dry-run
-```
-
-Verify the output includes: `dist/`, `commands/`, `skills/`, `hooks/`, `docs/`, `.opencode-plugin/`.
-
-### 5. Publish
-
-```bash
-npm publish
-```
-
-### 6. Tag
-
-```bash
-git tag v$(node -p "require('./package.json').version")
-git push origin v$(node -p "require('./package.json').version")
+npm run verify:pack
+npm publish --access public
 ```
 
 ## Package Contents
@@ -61,7 +86,11 @@ The shipped package includes:
 - `commands/` — OpenCode command surfaces (`autoresearch.md`, `autoresearch/*.md`)
 - `skills/autoresearch/` — Skill bundle with references
 - `hooks/` — Shell hooks for session lifecycle
-- `docs/` — Installation and architecture docs
-- `.opencode-plugin/plugin.json` — Plugin manifest
+- `docs/` — Installation, architecture, and release docs
+- `.opencode-plugin/plugin.json` — OpenCode plugin manifest
+- `AGENTS.md` — Agent guide
+- `VERSION` — Version marker
+- `README.md` — Product overview
+- `LICENSE` — MIT license
 
-Python scripts are **not** included in the shipped package.
+Runtime artifacts (`.autoresearch/`) and Node modules are **not** included.

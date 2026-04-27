@@ -4,6 +4,20 @@
 
 The command family is fully supported in OpenCode:
 
+```mermaid
+flowchart TD
+    A[/autoresearch] --> B[Default Loop]
+    A --> C[Specialized Modes]
+    C --> D[/autoresearch:plan]
+    C --> E[/autoresearch:debug]
+    C --> F[/autoresearch:fix]
+    C --> G[/autoresearch:learn]
+    C --> H[/autoresearch:predict]
+    C --> I[/autoresearch:scenario]
+    C --> J[/autoresearch:security]
+    C --> K[/autoresearch:ship]
+```
+
 - `/autoresearch` — Default improve-verify loop
 - `/autoresearch:plan` — Planning workflow
 - `/autoresearch:debug` — Debugging workflow
@@ -18,6 +32,19 @@ The command family is fully supported in OpenCode:
 
 The `autoresearch` CLI provides background and foreground run control:
 
+```mermaid
+flowchart LR
+    A[autoresearch CLI] --> B[init]
+    A --> C[wizard]
+    A --> D[status]
+    A --> E[launch]
+    A --> F[stop]
+    A --> G[resume]
+    A --> H[complete]
+    A --> I[record]
+    A --> J[doctor]
+```
+
 - `autoresearch init` — Initialize a run
 - `autoresearch wizard` — Generate setup summary
 - `autoresearch status` — Print run status
@@ -26,8 +53,23 @@ The `autoresearch` CLI provides background and foreground run control:
 - `autoresearch resume` — Resume background run
 - `autoresearch complete` — Mark run complete
 - `autoresearch record` — Record iteration result
+- `autoresearch doctor` — Verify installation
 
 ## Mode Routing
+
+```mermaid
+flowchart TD
+    A[User Request] --> B{Task Type}
+    B -->|general improvement| C[default]
+    B -->|needs planning| D[plan]
+    B -->|has bug| E[debug]
+    B -->|needs fix| F[fix]
+    B -->|needs knowledge| G[learn]
+    B -->|wants prediction| H[predict]
+    B -->|compare scenarios| I[scenario]
+    B -->|security concern| J[security]
+    B -->|ready to release| K[ship]
+```
 
 - **default**: Improve-verify loop with metric tracking
 - **plan**: Setup planning before iteration
@@ -38,3 +80,23 @@ The `autoresearch` CLI provides background and foreground run control:
 - **scenario**: Scenario comparison
 - **security**: Security review
 - **ship**: Ship-readiness check
+
+## Background vs Foreground
+
+```mermaid
+flowchart LR
+    A[Run Mode] --> B[foreground]
+    A --> C[background]
+    B --> D[Interactive]
+    B --> E[User attends]
+    C --> F[Unattended]
+    C --> G[Supervisor polls]
+    C --> H[Can resume]
+```
+
+| Mode | Use When |
+| --- | --- |
+| `foreground` | Interactive development, user present |
+| `background` | Overnight runs, self-improvement, CI/CD |
+
+Background runs create `.autoresearch/state.json` and can be resumed with `autoresearch resume`.

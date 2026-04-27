@@ -1,8 +1,8 @@
 ---
 name: autoresearch
-description: "Run a subagent-first structured improve-verify loop in OpenCode. Activate with /autoresearch or specialized modes like /autoresearch:plan, /autoresearch:debug, /autoresearch:fix, /autoresearch:learn, /autoresearch:predict, /autoresearch:scenario, /autoresearch:security, /autoresearch:ship."
+description: "Run a subagent-first structured improve-verify loop in OpenCode. Activate with /autoresearch or specialized modes like /autoresearch:plan, /autoresearch:debug, /autoresearch:fix, /autoresearch:learn, /autoresearch:predict, /autoresearch:scenario, /autoresearch:security, /autoresearch:ship. Supports recursive self-improvement loops."
 metadata:
-  short-description: "Subagent-first autonomous iteration loop for OpenCode"
+  short-description: "Subagent-first autonomous iteration loop for OpenCode with recursive self-improvement"
 ---
 
 # Auto Research for OpenCode
@@ -18,7 +18,8 @@ When invoked:
 3. Read `references/subagent-orchestration.md`
 4. For new interactive runs, read `references/interaction-wizard.md`, `references/plan-workflow.md`, and `references/loop-workflow.md`
 5. For state and results semantics, read `references/state-management.md` and `references/results-logging.md`
-6. For specialized modes, read the matching workflow reference:
+6. For self-improvement and recursive loops, read `references/self-improve-loop.md`
+7. For specialized modes, read the matching workflow reference:
    - `references/debug-workflow.md`
    - `references/fix-workflow.md`
    - `references/learn-workflow.md`
@@ -36,6 +37,27 @@ The main agent is the orchestrator. Subagents are the standing execution pool.
 - Feed subagent findings back into the next iteration before making another code change.
 - The main agent owns the final decision, the edit, and the run state.
 - Approval belongs before launch. After launch, continue by default unless the user stops the run.
+
+## Recursive Self-Improvement
+
+Auto Research can run on itself:
+
+```mermaid
+flowchart TD
+    A[Meta-Goal] --> B[Child Loop]
+    B --> C[Evaluate]
+    C --> D{Improve?}
+    D -->|yes| E[Learn + Memory]
+    D -->|no| F[Adapt Strategy]
+    E --> G[Next Child]
+    F --> G
+    G --> B
+```
+
+- Use `references/self-improve-loop.md` for recursive run semantics.
+- Meta-iterations spawn child loops that inherit the meta-goal.
+- Patterns extracted from child results guide strategy adaptation.
+- Memory persists across meta-iterations in `autoresearch-memory.md`.
 
 ## Required Internal Fields
 
@@ -61,6 +83,7 @@ Strongly recommended:
 5. Record every iteration before the next one starts.
 6. Keep strict improvements, discard regressions.
 7. Continue until the stop condition is met.
+8. For self-improvement runs, archive state before each meta-iteration.
 
 ## Background Control
 
@@ -75,3 +98,5 @@ autoresearch complete
 ## Output
 
 Follow `references/structured-output-spec.md`. Print a setup summary before the first iteration, short progress updates during the loop, and a completion summary when done.
+
+For recursive runs, emit meta-iteration summaries in addition to standard progress.

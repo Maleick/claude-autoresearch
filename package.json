@@ -1,7 +1,7 @@
 {
   "name": "opencode-autoresearch",
-  "version": "3.1.0-beta.2",
-  "description": "Auto Research for OpenCode. Subagent-first autonomous iteration loop with standing-pool orchestration and mechanical verification.",
+  "version": "3.2.0",
+  "description": "Autonomous recursive self-improvement engine for OpenCode. Subagent-first iteration loop with standing-pool orchestration and mechanical verification.",
   "author": {
     "name": "Maleick",
     "url": "https://github.com/Maleick"
@@ -11,36 +11,56 @@
     "type": "git",
     "url": "git+https://github.com/Maleick/AutoResearch.git"
   },
+  "bugs": {
+    "url": "https://github.com/Maleick/AutoResearch/issues"
+  },
   "license": "MIT",
   "keywords": [
     "opencode",
     "plugin",
     "autoresearch",
     "automation",
-    "workflows"
+    "workflows",
+    "self-improvement",
+    "iteration"
   ],
   "type": "module",
-  "main": "dist/index.js",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "bin": {
-    "autoresearch": "dist/cli.js"
+    "autoresearch": "dist/cli.js",
+    "opencode-autoresearch": "dist/cli.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
   },
   "files": [
-    "dist/",
-    "commands/",
-    "skills/",
-    "hooks/",
-    "docs/",
-    ".opencode-plugin/"
+    "dist",
+    "hooks",
+    "commands",
+    "skills",
+    "docs",
+    ".opencode-plugin",
+    "AGENTS.md",
+    "VERSION",
+    "README.md",
+    "LICENSE"
   ],
   "scripts": {
     "build": "tsc",
     "typecheck": "tsc --noEmit",
-    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
-    "pack": "npm pack --dry-run",
-    "lint": "echo 'TODO: add lint'"
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config jest.config.json",
+    "verify:pack": "bash hooks/verify-package.sh",
+    "prepack": "tsc"
   },
   "devDependencies": {
+    "@types/jest": "^30.0.0",
     "@types/node": "^20.0.0",
+    "jest": "^30.3.0",
+    "ts-jest": "^29.4.9",
     "typescript": "^5.9.3"
   },
   "engines": {

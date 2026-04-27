@@ -1,4 +1,4 @@
-import { readFileSync, writeFileSync, mkdirSync, rmSync, existsSync } from "fs";
+import { readFileSync, existsSync } from "fs";
 import { resolve } from "path";
 import { fileURLToPath } from "url";
 
@@ -119,17 +119,11 @@ describe("No legacy Claude/Codex artifacts remain", () => {
     expect(existsSync(resolve(REPO_ROOT, "SKILL.md"))).toBe(false);
   });
 
-  it("no Python scripts in scripts/", () => {
+  it("no Python scripts in scripts/", async () => {
     const scriptsDir = resolve(REPO_ROOT, "scripts");
     if (existsSync(scriptsDir)) {
-      const files = (() => {
-        try {
-          const { readdirSync } = require("fs");
-          return readdirSync(scriptsDir).filter((f: string) => f.endsWith(".py"));
-        } catch {
-          return [];
-        }
-      })();
+      const { readdirSync } = await import("fs");
+      const files = readdirSync(scriptsDir).filter((f: string) => f.endsWith(".py"));
       expect(files.length).toBe(0);
     }
   });

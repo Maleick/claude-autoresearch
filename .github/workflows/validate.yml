@@ -12,57 +12,52 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-node@v4
         with:
-          python-version: "3.12"
+          node-version: "20"
 
-      - name: Install test dependencies
-        run: python -m pip install --upgrade pip pytest
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Type check
+        run: npm run typecheck
 
       - name: Check version consistency
         run: |
-          python - <<'PY'
-          import json
-          from pathlib import Path
+          node -e "
+          const fs = require('fs');
+          const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+          const version = fs.readFileSync('VERSION', 'utf8').trim();
+          const constants = fs.readFileSync('src/constants.ts', 'utf8');
+          const plugin = JSON.parse(fs.readFileSync('.opencode-plugin/plugin.json', 'utf8'));
+          const readme = fs.readFileSync('README.md', 'utf8');
 
-          version = Path("VERSION").read_text(encoding="utf-8").strip()
-          readme = Path("README.md").read_text(encoding="utf-8")
-          claude_marketplace = json.loads(Path(".claude-plugin/marketplace.json").read_text(encoding="utf-8"))
-          claude_plugin = json.loads(Path("plugins/autoresearch/.claude-plugin/plugin.json").read_text(encoding="utf-8"))
-          codex_plugin = json.loads(Path("plugins/codex-autoresearch/.codex-plugin/plugin.json").read_text(encoding="utf-8"))
+          const mismatches = [];
+          if (pkg.version !== version) mismatches.push(\`package.json (\${pkg.version}) vs VERSION (\${version})\`);
+          if (!constants.includes('VERSION = \"' + version + '\"')) mismatches.push('src/constants.ts');
+          if (plugin.version !== version) mismatches.push('.opencode-plugin/plugin.json');
+          if (!readme.includes('v' + version)) mismatches.push('README.md version banner');
 
-          expected = {
-              "VERSION": version,
-              ".claude-plugin/marketplace.json": claude_marketplace["version"],
-              "plugins/autoresearch/.claude-plugin/plugin.json": claude_plugin["version"],
-              "plugins/codex-autoresearch/.codex-plugin/plugin.json": codex_plugin["version"],
+          if (mismatches.length > 0) {
+            console.error('Version mismatch:', mismatches.join(', '));
+            process.exit(1);
           }
+          console.log('Version aligned:', version);
+          "
 
-          mismatches = [f"{path}={value}" for path, value in expected.items() if value != version]
-          if f"**v{version}**" not in readme:
-              mismatches.append("README.md version banner mismatch")
+      - name: Verify package contents
+        run: npm run verify:pack
 
-          if mismatches:
-              raise SystemExit("Version mismatch: " + ", ".join(mismatches))
-          PY
-
-      - name: Validate root-to-plugin sync
-        run: python scripts/sync_plugin_payload.py --repo . --check
-
-      - name: Validate Codex plugin payload
-        run: python scripts/check_plugin_distribution.py --repo .
-
-      - name: Run packaging tests
-        run: pytest -q tests/test_plugin_distribution.py tests/test_results_compatibility.py
+      - name: Run tests
+        run: npm test
 
       - name: Check for absolute local paths in docs
         run: |
-          ! rg -n "/Users/|/home/" README.md CHANGELOG.md CONTRIBUTING.md SECURITY.md wiki docs .claude-plugin plugins
+          ! grep -r "/Users/\|/home/" README.md CHANGELOG.md CONTRIBUTING.md SECURITY.md wiki docs .opencode-plugin
 
       - name: Check for stale public positioning
         run: |
-          ! rg -n "Claude Code only|Claude-only" README.md CHANGELOG.md CONTRIBUTING.md SECURITY.md wiki docs .claude-plugin plugins
-
-      - name: Check shared content for Claude-local paths
-        run: |
-          ! rg -n "\.claude/" SKILL.md agents references scripts tests .agents plugins/codex-autoresearch
+          ! grep -r "Claude Code only\|Claude-only" README.md CHANGELOG.md CONTRIBUTING.md SECURITY.md wiki docs .opencode-plugin
