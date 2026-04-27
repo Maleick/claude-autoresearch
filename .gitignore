@@ -13,17 +13,11 @@ docs/specs/
 .autoship/
 
 # Autoresearch runtime artifacts
+.autoresearch/
 autoresearch-results.tsv
-research-results.tsv
 autoresearch-report.md
-autoresearch-state.json
-autoresearch-state.json.tmp
-autoresearch-launch.json
-autoresearch-self-improvement.md
 autoresearch-memory.md
-autoresearch-debug-findings.md
-autoresearch-security/
-.autoresearch-predict/
+autoresearch-hook-context.json
 
 # OS
 .DS_Store
