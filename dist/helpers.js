@@ -130,7 +130,7 @@ export function inferVerifyCommand(repo) {
     return "<set verify command>";
 }
 export function normalizeLabels(values) {
-    if (!values)
+    if (values == null)
         return [];
     if (typeof values === "string") {
         return [...new Set(values.split(",").map((s) => s.trim()).filter(Boolean))];

@@ -129,7 +129,7 @@ export function inferVerifyCommand(repo?: string): string {
 }
 
 export function normalizeLabels(values?: unknown): string[] {
-  if (!values) return [];
+  if (values == null) return [];
   if (typeof values === "string") {
     return [...new Set(values.split(",").map((s) => s.trim()).filter(Boolean))];
   }
