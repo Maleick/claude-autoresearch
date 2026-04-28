@@ -172,4 +172,22 @@ describe("buildSubagentPoolPlan", () => {
     const plan2 = mod.buildSubagentPoolPlan({ goal: "b", mode: "foreground" });
     expect(plan1.pool_key).not.toBe(plan2.pool_key);
   });
+
+  it("activates pattern_analyst for pattern keyword", () => {
+    const plan = mod.buildSubagentPoolPlan({ goal: "find usage pattern", mode: "foreground" });
+    const ids = plan.roles.map((r: any) => r.id);
+    expect(ids).toContain("pattern_analyst");
+  });
+
+  it("activates strategy_advisor for adapt keyword", () => {
+    const plan = mod.buildSubagentPoolPlan({ goal: "adapt strategy based on results", mode: "foreground" });
+    const ids = plan.roles.map((r: any) => r.id);
+    expect(ids).toContain("strategy_advisor");
+  });
+
+  it("activates regression_guard for regression keyword", () => {
+    const plan = mod.buildSubagentPoolPlan({ goal: "guard against regressions", mode: "foreground" });
+    const ids = plan.roles.map((r: any) => r.id);
+    expect(ids).toContain("regression_guard");
+  });
 });
