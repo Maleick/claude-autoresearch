@@ -12,8 +12,34 @@ describe("Index Exports", () => {
     expect(index.PRODUCT_BRAND).toBeDefined();
   });
 
+  it("exports correct version string", async () => {
+    const index = await import(resolve(REPO_ROOT, "dist/index.js"));
+    expect(typeof index.VERSION).toBe("string");
+    expect(index.VERSION).toMatch(/^\d+\.\d+\.\d+$/);
+  });
+
+  it("exports correct package name", async () => {
+    const index = await import(resolve(REPO_ROOT, "dist/index.js"));
+    expect(index.PACKAGE_NAME).toBe("opencode-autoresearch");
+  });
+
+  it("exports correct skill name", async () => {
+    const index = await import(resolve(REPO_ROOT, "dist/index.js"));
+    expect(index.SKILL_NAME).toBe("autoresearch");
+  });
+
+  it("exports correct product brand", async () => {
+    const index = await import(resolve(REPO_ROOT, "dist/index.js"));
+    expect(index.PRODUCT_BRAND).toBe("Auto Research");
+  });
+
   it("exports type definitions", async () => {
     const types = await import(resolve(REPO_ROOT, "dist/types.js"));
     expect(types).toBeDefined();
+  });
+
+  it("type module exports are empty object at runtime", async () => {
+    const types = await import(resolve(REPO_ROOT, "dist/types.js"));
+    expect(Object.keys(types).length).toBe(0);
   });
 });

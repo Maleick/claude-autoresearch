@@ -1,6 +1,6 @@
 import { resolve } from "path";
 import { fileURLToPath } from "url";
-import { writeFileSync, unlinkSync, existsSync, mkdirSync, rmSync } from "fs";
+import { writeFileSync, unlinkSync, existsSync, mkdirSync, rmSync, readFileSync } from "fs";
 
 const REPO_ROOT = resolve(fileURLToPath(import.meta.url), "..", "..");
 
@@ -308,5 +308,59 @@ describe("inferVerifyCommand", () => {
     writeFileSync(resolve(d, "package.json"), JSON.stringify({ scripts: { test: "jest" } }), "utf-8");
     writeFileSync(resolve(d, "Makefile"), "test:\n\techo\n", "utf-8");
     expect(mod.inferVerifyCommand(d)).toBe("npm test");
+  });
+});
+
+describe("ensureParent", () => {
+  let mod: any;
+  beforeAll(async () => { mod = await importHelpers(); });
+
+  const tmpBase = resolve(REPO_ROOT, ".autoresearch-test-ensure-parent");
+
+  afterEach(() => {
+    try { rmSync(tmpBase, { recursive: true }); } catch {}
+  });
+
+  it("creates missing parent directories", () => {
+    const deepPath = resolve(tmpBase, "a", "b", "c", "file.txt");
+    mod.ensureParent(deepPath);
+    expect(existsSync(resolve(tmpBase, "a", "b", "c"))).toBe(true);
+  });
+
+  it("does not throw when parent exists", () => {
+    mkdirSync(tmpBase, { recursive: true });
+    const existingPath = resolve(tmpBase, "file.txt");
+    expect(() => mod.ensureParent(existingPath)).not.toThrow();
+  });
+});
+
+describe("atomicWriteJson", () => {
+  let mod: any;
+  beforeAll(async () => { mod = await importHelpers(); });
+
+  const tmpFile = resolve(REPO_ROOT, ".autoresearch-test-atomic.json");
+
+  afterEach(() => {
+    try { unlinkSync(tmpFile); } catch {}
+  });
+
+  it("writes JSON with trailing newline", () => {
+    mod.atomicWriteJson(tmpFile, { key: "value" });
+    const content = readFileSync(tmpFile, "utf-8");
+    expect(content).toBe('{\n  "key": "value"\n}\n');
+  });
+
+  it("creates parent directories if needed", () => {
+    const deepFile = resolve(REPO_ROOT, ".autoresearch-test-atomic", "deep", "file.json");
+    mod.atomicWriteJson(deepFile, { nested: true });
+    expect(existsSync(deepFile)).toBe(true);
+    try { rmSync(resolve(REPO_ROOT, ".autoresearch-test-atomic"), { recursive: true }); } catch {}
+  });
+
+  it("overwrites existing file", () => {
+    writeFileSync(tmpFile, JSON.stringify({ old: true }), "utf-8");
+    mod.atomicWriteJson(tmpFile, { new: true });
+    const content = JSON.parse(readFileSync(tmpFile, "utf-8"));
+    expect(content).toEqual({ new: true });
   });
 });
