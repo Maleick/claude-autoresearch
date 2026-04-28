@@ -1,6 +1,7 @@
 import { resolve } from "path";
 import { fileURLToPath } from "url";
 import { execSync } from "child_process";
+import { existsSync, readFileSync, rmSync } from "fs";
 
 const REPO_ROOT = resolve(fileURLToPath(import.meta.url), "..", "..");
 const CLI = resolve(REPO_ROOT, "dist/cli.js");
@@ -163,6 +164,98 @@ describe("CLI Commands", () => {
     it("generates markdown report", () => {
       const out = execSync(`node ${CLI} report`, { encoding: "utf-8", cwd: REPO_ROOT });
       expect(out).toContain("# Auto Research Report");
+    });
+  });
+
+  describe("init command", () => {
+    const tmpDir = resolve(REPO_ROOT, ".autoresearch-test-init");
+    const tmpState = resolve(tmpDir, ".autoresearch", "state.json");
+    const tmpResults = resolve(tmpDir, "autoresearch-results.tsv");
+
+    afterEach(() => {
+      try { rmSync(tmpDir, { recursive: true }); } catch {}
+    });
+
+    it("creates state and results files", () => {
+      execSync(`node ${CLI} init --goal "test goal" --metric "tests" --verify "npm test" --repo ${tmpDir}`, { encoding: "utf-8" });
+      expect(existsSync(tmpState)).toBe(true);
+      expect(existsSync(tmpResults)).toBe(true);
+    });
+
+    it("initializes with default mode foreground", () => {
+      execSync(`node ${CLI} init --goal "test goal" --metric "tests" --verify "npm test" --repo ${tmpDir}`, { encoding: "utf-8" });
+      const state = JSON.parse(readFileSync(tmpState, "utf-8"));
+      expect(state.mode).toBe("foreground");
+    });
+
+    it("initializes with background mode", () => {
+      execSync(`node ${CLI} init --goal "test goal" --metric "tests" --verify "npm test" --mode background --repo ${tmpDir}`, { encoding: "utf-8" });
+      const state = JSON.parse(readFileSync(tmpState, "utf-8"));
+      expect(state.mode).toBe("background");
+    });
+
+    it("supports --fresh-start to overwrite existing", () => {
+      execSync(`node ${CLI} init --goal "first" --metric "m1" --verify "echo 1" --repo ${tmpDir}`, { encoding: "utf-8" });
+      execSync(`node ${CLI} init --goal "second" --metric "m2" --verify "echo 2" --repo ${tmpDir} --fresh-start`, { encoding: "utf-8" });
+      const state = JSON.parse(readFileSync(tmpState, "utf-8"));
+      expect(state.goal).toBe("second");
+    });
+  });
+
+  describe("record command", () => {
+    const tmpDir = resolve(REPO_ROOT, ".autoresearch-test-record");
+    const tmpState = resolve(tmpDir, ".autoresearch", "state.json");
+    const tmpResults = resolve(tmpDir, "autoresearch-results.tsv");
+
+    beforeEach(() => {
+      try { rmSync(tmpDir, { recursive: true }); } catch {}
+      execSync(`node ${CLI} init --goal "test" --metric "tests" --verify "echo test" --repo ${tmpDir}`, { encoding: "utf-8" });
+    });
+
+    afterEach(() => {
+      try { rmSync(tmpDir, { recursive: true }); } catch {}
+    });
+
+    it("appends iteration to results", () => {
+      execSync(`node ${CLI} record --decision keep --metric-value 42 --verify-status pass --guard-status pass --change-summary "test change" --repo ${tmpDir}`, { encoding: "utf-8" });
+      const results = readFileSync(tmpResults, "utf-8");
+      expect(results).toContain("keep");
+      expect(results).toContain("42");
+    });
+
+    it("appends multiple iterations", () => {
+      execSync(`node ${CLI} record --decision keep --metric-value 10 --verify-status pass --guard-status pass --change-summary "first" --repo ${tmpDir}`, { encoding: "utf-8" });
+      execSync(`node ${CLI} record --decision keep --metric-value 20 --verify-status pass --guard-status pass --change-summary "second" --repo ${tmpDir}`, { encoding: "utf-8" });
+      const results = readFileSync(tmpResults, "utf-8");
+      const lines = results.trim().split("\n");
+      expect(lines.length).toBeGreaterThanOrEqual(3); // header + 2 records
+    });
+  });
+
+  describe("stop and resume commands", () => {
+    const tmpDir = resolve(REPO_ROOT, ".autoresearch-test-stop");
+    const tmpState = resolve(tmpDir, ".autoresearch", "state.json");
+
+    beforeEach(() => {
+      try { rmSync(tmpDir, { recursive: true }); } catch {}
+      execSync(`node ${CLI} init --goal "test" --metric "tests" --verify "echo test" --mode background --repo ${tmpDir}`, { encoding: "utf-8" });
+    });
+
+    afterEach(() => {
+      try { rmSync(tmpDir, { recursive: true }); } catch {}
+    });
+
+    it("sets stop_requested flag", () => {
+      execSync(`node ${CLI} stop --repo ${tmpDir}`, { encoding: "utf-8" });
+      const state = JSON.parse(readFileSync(tmpState, "utf-8"));
+      expect(state.flags.stop_requested).toBe(true);
+    });
+
+    it("resumes background run", () => {
+      execSync(`node ${CLI} stop --repo ${tmpDir}`, { encoding: "utf-8" });
+      const out = execSync(`node ${CLI} resume --repo ${tmpDir} --json`, { encoding: "utf-8" });
+      const json = JSON.parse(out);
+      expect(json.status).toBe("resumed");
     });
   });
 
