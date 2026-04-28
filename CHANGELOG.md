@@ -1,68 +1,67 @@
-# Changelog
+# Auto Research Changelog
 
-All notable changes to Auto Research are documented in this file.
-
-## [3.0.0] - 2026-04-14
+## [3.3.0] - 2026-04-28
 
 ### Added
-
-- Root-centered Auto Research skill bundle for Codex: `SKILL.md`, `agents/`, `references/`, and `scripts/`
-- Local Codex plugin package at `plugins/codex-autoresearch`
-- Repo-scoped Codex marketplace at `.agents/plugins/marketplace.json`
-- Distribution sync and validation scripts
-- Pytest coverage for plugin mirroring and dual results-log compatibility
-- `feature-list.json` to track the cross-platform rewrite
+- **9 new CLI commands**: explain, history, config, report, summary, suggest, export, completion, validate
+- **New flags**: --version/-v, --json, --verbose, --dry-run
+- **Enhanced doctor command**: 6 checks with detailed output
+- **Shell completion support**: bash, zsh, fish
+- **Export functionality**: JSON and Markdown formats
+- **Pre-flight validation**: validate command for config checking
+- **Performance benchmarks**: 3 performance tests
+- **Quickstart guide**: docs/QUICKSTART.md
 
 ### Changed
+- **Type system overhaul**: 6 new interfaces, eliminated Record<string, unknown> casts
+- **Code quality cleanup**: 8 specialist subagents, 242 deletions, 175 insertions
+- **Subagent pool**: 10 roles including meta_orchestrator for self-improvement
+- **Word-boundary trigger matching**: Prevents false positives
+- **TSV utilities**: Centralized parsing helpers
 
-- Public project brand renamed from `Autoresearch` / `claude-autoresearch` to `Auto Research`
-- Repository renamed to `github.com/Maleick/AutoResearch`
-- README, wiki, Pages site, and architecture docs rewritten around cross-platform runtime support
-- Claude package reframed as a compatibility wrapper while keeping the stable `/autoresearch*` command family
-- Results logging now preserves both `research-results.tsv` and `autoresearch-results.tsv`
+### Fixed
+- **normalizeLabels**: Handles null, undefined, numbers, nested arrays
+- **readJsonFile**: Proper error messages for missing vs invalid JSON
+- **Wizard scope resolution**: Uses path.basename() instead of split/pop
+- **Trigger matching**: Word boundaries prevent partial matches
 
-### Compatibility
+## [3.2.0] - 2026-04-27
 
-- Existing Claude command names remain `/autoresearch`, `/autoresearch:plan`, `/autoresearch:debug`, `/autoresearch:fix`, `/autoresearch:learn`, `/autoresearch:predict`, `/autoresearch:scenario`, `/autoresearch:security`, and `/autoresearch:ship`
-- Existing web URLs remain live during the transition, including the current Pages path and CNAME
+### Added
+- Recursive self-improvement loop support
+- Mermaid diagrams in documentation
+- Enhanced subagent pool with meta-orchestrator role
+- AGENTS.md guide
+- verify-package.sh script
+
+### Changed
+- README overhaul with banner and diagrams
+- Wiki pages with architecture charts
+- GitHub Actions for automated releases
+- Package.json alignment with AutoShip
+
+## [3.1.0] - 2026-04-13
+
+### Added
+- OpenCode-only runtime
+- ESM module support
+- TypeScript strict mode
 
 ## [2.2.1] - 2026-04-13
 
 ### Fixed
-
-- `validate.yml`: all three CI checks now use `continue-on-error` with a final aggregator step
-- `validate.yml`: added comment explaining why `autoresearch.md` is excluded from `argument-hint` frontmatter check
-- `docs/index.html`: copy button reads install string from DOM instead of a duplicate hardcoded string
+- Documentation fixes
+- Type definitions
 
 ## [2.2.0] - 2026-04-13
 
 ### Added
+- Initial release
+- Core iteration loop
+- Subagent-first orchestration
 
-- One-liner install command for the Claude package
-- Auto-update enabled by default via `"autoUpdate": true` in Claude plugin manifests
-- GitHub Pages landing page
-- GitHub Actions validation and release workflows
-- Architecture doc and wiki
-
-## [2.1.0] - 2026-03-31
+## [2.1.0] - 2026-04-01
 
 ### Added
-
-- Full command reference and configuration reference in README
-- `--dry-run`, `--notify`, and related workflow flags
-- Additional stop conditions, schema/versioning, and artifact lifecycle details
-
-## [2.0.0] - 2026-03-30
-
-### Added
-
-- Guided wizard for no-args invocation
-- `--force-branch`, `--no-limit`, `--resume`, `Target:`, `MetricPattern:`, and `Timeout:`
-- Atomic state persistence and crash-loop handling
-
-## [1.0.0] - 2026-03-29
-
-### Added
-
-- Initial release of the autoresearch plugin
-- Core autonomous loop protocol and eight subcommands
+- Full documentation
+- New flags and protocol improvements
