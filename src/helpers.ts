@@ -128,13 +128,23 @@ export function inferVerifyCommand(repo?: string): string {
   return "<set verify command>";
 }
 
-export function normalizeLabels(values?: string | string[] | null): string[] {
+export function normalizeLabels(values?: unknown): string[] {
   if (!values) return [];
   if (typeof values === "string") {
     return [...new Set(values.split(",").map((s) => s.trim()).filter(Boolean))];
   }
-  if (!Array.isArray(values)) return [];
-  return [...new Set(values.map((v) => v.trim()).filter(Boolean))];
+  if (!Array.isArray(values)) {
+    const str = String(values).trim();
+    return str ? [str] : [];
+  }
+  const flatten = (arr: unknown[]): string[] =>
+    arr.flatMap((v) => {
+      if (typeof v === "string") return [v.trim()];
+      if (Array.isArray(v)) return flatten(v);
+      const str = String(v).trim();
+      return str ? [str] : [];
+    });
+  return [...new Set(flatten(values).filter(Boolean))];
 }
 
 export function missingRequiredLabels(labels: string[], required: string[]): string[] {
