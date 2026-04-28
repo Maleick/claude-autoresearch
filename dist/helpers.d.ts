@@ -15,4 +15,6 @@ export declare function parseDurationSeconds(value: string | undefined | null): 
 export declare function inferVerifyCommand(repo?: string): string;
 export declare function normalizeLabels(values?: string | string[] | null): string[];
 export declare function missingRequiredLabels(labels: string[], required: string[]): string[];
+export declare function parseTsvFile(content: string): Record<string, string>[];
+export declare function countTsvDataRows(content: string): number;
 //# sourceMappingURL=helpers.d.ts.map

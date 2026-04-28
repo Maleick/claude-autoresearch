@@ -141,3 +141,20 @@ export function missingRequiredLabels(labels: string[], required: string[]): str
   const labelSet = new Set(labels);
   return required.filter((l) => !labelSet.has(l));
 }
+
+export function parseTsvFile(content: string): Record<string, string>[] {
+  const lines = content.trim().split("\n");
+  if (lines.length <= 1) return [];
+  const headers = lines[0].split("\t");
+  return lines.slice(1).filter(Boolean).map((r) => {
+    const cols = r.split("\t");
+    const obj: Record<string, string> = {};
+    headers.forEach((h, i) => { obj[h] = cols[i] ?? ""; });
+    return obj;
+  });
+}
+
+export function countTsvDataRows(content: string): number {
+  const lines = content.trim().split("\n");
+  return lines.length > 1 ? lines.slice(1).filter((l) => l.trim()).length : 0;
+}

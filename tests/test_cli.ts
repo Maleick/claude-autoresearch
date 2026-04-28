@@ -26,7 +26,7 @@ describe("CLI Commands", () => {
     it("outputs version info", () => {
       const out = execSync(`node ${CLI} --version`, { encoding: "utf-8" });
       expect(out).toContain("autoresearch");
-      expect(out).toContain("3.2.0");
+      expect(out).toContain("3.3.0");
     });
 
     it("accepts -v shorthand", () => {
@@ -90,6 +90,52 @@ describe("CLI Commands", () => {
       expect(() => {
         execSync(`node ${CLI} completion --shell powershell`, { encoding: "utf-8" });
       }).toThrow("Unknown shell");
+    });
+  });
+
+  describe("explain command", () => {
+    it("shows human-readable run state", () => {
+      const out = execSync(`node ${CLI} explain`, { encoding: "utf-8", cwd: REPO_ROOT });
+      expect(out).toContain("Auto Research Run:");
+    });
+
+    it("supports --json flag", () => {
+      const out = execSync(`node ${CLI} explain --json`, { encoding: "utf-8", cwd: REPO_ROOT });
+      const json = JSON.parse(out);
+      expect(json.status).toBeDefined();
+    });
+  });
+
+  describe("history command", () => {
+    it("shows iteration history", () => {
+      const out = execSync(`node ${CLI} history`, { encoding: "utf-8", cwd: REPO_ROOT });
+      expect(out).toContain("records");
+    });
+
+    it("supports --json flag", () => {
+      const out = execSync(`node ${CLI} history --json`, { encoding: "utf-8", cwd: REPO_ROOT });
+      const json = JSON.parse(out);
+      expect(json.count).toBeDefined();
+    });
+  });
+
+  describe("config command", () => {
+    it("shows run configuration", () => {
+      const out = execSync(`node ${CLI} config`, { encoding: "utf-8", cwd: REPO_ROOT });
+      expect(out).toContain("Run Configuration");
+    });
+  });
+
+  describe("validate command", () => {
+    it("validates configuration", () => {
+      const out = execSync(`node ${CLI} validate --goal "test" --metric "test" --verify "echo test"`, { encoding: "utf-8", cwd: REPO_ROOT });
+      expect(out).toContain("✓ Configuration is valid");
+    });
+
+    it("reports missing required fields", () => {
+      expect(() => {
+        execSync(`node ${CLI} validate`, { encoding: "utf-8", cwd: REPO_ROOT });
+      }).toThrow("Missing required");
     });
   });
 
