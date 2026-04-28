@@ -28,6 +28,12 @@ flowchart TD
 - `/autoresearch:security` — Security review
 - `/autoresearch:ship` — Ship-readiness workflow
 
+## New in v3.3.0
+
+- `/autoresearch` now supports **recursive self-improvement** via `meta_orchestrator` role
+- Enhanced subagent pool with `pattern_analyst`, `strategy_advisor`, `regression_guard`
+- Background runs now persist memory across meta-iterations
+
 ## CLI
 
 The `autoresearch` CLI provides background and foreground run control:
