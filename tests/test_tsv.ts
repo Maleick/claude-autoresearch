@@ -64,5 +64,51 @@ describe("TSV Utilities", () => {
       const tsv = "header\nrow1\n\nrow2\n";
       expect(mod.countTsvDataRows(tsv)).toBe(2);
     });
+
+    it("handles whitespace-only lines", () => {
+      const tsv = "header\nrow1\n   \nrow2\n";
+      expect(mod.countTsvDataRows(tsv)).toBe(2);
+    });
+
+    it("handles single row", () => {
+      const tsv = "header\nrow1";
+      expect(mod.countTsvDataRows(tsv)).toBe(1);
+    });
+  });
+
+  describe("parseTsvFile edge cases", () => {
+    it("handles extra tabs in rows", () => {
+      const tsv = "col1\tcol2\nval1\tval2\tval3";
+      const result = mod.parseTsvFile(tsv);
+      expect(result[0].col1).toBe("val1");
+      expect(result[0].col2).toBe("val2");
+    });
+
+    it("handles rows with fewer columns", () => {
+      const tsv = "col1\tcol2\tcol3\nval1\tval2";
+      const result = mod.parseTsvFile(tsv);
+      expect(result[0].col1).toBe("val1");
+      expect(result[0].col2).toBe("val2");
+      expect(result[0].col3).toBe("");
+    });
+
+    it("handles newline at end", () => {
+      const tsv = "col1\tcol2\nval1\tval2\n";
+      const result = mod.parseTsvFile(tsv);
+      expect(result.length).toBe(1);
+    });
+
+    it("handles multiple newlines at end", () => {
+      const tsv = "col1\tcol2\nval1\tval2\n\n\n";
+      const result = mod.parseTsvFile(tsv);
+      expect(result.length).toBe(1);
+    });
+
+    it("preserves special characters in values", () => {
+      const tsv = "col1\tcol2\nhello world\t@test#123";
+      const result = mod.parseTsvFile(tsv);
+      expect(result[0].col1).toBe("hello world");
+      expect(result[0].col2).toBe("@test#123");
+    });
   });
 });

@@ -1,4 +1,4 @@
-import { resolve } from "path";
+import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 import { writeFileSync, readFileSync, mkdirSync, rmSync, existsSync } from "fs";
 import type { RunState, RunStats, RunFlags, Metric, LabelRequirements, ArtifactPaths } from "../src/types.js";
@@ -35,6 +35,14 @@ const minimalArtifactPaths: ArtifactPaths = {
   results: "results.tsv",
   state: "state.json",
 };
+
+beforeAll(() => {
+  mkdirSync(TMP_DIR, { recursive: true });
+});
+
+afterAll(() => {
+  try { rmSync(TMP_DIR, { recursive: true, force: true }); } catch {}
+});
 
 function createMinimalState(overrides: Partial<RunState> = {}): RunState {
   return {
@@ -126,11 +134,12 @@ describe("setStopRequested", () => {
   const stateFile = resolve(stateDir, "state.json");
 
   beforeEach(() => {
-    rmSync(stateDir, { recursive: true, force: true });
+    try { rmSync(stateDir, { recursive: true, force: true }); } catch {}
     mkdirSync(stateDir, { recursive: true });
   });
 
   it("stops a background run", async () => {
+    if (!existsSync(stateDir)) mkdirSync(stateDir, { recursive: true });
     writeFileSync(stateFile, JSON.stringify(createMinimalState({ mode: "background" })), "utf-8");
     const result = await mod.setStopRequested(stateDir, "state.json");
     expect(result.flags.stop_requested).toBe(true);
@@ -139,6 +148,7 @@ describe("setStopRequested", () => {
   });
 
   it("rejects stopping a foreground run", async () => {
+    if (!existsSync(stateDir)) mkdirSync(stateDir, { recursive: true });
     writeFileSync(stateFile, JSON.stringify(createMinimalState({ mode: "foreground" })), "utf-8");
     await expect(mod.setStopRequested(stateDir, "state.json")).rejects.toThrow("Only background runs can be stopped.");
   });
@@ -152,7 +162,7 @@ describe("resumeBackgroundRun", () => {
   const stateFile = resolve(stateDir, "state.json");
 
   beforeEach(() => {
-    rmSync(stateDir, { recursive: true, force: true });
+    try { rmSync(stateDir, { recursive: true, force: true }); } catch {}
     mkdirSync(stateDir, { recursive: true });
   });
 
@@ -217,7 +227,7 @@ describe("buildSupervisorSnapshot", () => {
   const stateDir = resolve(TMP_DIR, "buildSupervisorSnapshot");
 
   beforeEach(() => {
-    rmSync(stateDir, { recursive: true, force: true });
+    try { rmSync(stateDir, { recursive: true, force: true }); } catch {}
     mkdirSync(stateDir, { recursive: true });
   });
 
@@ -303,6 +313,8 @@ describe("appendIteration", () => {
     mkdirSync(stateDir, { recursive: true });
     writeFileSync(stateFile, JSON.stringify(createMinimalState(overrides)), "utf-8");
     if (!existsSync(resultsFile)) {
+      const resultsDir = dirname(resultsFile);
+      if (!existsSync(resultsDir)) mkdirSync(resultsDir, { recursive: true });
       const header = "timestamp\titeration\tdecision\tmetric_value\tverify_status\tguard_status\thypothesis\tchange_summary\tlabels\tnote\n";
       writeFileSync(resultsFile, header, "utf-8");
     }

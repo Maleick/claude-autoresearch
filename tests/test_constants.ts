@@ -38,4 +38,27 @@ describe("Constants", () => {
     const { MEMORY_DEFAULT } = await import(resolve(REPO_ROOT, "dist/constants.js"));
     expect(MEMORY_DEFAULT).toBe("autoresearch-memory.md");
   });
+
+  it("has correct product brand", async () => {
+    const { PRODUCT_BRAND } = await import(resolve(REPO_ROOT, "dist/constants.js"));
+    expect(PRODUCT_BRAND).toBe("Auto Research");
+  });
+
+  it("exports all expected constants", async () => {
+    const constants = await import(resolve(REPO_ROOT, "dist/constants.js"));
+    expect(constants.VERSION).toBeDefined();
+    expect(constants.PACKAGE_NAME).toBeDefined();
+    expect(constants.SKILL_NAME).toBeDefined();
+    expect(constants.PRODUCT_BRAND).toBeDefined();
+    expect(constants.RESULTS_DEFAULT).toBeDefined();
+    expect(constants.STATE_DEFAULT).toBeDefined();
+    expect(constants.LAUNCH_DEFAULT).toBeDefined();
+    expect(constants.MEMORY_DEFAULT).toBeDefined();
+  });
+
+  it("version matches package.json", async () => {
+    const { VERSION } = await import(resolve(REPO_ROOT, "dist/constants.js"));
+    const pkg = JSON.parse(await import("fs").then(fs => fs.readFileSync(resolve(REPO_ROOT, "package.json"), "utf-8")));
+    expect(VERSION).toBe(pkg.version);
+  });
 });

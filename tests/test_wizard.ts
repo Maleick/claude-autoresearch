@@ -124,4 +124,151 @@ describe("buildSetupSummary", () => {
     expect(result.missing_required).toContain("verify");
     expect(result.verify).toBe("<set verify command>");
   });
+
+  it("includes duration when provided", () => {
+    const result = mod.buildSetupSummary(undefined, { goal: "improve", duration: "5h" });
+    expect(result.duration).toBe("5h");
+    expect(result.duration_seconds).toBe(18000);
+  });
+
+  it("includes required_stop_labels when provided", () => {
+    const result = mod.buildSetupSummary(undefined, { goal: "improve", required_stop_labels: "blocker" });
+    expect(result.required_stop_labels).toEqual(["blocker"]);
+  });
+
+  it("defaults required_keep_labels to empty", () => {
+    const result = mod.buildSetupSummary(undefined, { goal: "improve" });
+    expect(result.required_keep_labels).toEqual([]);
+  });
+
+  it("includes questions array when goal missing", () => {
+    const result = mod.buildSetupSummary(undefined, {});
+    expect(Array.isArray(result.questions)).toBe(true);
+    expect(result.questions.length).toBeGreaterThan(0);
+    const qIds = result.questions.map((q: any) => q.id);
+    expect(qIds).toContain("goal");
+  });
+
+  it("questions have id, prompt, and reason fields", () => {
+    const result = mod.buildSetupSummary(undefined, {});
+    expect(result.questions.length).toBeGreaterThan(0);
+    const q = result.questions[0];
+    expect(q.id).toBeDefined();
+    expect(q.prompt).toBeDefined();
+    expect(q.reason).toBeDefined();
+  });
+
+  it("includes stop_condition with verify and iterations", () => {
+    const result = mod.buildSetupSummary(undefined, { goal: "improve", verify: "npm test", iterations: 10 });
+    expect(result.stop_condition).toContain("npm test");
+    expect(result.stop_condition).toContain("10 iterations complete");
+  });
+
+  it("includes stop_condition with duration", () => {
+    const result = mod.buildSetupSummary(undefined, { goal: "improve", verify: "npm test", duration: "2h" });
+    expect(result.stop_condition).toContain("2h elapses");
+  });
+
+  it("defaults stop_condition when nothing provided", () => {
+    const result = mod.buildSetupSummary("/tmp/nonexistent", {});
+    expect(result.stop_condition).toBe("stop when ");
+  });
+
+  it("includes rollback_strategy", () => {
+    const result = mod.buildSetupSummary(undefined, { goal: "improve" });
+    expect(typeof result.rollback_strategy).toBe("string");
+    expect(result.rollback_strategy.length).toBeGreaterThan(0);
+  });
+
+  it("uses custom rollback_strategy when provided", () => {
+    const result = mod.buildSetupSummary(undefined, { goal: "improve", rollback_strategy: "custom strategy" });
+    expect(result.rollback_strategy).toBe("custom strategy");
+  });
+
+  it("includes guard when provided", () => {
+    const result = mod.buildSetupSummary(undefined, { goal: "improve", guard: "npm run lint" });
+    expect(result.guard).toBe("npm run lint");
+  });
+
+  it("omits guard when not provided", () => {
+    const result = mod.buildSetupSummary(undefined, { goal: "improve" });
+    expect(result.guard).toBeUndefined();
+  });
+
+  it("includes mode in output", () => {
+    const result = mod.buildSetupSummary(undefined, { goal: "improve", mode: "background" });
+    expect(result.mode).toBe("background");
+  });
+
+  it("defaults mode to foreground", () => {
+    const result = mod.buildSetupSummary(undefined, { goal: "improve" });
+    expect(result.mode).toBe("foreground");
+  });
+
+  it("includes direction in output", () => {
+    const result = mod.buildSetupSummary(undefined, { goal: "improve", direction: "higher" });
+    expect(result.direction).toBe("higher");
+  });
+
+  it("defaults direction to lower", () => {
+    const result = mod.buildSetupSummary(undefined, { goal: "improve" });
+    expect(result.direction).toBe("lower");
+  });
+
+  it("includes metric in output", () => {
+    const result = mod.buildSetupSummary(undefined, { goal: "improve", metric: "coverage" });
+    expect(result.metric).toBe("coverage");
+  });
+
+  it("defaults metric to primary verify metric", () => {
+    const result = mod.buildSetupSummary(undefined, { goal: "improve" });
+    expect(result.metric).toBe("primary verify metric");
+  });
+
+  it("includes verify in output", () => {
+    const result = mod.buildSetupSummary(undefined, { goal: "improve", verify: "npm test" });
+    expect(result.verify).toBe("npm test");
+  });
+
+  it("infers verify from repo", () => {
+    const result = mod.buildSetupSummary(REPO_ROOT, { goal: "improve" });
+    expect(result.verify).toBe("npm test");
+  });
+
+  it("sets missing_required when goal is missing", () => {
+    const result = mod.buildSetupSummary(undefined, {});
+    expect(result.missing_required).toContain("goal");
+  });
+
+  it("sets missing_required when verify cannot be inferred", () => {
+    const result = mod.buildSetupSummary("/tmp/nonexistent", { goal: "improve" });
+    expect(result.missing_required).toContain("verify");
+  });
+
+  it("questions include verify when not provided", () => {
+    const result = mod.buildSetupSummary(undefined, { goal: "improve" });
+    const qIds = result.questions.map((q: any) => q.id);
+    expect(qIds).toContain("verify");
+  });
+
+  it("questions include mode when not provided", () => {
+    const result = mod.buildSetupSummary(undefined, { goal: "improve" });
+    const qIds = result.questions.map((q: any) => q.id);
+    expect(qIds).toContain("mode");
+  });
+
+  it("subagent_pool has correct goal", () => {
+    const result = mod.buildSetupSummary(undefined, { goal: "test goal" });
+    expect(result.subagent_pool.goal).toBe("test goal");
+  });
+
+  it("subagent_pool has correct scope", () => {
+    const result = mod.buildSetupSummary(undefined, { goal: "improve", scope: "src/" });
+    expect(result.subagent_pool.scope).toBe("src/");
+  });
+
+  it("continuation_policy has correct approval_boundary", () => {
+    const result = mod.buildSetupSummary(undefined, { goal: "improve" });
+    expect(result.continuation_policy.approval_boundary).toBe("pre_launch");
+  });
 });

@@ -190,4 +190,126 @@ describe("buildSubagentPoolPlan", () => {
     const ids = plan.roles.map((r: any) => r.id);
     expect(ids).toContain("regression_guard");
   });
+
+  it("activates research_tracker for research keyword", () => {
+    const plan = mod.buildSubagentPoolPlan({ goal: "research user behavior", mode: "foreground" });
+    const ids = plan.roles.map((r: any) => r.id);
+    expect(ids).toContain("research_tracker");
+  });
+
+  it("includes fallback_mode in plan", () => {
+    const plan = mod.buildSubagentPoolPlan({ goal: "test", mode: "foreground" });
+    expect(plan.fallback_mode).toBe("serial");
+  });
+
+  it("includes handoff_contract in plan", () => {
+    const plan = mod.buildSubagentPoolPlan({ goal: "test", mode: "foreground" });
+    expect(plan.handoff_contract).toBeDefined();
+    expect(plan.handoff_contract.length).toBeGreaterThan(0);
+  });
+
+  it("includes reanchor_checklist in plan", () => {
+    const plan = mod.buildSubagentPoolPlan({ goal: "test", mode: "foreground" });
+    expect(plan.reanchor_checklist).toBeDefined();
+    expect(plan.reanchor_checklist.length).toBeGreaterThan(0);
+  });
+
+  it("sets recommended_active_role_ids based on tier", () => {
+    const plan = mod.buildSubagentPoolPlan({ goal: "simple", mode: "foreground" });
+    expect(plan.recommended_active_role_ids).toBeDefined();
+    expect(plan.recommended_active_role_ids.length).toBeGreaterThan(0);
+  });
+
+  it("activation includes during_setup flag", () => {
+    const plan = mod.buildSubagentPoolPlan({ goal: "test", mode: "foreground" });
+    expect(plan.activation.during_setup).toBe(true);
+  });
+
+  it("activation includes during_iterations flag", () => {
+    const plan = mod.buildSubagentPoolPlan({ goal: "test", mode: "foreground" });
+    expect(plan.activation.during_iterations).toBe(true);
+  });
+
+  it("activation includes during_resume flag", () => {
+    const plan = mod.buildSubagentPoolPlan({ goal: "test", mode: "foreground" });
+    expect(plan.activation.during_resume).toBe(true);
+  });
+
+  it("each role has active_by_default boolean", () => {
+    const plan = mod.buildSubagentPoolPlan({ goal: "test", mode: "foreground" });
+    for (const role of plan.roles) {
+      expect(typeof role.active_by_default).toBe("boolean");
+    }
+  });
+
+  it("each role has name string", () => {
+    const plan = mod.buildSubagentPoolPlan({ goal: "test", mode: "foreground" });
+    for (const role of plan.roles) {
+      expect(typeof role.name).toBe("string");
+      expect(role.name.length).toBeGreaterThan(0);
+    }
+  });
+
+  it("each role has focus string", () => {
+    const plan = mod.buildSubagentPoolPlan({ goal: "test", mode: "foreground" });
+    for (const role of plan.roles) {
+      expect(typeof role.focus).toBe("string");
+      expect(role.focus.length).toBeGreaterThan(0);
+    }
+  });
+
+  it("pool_key starts with autoresearch-pool-", () => {
+    const plan = mod.buildSubagentPoolPlan({ goal: "test", mode: "foreground" });
+    expect(plan.pool_key).toMatch(/^autoresearch-pool-/);
+  });
+
+  it("version is 1", () => {
+    const plan = mod.buildSubagentPoolPlan({ goal: "test", mode: "foreground" });
+    expect(plan.version).toBe(1);
+  });
+
+  it("role_limit is 6", () => {
+    const plan = mod.buildSubagentPoolPlan({ goal: "test", mode: "foreground" });
+    expect(plan.role_limit).toBe(6);
+  });
+
+  it("standing_pool is true", () => {
+    const plan = mod.buildSubagentPoolPlan({ goal: "test", mode: "foreground" });
+    expect(plan.standing_pool).toBe(true);
+  });
+
+  it("orchestrator_role_id is orchestrator", () => {
+    const plan = mod.buildSubagentPoolPlan({ goal: "test", mode: "foreground" });
+    expect(plan.orchestrator_role_id).toBe("orchestrator");
+  });
+
+  it("state_owner is orchestrator", () => {
+    const plan = mod.buildSubagentPoolPlan({ goal: "test", mode: "foreground" });
+    expect(plan.state_owner).toBe("orchestrator");
+  });
+
+  it("resource_tier for simple goal without scope is lite", () => {
+    const plan = mod.buildSubagentPoolPlan({ goal: "simple task", mode: "foreground" });
+    expect(plan.resource_tier).toBe("lite");
+  });
+
+  it("resource_tier for complex goal with scope is balanced", () => {
+    const plan = mod.buildSubagentPoolPlan({ goal: "redesign the entire architecture", mode: "foreground", scope: "src/" });
+    expect(plan.resource_tier).toBe("balanced");
+  });
+
+  it("resource_tier for medium goal with scope is balanced", () => {
+    const plan = mod.buildSubagentPoolPlan({ goal: "improve performance", mode: "foreground", scope: "src/" });
+    expect(plan.resource_tier).toBe("balanced");
+  });
+
+  it("background mode always uses full tier", () => {
+    const plan = mod.buildSubagentPoolPlan({ goal: "simple fix", mode: "background" });
+    expect(plan.resource_tier).toBe("full");
+  });
+
+  it("kind is autoresearch_subagent_pool", () => {
+    const plan = mod.buildSubagentPoolPlan({ goal: "test", mode: "foreground" });
+    expect(plan.kind).toBe("autoresearch_subagent_pool");
+  });
 });

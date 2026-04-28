@@ -139,4 +139,59 @@ describe("docs/", () => {
     const content = readFileSync(resolve(REPO_ROOT, "docs/RELEASE.md"), "utf-8");
     expect(content).toContain("npm publish");
   });
+
+  it("has ARCHITECTURE.md", () => {
+    const content = readFileSync(resolve(REPO_ROOT, "docs/ARCHITECTURE.md"), "utf-8");
+    expect(content).toContain("Auto Research");
+  });
+
+  it("has QUICKSTART.md", () => {
+    const content = readFileSync(resolve(REPO_ROOT, "docs/QUICKSTART.md"), "utf-8");
+    expect(content).toContain("autoresearch");
+  });
+});
+
+describe("wiki/", () => {
+  it("has Home.md", () => {
+    const content = readFileSync(resolve(REPO_ROOT, "wiki/Home.md"), "utf-8");
+    expect(content).toContain("Auto Research");
+  });
+
+  it("has Contributing.md", () => {
+    const content = readFileSync(resolve(REPO_ROOT, "wiki/Contributing.md"), "utf-8");
+    expect(content).toContain("autoresearch");
+  });
+});
+
+describe("commands/", () => {
+  it("has autoresearch.md with main command", () => {
+    const content = readFileSync(resolve(REPO_ROOT, "commands/autoresearch.md"), "utf-8");
+    expect(content).toContain("/autoresearch");
+  });
+
+  it("has mode commands", () => {
+    const modes = ["plan", "debug", "fix", "learn", "predict", "scenario", "security", "ship"];
+    for (const mode of modes) {
+      const path = resolve(REPO_ROOT, `commands/autoresearch/${mode}.md`);
+      expect(existsSync(path)).toBe(true);
+      const content = readFileSync(path, "utf-8");
+      expect(content.length).toBeGreaterThan(0);
+    }
+  });
+});
+
+describe("skills/", () => {
+  it("has autoresearch skill", () => {
+    const content = readFileSync(resolve(REPO_ROOT, "skills/autoresearch/SKILL.md"), "utf-8");
+    expect(content).toContain("Auto Research");
+    expect(content).toContain("/autoresearch");
+  });
+
+  it("has loop-workflow reference", () => {
+    expect(existsSync(resolve(REPO_ROOT, "skills/autoresearch/references/loop-workflow.md"))).toBe(true);
+  });
+
+  it("has core-principles reference", () => {
+    expect(existsSync(resolve(REPO_ROOT, "skills/autoresearch/references/core-principles.md"))).toBe(true);
+  });
 });

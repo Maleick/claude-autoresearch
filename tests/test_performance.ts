@@ -43,4 +43,40 @@ describe("Performance Benchmarks", () => {
     
     expect(elapsed).toBeLessThan(10);
   });
+
+  it("normalizes labels in under 10ms", async () => {
+    const { normalizeLabels } = await import(resolve(REPO_ROOT, "dist/helpers.js"));
+    
+    const start = performance.now();
+    for (let i = 0; i < 1000; i++) {
+      normalizeLabels(["a", "b", "c", "a", "b", "c"]);
+    }
+    const elapsed = performance.now() - start;
+    
+    expect(elapsed).toBeLessThan(10);
+  });
+
+  it("counts TSV rows in under 5ms", async () => {
+    const { countTsvDataRows } = await import(resolve(REPO_ROOT, "dist/helpers.js"));
+    const tsv = "header\n" + Array(1000).fill("row").join("\n");
+    
+    const start = performance.now();
+    const result = countTsvDataRows(tsv);
+    const elapsed = performance.now() - start;
+    
+    expect(result).toBe(1000);
+    expect(elapsed).toBeLessThan(5);
+  });
+
+  it("builds wizard summary in under 10ms", async () => {
+    const { buildSetupSummary } = await import(resolve(REPO_ROOT, "dist/wizard.js"));
+    
+    const start = performance.now();
+    for (let i = 0; i < 100; i++) {
+      buildSetupSummary(REPO_ROOT, { goal: "test goal", verify: "npm test" });
+    }
+    const elapsed = performance.now() - start;
+    
+    expect(elapsed).toBeLessThan(20);
+  });
 });

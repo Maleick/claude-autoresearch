@@ -142,5 +142,133 @@ describe("run-manager", () => {
       expect(snapshot.stats.total_iterations).toBe(1);
       expect(snapshot.stats.kept).toBe(1);
     });
+
+    it("returns snapshot with metric info", async () => {
+      const { initializeRun, appendIteration, buildSupervisorSnapshot } = await import(resolve(REPO_ROOT, "dist/run-manager.js"));
+      const config = {
+        goal: "Test goal",
+        metric: "defects",
+        direction: "lower",
+        verify: "echo 0",
+        mode: "foreground",
+      };
+      await initializeRun(tmpDir, undefined, undefined, config, false);
+      await appendIteration(tmpDir, undefined, undefined, "keep", "42", "pass", "pass", "", "test", [], "");
+      const snapshot = await buildSupervisorSnapshot(tmpDir, undefined, undefined);
+      expect(snapshot.metric).toBeDefined();
+      expect(snapshot.metric.name).toBe("defects");
+      expect(snapshot.metric.direction).toBe("lower");
+    });
+
+    it("returns snapshot with last iteration", async () => {
+      const { initializeRun, appendIteration, buildSupervisorSnapshot } = await import(resolve(REPO_ROOT, "dist/run-manager.js"));
+      const config = {
+        goal: "Test goal",
+        metric: "defects",
+        direction: "lower",
+        verify: "echo 0",
+        mode: "foreground",
+      };
+      await initializeRun(tmpDir, undefined, undefined, config, false);
+      await appendIteration(tmpDir, undefined, undefined, "discard", "30", "fail", "pass", "", "bad", [], "");
+      const snapshot = await buildSupervisorSnapshot(tmpDir, undefined, undefined);
+      expect(snapshot.last_iteration).toBeDefined();
+      expect(snapshot.last_iteration.decision).toBe("discard");
+      expect(snapshot.last_iteration.metric_value).toBe("30");
+    });
+
+    it("returns snapshot with flags", async () => {
+      const { initializeRun, appendIteration, buildSupervisorSnapshot } = await import(resolve(REPO_ROOT, "dist/run-manager.js"));
+      const config = {
+        goal: "Test goal",
+        metric: "defects",
+        direction: "lower",
+        verify: "echo 0",
+        mode: "foreground",
+      };
+      await initializeRun(tmpDir, undefined, undefined, config, false);
+      await appendIteration(tmpDir, undefined, undefined, "keep", "10", "pass", "pass", "", "good", [], "");
+      const snapshot = await buildSupervisorSnapshot(tmpDir, undefined, undefined);
+      expect(snapshot.flags).toBeDefined();
+      expect(snapshot.flags.stop_ready).toBe(true);
+    });
+
+    it("returns snapshot with results row count", async () => {
+      const { initializeRun, appendIteration, buildSupervisorSnapshot } = await import(resolve(REPO_ROOT, "dist/run-manager.js"));
+      const config = {
+        goal: "Test goal",
+        metric: "defects",
+        direction: "lower",
+        verify: "echo 0",
+        mode: "foreground",
+      };
+      await initializeRun(tmpDir, undefined, undefined, config, false);
+      await appendIteration(tmpDir, undefined, undefined, "keep", "10", "pass", "pass", "", "first", [], "");
+      await appendIteration(tmpDir, undefined, undefined, "keep", "20", "pass", "pass", "", "second", [], "");
+      const snapshot = await buildSupervisorSnapshot(tmpDir, undefined, undefined);
+      expect(snapshot.results_rows).toBe(2);
+    });
+
+    it("returns snapshot with zero results rows for new run", async () => {
+      const { initializeRun, buildSupervisorSnapshot } = await import(resolve(REPO_ROOT, "dist/run-manager.js"));
+      const config = {
+        goal: "Test goal",
+        metric: "defects",
+        direction: "lower",
+        verify: "echo 0",
+        mode: "foreground",
+      };
+      await initializeRun(tmpDir, undefined, undefined, config, false);
+      const snapshot = await buildSupervisorSnapshot(tmpDir, undefined, undefined);
+      expect(snapshot.results_rows).toBe(0);
+    });
+
+    it("returns snapshot with artifact paths", async () => {
+      const { initializeRun, buildSupervisorSnapshot } = await import(resolve(REPO_ROOT, "dist/run-manager.js"));
+      const config = {
+        goal: "Test goal",
+        metric: "defects",
+        direction: "lower",
+        verify: "echo 0",
+        mode: "foreground",
+      };
+      await initializeRun(tmpDir, undefined, undefined, config, false);
+      const snapshot = await buildSupervisorSnapshot(tmpDir, undefined, undefined);
+      expect(snapshot.artifact_paths).toBeDefined();
+      expect(snapshot.artifact_paths.results).toBeDefined();
+      expect(snapshot.artifact_paths.state).toBeDefined();
+    });
+
+    it("returns snapshot with label requirements", async () => {
+      const { initializeRun, buildSupervisorSnapshot } = await import(resolve(REPO_ROOT, "dist/run-manager.js"));
+      const config = {
+        goal: "Test goal",
+        metric: "defects",
+        direction: "lower",
+        verify: "echo 0",
+        mode: "foreground",
+      };
+      await initializeRun(tmpDir, undefined, undefined, config, false);
+      const snapshot = await buildSupervisorSnapshot(tmpDir, undefined, undefined);
+      expect(snapshot.label_requirements).toBeDefined();
+    });
+
+    it("returns correct decision for stop_requested", async () => {
+      const { initializeRun, appendIteration, buildSupervisorSnapshot } = await import(resolve(REPO_ROOT, "dist/run-manager.js"));
+      const config = {
+        goal: "Test goal",
+        metric: "defects",
+        direction: "lower",
+        verify: "echo 0",
+        mode: "background",
+      };
+      await initializeRun(tmpDir, undefined, undefined, config, false);
+      await appendIteration(tmpDir, undefined, undefined, "keep", "10", "pass", "pass", "", "test", [], "");
+      const { setStopRequested } = await import(resolve(REPO_ROOT, "dist/run-manager.js"));
+      await setStopRequested(tmpDir, undefined);
+      const snapshot = await buildSupervisorSnapshot(tmpDir, undefined, undefined);
+      expect(snapshot.decision).toBe("stop");
+      expect(snapshot.reason).toBe("stop_requested");
+    });
   });
 });

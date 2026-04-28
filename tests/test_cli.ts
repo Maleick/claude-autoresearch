@@ -259,11 +259,232 @@ describe("CLI Commands", () => {
     });
   });
 
+  describe("doctor command", () => {
+    it("reports version and checks", () => {
+      const out = execSync(`node ${CLI} doctor`, { encoding: "utf-8", cwd: REPO_ROOT });
+      expect(out).toContain("autoresearch");
+      expect(out).toContain("✓");
+    });
+  });
+
+  describe("export command", () => {
+    it("exports run data as JSON", () => {
+      const out = execSync(`node ${CLI} export --repo ${REPO_ROOT}`, { encoding: "utf-8", cwd: REPO_ROOT });
+      const json = JSON.parse(out);
+      expect(json.exported_at).toBeDefined();
+      expect(json.state).toBeDefined();
+    });
+  });
+
+  describe("complete command", () => {
+    const tmpDir = resolve(REPO_ROOT, ".autoresearch-test-complete");
+    const tmpState = resolve(tmpDir, ".autoresearch", "state.json");
+
+    beforeEach(() => {
+      try { rmSync(tmpDir, { recursive: true }); } catch {}
+      execSync(`node ${CLI} init --goal "test" --metric "tests" --verify "echo test" --mode background --repo ${tmpDir}`, { encoding: "utf-8" });
+    });
+
+    afterEach(() => {
+      try { rmSync(tmpDir, { recursive: true }); } catch {}
+    });
+
+    it("marks run as completed", () => {
+      execSync(`node ${CLI} complete --repo ${tmpDir}`, { encoding: "utf-8" });
+      const state = JSON.parse(readFileSync(tmpState, "utf-8"));
+      expect(state.status).toBe("completed");
+    });
+  });
+
+  describe("config command with --json", () => {
+    it("outputs configuration as JSON", () => {
+      const out = execSync(`node ${CLI} config --json`, { encoding: "utf-8", cwd: REPO_ROOT });
+      const json = JSON.parse(out);
+      expect(json.goal).toBeDefined();
+    });
+  });
+
+  describe("history command with --limit", () => {
+    it("limits the number of records shown", () => {
+      const out = execSync(`node ${CLI} history --limit 5`, { encoding: "utf-8", cwd: REPO_ROOT });
+      expect(out).toContain("records");
+    });
+  });
+
+  describe("suggest command", () => {
+    it("suggests next goals from memory", () => {
+      const out = execSync(`node ${CLI} suggest`, { encoding: "utf-8", cwd: REPO_ROOT });
+      expect(out).toContain("Memory");
+    });
+  });
+
+  describe("record command with labels", () => {
+    const tmpDir = resolve(REPO_ROOT, ".autoresearch-test-record-labels");
+    const tmpResults = resolve(tmpDir, "autoresearch-results.tsv");
+
+    beforeEach(() => {
+      try { rmSync(tmpDir, { recursive: true }); } catch {}
+      execSync(`node ${CLI} init --goal "test" --metric "tests" --verify "echo test" --repo ${tmpDir}`, { encoding: "utf-8" });
+    });
+
+    afterEach(() => {
+      try { rmSync(tmpDir, { recursive: true }); } catch {}
+    });
+
+    it("records iteration with labels", () => {
+      execSync(`node ${CLI} record --decision keep --metric-value 42 --verify-status pass --guard-status pass --change-summary "test" --labels progress,test --repo ${tmpDir}`, { encoding: "utf-8" });
+      const results = readFileSync(tmpResults, "utf-8");
+      expect(results).toContain("progress");
+      expect(results).toContain("test");
+    });
+  });
+
+  describe("short flags", () => {
+    const tmpDir = resolve(REPO_ROOT, ".autoresearch-test-short");
+    const tmpState = resolve(tmpDir, ".autoresearch", "state.json");
+
+    afterEach(() => {
+      try { rmSync(tmpDir, { recursive: true }); } catch {}
+    });
+
+    it("accepts -g shorthand for --goal", () => {
+      execSync(`node ${CLI} init -g "test" --metric "m" --verify "echo" --repo ${tmpDir}`, { encoding: "utf-8" });
+      expect(existsSync(tmpState)).toBe(true);
+    });
+
+    it("accepts -m shorthand for --metric", () => {
+      execSync(`node ${CLI} init --goal "test" -m "m" --verify "echo" --repo ${tmpDir}`, { encoding: "utf-8" });
+      const state = JSON.parse(readFileSync(tmpState, "utf-8"));
+      expect(state.metric.name).toBe("m");
+    });
+
+    it("accepts -v shorthand for --verify", () => {
+      execSync(`node ${CLI} init --goal "test" --metric "m" -v "echo test" --repo ${tmpDir}`, { encoding: "utf-8" });
+      const state = JSON.parse(readFileSync(tmpState, "utf-8"));
+      expect(state.verify).toBe("echo test");
+    });
+  });
+
+  describe("init with all options", () => {
+    const tmpDir = resolve(REPO_ROOT, ".autoresearch-test-full");
+    const tmpState = resolve(tmpDir, ".autoresearch", "state.json");
+
+    afterEach(() => {
+      try { rmSync(tmpDir, { recursive: true }); } catch {}
+    });
+
+    it("initializes with scope, direction, guard, iterations", () => {
+      execSync(`node ${CLI} init --goal "test" --metric "m" --verify "echo" --scope "src/" --direction higher --guard "npm run lint" --iterations 50 --repo ${tmpDir}`, { encoding: "utf-8" });
+      const state = JSON.parse(readFileSync(tmpState, "utf-8"));
+      expect(state.scope).toBe("src/");
+      expect(state.metric.direction).toBe("higher");
+      expect(state.guard).toBe("npm run lint");
+      expect(state.iterations_cap).toBe(50);
+    });
+  });
+
+  describe("validate command", () => {
+    it("validates with guard", () => {
+      const out = execSync(`node ${CLI} validate --goal "test" --metric "test" --verify "echo test" --guard "npm run lint"`, { encoding: "utf-8", cwd: REPO_ROOT });
+      expect(out).toContain("✓ Configuration is valid");
+    });
+
+    it("validates with iterations", () => {
+      const out = execSync(`node ${CLI} validate --goal "test" --metric "test" --verify "echo test" --iterations 10`, { encoding: "utf-8", cwd: REPO_ROOT });
+      expect(out).toContain("✓ Configuration is valid");
+    });
+  });
+
+  describe("history command", () => {
+    it("shows history with limit", () => {
+      const out = execSync(`node ${CLI} history --limit 3`, { encoding: "utf-8", cwd: REPO_ROOT });
+      expect(out).toContain("records");
+    });
+
+    it("shows history with json", () => {
+      const out = execSync(`node ${CLI} history --json --limit 2`, { encoding: "utf-8", cwd: REPO_ROOT });
+      const json = JSON.parse(out);
+      expect(json.count).toBeDefined();
+    });
+  });
+
+  describe("summary command", () => {
+    it("shows summary with json", () => {
+      const out = execSync(`node ${CLI} summary --json`, { encoding: "utf-8", cwd: REPO_ROOT });
+      const json = JSON.parse(out);
+      expect(json.total_records).toBeDefined();
+    });
+  });
+
   describe("unknown command", () => {
     it("exits with error for unknown command", () => {
       expect(() => {
         execSync(`node ${CLI} unknowncmd`, { encoding: "utf-8" });
       }).toThrow();
+    });
+  });
+
+  describe("no args", () => {
+    it("shows usage when no args provided", () => {
+      const out = execSync(`node ${CLI} 2>&1`, { encoding: "utf-8" });
+      expect(out).toContain("Usage:");
+    });
+  });
+
+  describe("version output", () => {
+    it("includes version number", () => {
+      const out = execSync(`node ${CLI} --version`, { encoding: "utf-8" });
+      expect(out).toContain("3.3.0");
+    });
+
+    it("includes runtime info", () => {
+      const out = execSync(`node ${CLI} --version`, { encoding: "utf-8" });
+      expect(out).toContain("Node.js");
+    });
+  });
+
+  describe("help output", () => {
+    it("includes all commands", () => {
+      const out = execSync(`node ${CLI} --help 2>&1`, { encoding: "utf-8" });
+      expect(out).toContain("init");
+      expect(out).toContain("status");
+      expect(out).toContain("record");
+      expect(out).toContain("complete");
+    });
+
+    it("includes all options", () => {
+      const out = execSync(`node ${CLI} --help 2>&1`, { encoding: "utf-8" });
+      expect(out).toContain("--goal");
+      expect(out).toContain("--metric");
+      expect(out).toContain("--verify");
+    });
+  });
+
+  describe("init with dry-run", () => {
+    it("shows preview without creating files", () => {
+      const out = execSync(`node ${CLI} init --goal "test" --metric "test" --verify "echo test" --dry-run 2>&1`, { encoding: "utf-8" });
+      expect(out).toContain("Would initialize");
+      expect(out).toContain("dry-run");
+    });
+  });
+
+  describe("record with hypothesis", () => {
+    const tmpDir = resolve(REPO_ROOT, ".autoresearch-test-hypothesis");
+    const tmpResults = resolve(tmpDir, "autoresearch-results.tsv");
+
+    beforeEach(() => {
+      try { rmSync(tmpDir, { recursive: true }); } catch {}
+      execSync(`node ${CLI} init --goal "test" --metric "tests" --verify "echo test" --repo ${tmpDir}`, { encoding: "utf-8" });
+    });
+
+    afterEach(() => {
+      try { rmSync(tmpDir, { recursive: true }); } catch {}
+    });
+
+    it("records hypothesis in results", () => {
+      execSync(`node ${CLI} record --decision keep --metric-value 42 --verify-status pass --guard-status pass --change-summary "test" --hypothesis "my hypothesis" --repo ${tmpDir}`, { encoding: "utf-8" });
+      const results = readFileSync(tmpResults, "utf-8");
+      expect(results).toContain("my hypothesis");
     });
   });
 });

@@ -364,3 +364,88 @@ describe("atomicWriteJson", () => {
     expect(content).toEqual({ new: true });
   });
 });
+
+describe("printJson", () => {
+  let mod: any;
+  beforeAll(async () => { mod = await importHelpers(); });
+
+  it("prints valid JSON", () => {
+    const logs: string[] = [];
+    const originalLog = console.log;
+    console.log = (...args: any[]) => logs.push(args.join(" "));
+    mod.printJson({ key: "value" });
+    console.log = originalLog;
+    expect(logs[0]).toBe('{\n  "key": "value"\n}');
+  });
+
+  it("handles null", () => {
+    const logs: string[] = [];
+    const originalLog = console.log;
+    console.log = (...args: any[]) => logs.push(args.join(" "));
+    mod.printJson(null);
+    console.log = originalLog;
+    expect(logs[0]).toBe("null");
+  });
+
+  it("handles arrays", () => {
+    const logs: string[] = [];
+    const originalLog = console.log;
+    console.log = (...args: any[]) => logs.push(args.join(" "));
+    mod.printJson([1, 2, 3]);
+    console.log = originalLog;
+    expect(logs[0]).toBe("[\n  1,\n  2,\n  3\n]");
+  });
+});
+
+describe("resolveRepo", () => {
+  let mod: any;
+  beforeAll(async () => { mod = await importHelpers(); });
+
+  it("returns provided repo", () => {
+    expect(mod.resolveRepo("/my/repo")).toBe("/my/repo");
+  });
+
+  it("defaults to cwd when undefined", () => {
+    expect(mod.resolveRepo(undefined)).toBe(process.cwd());
+  });
+
+  it("returns empty string when provided", () => {
+    expect(mod.resolveRepo("")).toBe("");
+  });
+});
+
+describe("utcNow", () => {
+  let mod: any;
+  beforeAll(async () => { mod = await importHelpers(); });
+
+  it("returns ISO string", () => {
+    const result = mod.utcNow();
+    expect(result).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3})?Z$/);
+  });
+
+  it("returns consistent format", () => {
+    const result = mod.utcNow();
+    expect(result.endsWith("Z")).toBe(true);
+    expect(result.includes("+")).toBe(false);
+  });
+});
+
+describe("AutoresearchError", () => {
+  let mod: any;
+  beforeAll(async () => { mod = await importHelpers(); });
+
+  it("has correct name", () => {
+    const err = new mod.AutoresearchError("test message");
+    expect(err.name).toBe("AutoresearchError");
+  });
+
+  it("has correct message", () => {
+    const err = new mod.AutoresearchError("test message");
+    expect(err.message).toBe("test message");
+  });
+
+  it("is instance of Error", () => {
+    const err = new mod.AutoresearchError("test");
+    expect(err instanceof Error).toBe(true);
+  });
+});
