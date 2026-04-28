@@ -40,10 +40,6 @@ beforeAll(() => {
   mkdirSync(TMP_DIR, { recursive: true });
 });
 
-afterAll(() => {
-  try { rmSync(TMP_DIR, { recursive: true, force: true }); } catch {}
-});
-
 function createMinimalState(overrides: Partial<RunState> = {}): RunState {
   return {
     schema_version: 1,
@@ -226,14 +222,10 @@ describe("buildSupervisorSnapshot", () => {
   let mod: any;
   beforeAll(async () => { mod = await importRunManager(); });
 
-  const stateDir = resolve(TMP_DIR, "buildSupervisorSnapshot");
-
-  beforeEach(() => {
+  it("returns stop when stop_requested is true", async () => {
+    const stateDir = resolve(TMP_DIR, "buildSupervisorSnapshot-stop");
     try { rmSync(stateDir, { recursive: true, force: true }); } catch {}
     mkdirSync(stateDir, { recursive: true });
-  });
-
-  it("returns stop when stop_requested is true", async () => {
     writeFileSync(resolve(stateDir, "state.json"), JSON.stringify(createMinimalState({
       flags: { stop_requested: true, needs_human: false, background_active: true, stop_ready: false },
     })), "utf-8");
@@ -243,6 +235,9 @@ describe("buildSupervisorSnapshot", () => {
   });
 
   it("returns needs_human when needs_human is true", async () => {
+    const stateDir = resolve(TMP_DIR, "buildSupervisorSnapshot-human");
+    try { rmSync(stateDir, { recursive: true, force: true }); } catch {}
+    mkdirSync(stateDir, { recursive: true });
     writeFileSync(resolve(stateDir, "state.json"), JSON.stringify(createMinimalState({
       flags: { stop_requested: false, needs_human: true, background_active: true, stop_ready: false },
     })), "utf-8");
@@ -251,6 +246,9 @@ describe("buildSupervisorSnapshot", () => {
   });
 
   it("returns stop when iteration cap reached", async () => {
+    const stateDir = resolve(TMP_DIR, "buildSupervisorSnapshot-cap");
+    try { rmSync(stateDir, { recursive: true, force: true }); } catch {}
+    mkdirSync(stateDir, { recursive: true });
     writeFileSync(resolve(stateDir, "state.json"), JSON.stringify(createMinimalState({
       stats: { kept: 5, discarded: 0, needs_human: 0, consecutive_discards: 0, total_iterations: 10 },
       iterations_cap: 10,
@@ -261,6 +259,9 @@ describe("buildSupervisorSnapshot", () => {
   });
 
   it("returns stop for completed status", async () => {
+    const stateDir = resolve(TMP_DIR, "buildSupervisorSnapshot-completed");
+    try { rmSync(stateDir, { recursive: true, force: true }); } catch {}
+    mkdirSync(stateDir, { recursive: true });
     writeFileSync(resolve(stateDir, "state.json"), JSON.stringify(createMinimalState({ status: "completed" })), "utf-8");
     const snapshot = await mod.buildSupervisorSnapshot(stateDir, undefined, "state.json");
     expect(snapshot.decision).toBe("stop");
@@ -268,6 +269,9 @@ describe("buildSupervisorSnapshot", () => {
   });
 
   it("returns stop when deadline elapsed", async () => {
+    const stateDir = resolve(TMP_DIR, "buildSupervisorSnapshot-deadline");
+    try { rmSync(stateDir, { recursive: true, force: true }); } catch {}
+    mkdirSync(stateDir, { recursive: true });
     const pastDeadline = new Date(Date.now() - 3600000).toISOString();
     writeFileSync(resolve(stateDir, "state.json"), JSON.stringify(createMinimalState({
       deadline_at: pastDeadline,
@@ -278,6 +282,9 @@ describe("buildSupervisorSnapshot", () => {
   });
 
   it("returns relaunch for healthy running state", async () => {
+    const stateDir = resolve(TMP_DIR, "buildSupervisorSnapshot-relaunch");
+    try { rmSync(stateDir, { recursive: true, force: true }); } catch {}
+    mkdirSync(stateDir, { recursive: true });
     writeFileSync(resolve(stateDir, "state.json"), JSON.stringify(createMinimalState()), "utf-8");
     const snapshot = await mod.buildSupervisorSnapshot(stateDir, undefined, "state.json");
     expect(snapshot.decision).toBe("relaunch");
@@ -285,6 +292,9 @@ describe("buildSupervisorSnapshot", () => {
   });
 
   it("counts results rows from results file", async () => {
+    const stateDir = resolve(TMP_DIR, "buildSupervisorSnapshot-rows");
+    try { rmSync(stateDir, { recursive: true, force: true }); } catch {}
+    mkdirSync(stateDir, { recursive: true });
     writeFileSync(resolve(stateDir, "state.json"), JSON.stringify(createMinimalState()), "utf-8");
     const header = "timestamp\titeration\tdecision\tmetric_value\tverify_status\tguard_status\thypothesis\tchange_summary\tlabels\tnote\n";
     const row = "2024-01-01T00:00:00Z\t1\tkeep\t42\tpass\tpass\thyp\tchange\tlabel\tnote\n";
@@ -294,6 +304,9 @@ describe("buildSupervisorSnapshot", () => {
   });
 
   it("counts zero rows when results file is empty", async () => {
+    const stateDir = resolve(TMP_DIR, "buildSupervisorSnapshot-empty");
+    try { rmSync(stateDir, { recursive: true, force: true }); } catch {}
+    mkdirSync(stateDir, { recursive: true });
     writeFileSync(resolve(stateDir, "state.json"), JSON.stringify(createMinimalState()), "utf-8");
     const header = "timestamp\titeration\tdecision\tmetric_value\tverify_status\tguard_status\thypothesis\tchange_summary\tlabels\tnote\n";
     writeFileSync(resolve(stateDir, "autoresearch-results.tsv"), header, "utf-8");

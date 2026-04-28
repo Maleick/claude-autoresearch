@@ -5,7 +5,7 @@ import { mkdirSync, rmSync, existsSync, readFileSync } from "fs";
 const REPO_ROOT = resolve(fileURLToPath(import.meta.url), "..", "..");
 
 describe("run-manager", () => {
-  const tmpDir = resolve(REPO_ROOT, ".autoresearch-test-tmp");
+  const tmpDir = resolve(REPO_ROOT, ".autoresearch-test-tmp-manager");
 
   beforeEach(() => {
     try { rmSync(tmpDir, { recursive: true }); } catch { /* ignore */ }
