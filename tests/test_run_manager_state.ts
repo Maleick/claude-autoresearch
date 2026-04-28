@@ -130,16 +130,11 @@ describe("setStopRequested", () => {
   let mod: any;
   beforeAll(async () => { mod = await importRunManager(); });
 
-  const stateDir = resolve(TMP_DIR, "setStopRequested");
-  const stateFile = resolve(stateDir, "state.json");
-
-  beforeEach(() => {
+  it("stops a background run", async () => {
+    const stateDir = resolve(TMP_DIR, "setStopRequested-bg");
+    const stateFile = resolve(stateDir, "state.json");
     try { rmSync(stateDir, { recursive: true, force: true }); } catch {}
     mkdirSync(stateDir, { recursive: true });
-  });
-
-  it("stops a background run", async () => {
-    if (!existsSync(stateDir)) mkdirSync(stateDir, { recursive: true });
     writeFileSync(stateFile, JSON.stringify(createMinimalState({ mode: "background" })), "utf-8");
     const result = await mod.setStopRequested(stateDir, "state.json");
     expect(result.flags.stop_requested).toBe(true);
@@ -148,7 +143,10 @@ describe("setStopRequested", () => {
   });
 
   it("rejects stopping a foreground run", async () => {
-    if (!existsSync(stateDir)) mkdirSync(stateDir, { recursive: true });
+    const stateDir = resolve(TMP_DIR, "setStopRequested-fg");
+    const stateFile = resolve(stateDir, "state.json");
+    try { rmSync(stateDir, { recursive: true, force: true }); } catch {}
+    mkdirSync(stateDir, { recursive: true });
     writeFileSync(stateFile, JSON.stringify(createMinimalState({ mode: "foreground" })), "utf-8");
     await expect(mod.setStopRequested(stateDir, "state.json")).rejects.toThrow("Only background runs can be stopped.");
   });
@@ -158,15 +156,11 @@ describe("resumeBackgroundRun", () => {
   let mod: any;
   beforeAll(async () => { mod = await importRunManager(); });
 
-  const stateDir = resolve(TMP_DIR, "resumeBackgroundRun");
-  const stateFile = resolve(stateDir, "state.json");
-
-  beforeEach(() => {
+  it("resumes a stopped background run", async () => {
+    const stateDir = resolve(TMP_DIR, "resumeBackgroundRun-stopped");
+    const stateFile = resolve(stateDir, "state.json");
     try { rmSync(stateDir, { recursive: true, force: true }); } catch {}
     mkdirSync(stateDir, { recursive: true });
-  });
-
-  it("resumes a stopped background run", async () => {
     writeFileSync(stateFile, JSON.stringify(createMinimalState({
       mode: "background",
       flags: { stop_requested: true, needs_human: false, background_active: false, stop_ready: true },
@@ -179,11 +173,19 @@ describe("resumeBackgroundRun", () => {
   });
 
   it("rejects resuming a completed run", async () => {
+    const stateDir = resolve(TMP_DIR, "resumeBackgroundRun-completed");
+    const stateFile = resolve(stateDir, "state.json");
+    try { rmSync(stateDir, { recursive: true, force: true }); } catch {}
+    mkdirSync(stateDir, { recursive: true });
     writeFileSync(stateFile, JSON.stringify(createMinimalState({ status: "completed" })), "utf-8");
     await expect(mod.resumeBackgroundRun(stateDir, "state.json")).rejects.toThrow("Completed runs cannot be resumed");
   });
 
   it("rejects resuming a foreground run", async () => {
+    const stateDir = resolve(TMP_DIR, "resumeBackgroundRun-fg");
+    const stateFile = resolve(stateDir, "state.json");
+    try { rmSync(stateDir, { recursive: true, force: true }); } catch {}
+    mkdirSync(stateDir, { recursive: true });
     writeFileSync(stateFile, JSON.stringify(createMinimalState({ mode: "foreground", status: "stopping" })), "utf-8");
     await expect(mod.resumeBackgroundRun(stateDir, "state.json")).rejects.toThrow("Only background runs can be resumed");
   });
@@ -193,15 +195,11 @@ describe("completeRun", () => {
   let mod: any;
   beforeAll(async () => { mod = await importRunManager(); });
 
-  const stateDir = resolve(TMP_DIR, "completeRun");
-  const stateFile = resolve(stateDir, "state.json");
-
-  beforeEach(() => {
-    rmSync(stateDir, { recursive: true, force: true });
-    mkdirSync(stateDir, { recursive: true });
-  });
-
   it("completes a running run", async () => {
+    const stateDir = resolve(TMP_DIR, "completeRun-running");
+    const stateFile = resolve(stateDir, "state.json");
+    try { rmSync(stateDir, { recursive: true, force: true }); } catch {}
+    mkdirSync(stateDir, { recursive: true });
     writeFileSync(stateFile, JSON.stringify(createMinimalState()), "utf-8");
     const result = await mod.completeRun(stateDir, "state.json");
     expect(result.status).toBe("completed");
@@ -212,6 +210,10 @@ describe("completeRun", () => {
   });
 
   it("is idempotent on completed runs", async () => {
+    const stateDir = resolve(TMP_DIR, "completeRun-idempotent");
+    const stateFile = resolve(stateDir, "state.json");
+    try { rmSync(stateDir, { recursive: true, force: true }); } catch {}
+    mkdirSync(stateDir, { recursive: true });
     writeFileSync(stateFile, JSON.stringify(createMinimalState({ status: "completed" })), "utf-8");
     const stateBefore = JSON.parse(readFileSync(stateFile, "utf-8"));
     const result = await mod.completeRun(stateDir, "state.json");
