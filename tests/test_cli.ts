@@ -139,6 +139,33 @@ describe("CLI Commands", () => {
     });
   });
 
+  describe("summary command", () => {
+    it("shows aggregate stats", () => {
+      const out = execSync(`node ${CLI} summary`, { encoding: "utf-8", cwd: REPO_ROOT });
+      expect(out).toContain("Total iterations");
+    });
+
+    it("supports --json flag", () => {
+      const out = execSync(`node ${CLI} summary --json`, { encoding: "utf-8", cwd: REPO_ROOT });
+      const json = JSON.parse(out);
+      expect(json.total_records).toBeDefined();
+    });
+  });
+
+  describe("suggest command", () => {
+    it("suggests goals from memory", () => {
+      const out = execSync(`node ${CLI} suggest`, { encoding: "utf-8", cwd: REPO_ROOT });
+      expect(out).toContain("Memory Patterns");
+    });
+  });
+
+  describe("report command", () => {
+    it("generates markdown report", () => {
+      const out = execSync(`node ${CLI} report`, { encoding: "utf-8", cwd: REPO_ROOT });
+      expect(out).toContain("# Auto Research Report");
+    });
+  });
+
   describe("unknown command", () => {
     it("exits with error for unknown command", () => {
       expect(() => {
