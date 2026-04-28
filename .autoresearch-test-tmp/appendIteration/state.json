@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "run_id": "test-run",
+  "created_at": "2026-04-28T04:55:34.026Z",
+  "updated_at": "2026-04-28T04:55:34.026Z",
+  "status": "running",
+  "mode": "background",
+  "goal": "test",
+  "scope": "test",
+  "metric": {
+    "name": "test",
+    "direction": "lower"
+  },
+  "verify": "npm test",
+  "label_requirements": {
+    "keep": [],
+    "stop": []
+  },
+  "artifact_paths": {
+    "results": "results.tsv",
+    "state": "state.json"
+  },
+  "stats": {
+    "total_iterations": 1,
+    "kept": 1,
+    "discarded": 0,
+    "needs_human": 0,
+    "consecutive_discards": 0
+  },
+  "flags": {
+    "stop_requested": false,
+    "needs_human": false,
+    "background_active": true,
+    "stop_ready": true
+  },
+  "last_iteration": {
+    "iteration": 1,
+    "decision": "keep",
+    "metric_value": "95",
+    "change_summary": "persist test",
+    "labels": [
+      "fix"
+    ],
+    "timestamp": "2026-04-28T04:55:34.026Z",
+    "keep_labels_satisfied": true,
+    "stop_labels_satisfied": true,
+    "missing_keep_labels": [],
+    "missing_stop_labels": []
+  }
+}
