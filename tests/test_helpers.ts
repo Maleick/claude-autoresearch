@@ -154,6 +154,18 @@ describe("normalizeLabels", () => {
   it("preserves order of first occurrence", () => {
     expect(mod.normalizeLabels(["b", "a", "b"])).toEqual(["b", "a"]);
   });
+  it("handles null values in arrays", () => {
+    expect(mod.normalizeLabels(["a", null as any, "b"])).toEqual(["a", "b"]);
+  });
+  it("handles undefined values in arrays", () => {
+    expect(mod.normalizeLabels(["a", undefined as any, "b"])).toEqual(["a", "b"]);
+  });
+  it("handles numbers", () => {
+    expect(mod.normalizeLabels(42 as any)).toEqual(["42"]);
+  });
+  it("handles nested arrays", () => {
+    expect(mod.normalizeLabels([["a", "b"], ["c"]] as any)).toEqual(["a", "b", "c"]);
+  });
 });
 
 describe("missingRequiredLabels", () => {

@@ -140,8 +140,12 @@ export function normalizeLabels(values) {
         return str ? [str] : [];
     }
     const flatten = (arr) => arr.flatMap((v) => {
-        if (typeof v === "string")
-            return [v.trim()];
+        if (v == null)
+            return [];
+        if (typeof v === "string") {
+            const trimmed = v.trim();
+            return trimmed ? [trimmed] : [];
+        }
         if (Array.isArray(v))
             return flatten(v);
         const str = String(v).trim();
