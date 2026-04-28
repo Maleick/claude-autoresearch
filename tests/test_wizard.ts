@@ -108,4 +108,20 @@ describe("buildSetupSummary", () => {
     const result = mod.buildSetupSummary(undefined, { goal: "improve", guard: "npm run lint" });
     expect(result.guard).toBe("npm run lint");
   });
+
+  it("includes iterations when provided", () => {
+    const result = mod.buildSetupSummary(undefined, { goal: "improve", iterations: 50 });
+    expect(result.iterations_cap).toBe(50);
+  });
+
+  it("omits iterations when not provided", () => {
+    const result = mod.buildSetupSummary(undefined, { goal: "improve" });
+    expect(result.iterations_cap).toBeUndefined();
+  });
+
+  it("sets missing_verify_command when inference fails", () => {
+    const result = mod.buildSetupSummary("/tmp/empty-dir-12345", { goal: "improve" });
+    expect(result.missing_required).toContain("verify");
+    expect(result.verify).toBe("<set verify command>");
+  });
 });
