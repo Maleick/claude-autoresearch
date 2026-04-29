@@ -14,6 +14,7 @@ docs/specs/
 
 # Autoresearch runtime artifacts
 .autoresearch/
+.autoresearch-test-tmp/
 autoresearch-results.tsv
 autoresearch-report.md
 autoresearch-memory.md

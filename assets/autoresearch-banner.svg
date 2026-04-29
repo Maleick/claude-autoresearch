@@ -38,9 +38,9 @@
   <text x="56" y="130" class="ui" font-size="48" font-weight="700" fill="#e6edf3">Auto Research</text>
   <text x="56" y="165" class="ui" font-size="15" fill="#8b949e">Autonomous recursive self-improvement engine</text>
 
-  <!-- v3.2.0 pill -->
+  <!-- v3.3.1 pill -->
   <rect x="56" y="182" width="80" height="24" rx="12" fill="#1a2f1a" stroke="#238636" stroke-width="1"/>
-  <text x="96" y="198" class="ui" font-size="12" font-weight="600" fill="#3fb950" text-anchor="middle">v3.2.0</text>
+  <text x="96" y="198" class="ui" font-size="12" font-weight="600" fill="#3fb950" text-anchor="middle">v3.3.1</text>
 
   <!-- Tagline -->
   <text x="56" y="250" class="ui" font-size="16" fill="#c9d1d9">Fire it before bed.</text>

@@ -16,7 +16,7 @@ const packResult = JSON.parse(raw);
 const entries = Array.isArray(packResult) ? packResult : [packResult];
 const files = entries.flatMap((entry) => Array.isArray(entry.files) ? entry.files : []);
 
-const allowedRoots = new Set(["dist", "hooks", "commands", "skills", "docs", ".opencode-plugin"]);
+const allowedRoots = new Set(["dist", "hooks", "commands", "skills", "plugins", "docs", ".opencode-plugin"]);
 const allowedFiles = new Set(["package.json", "README.md", "LICENSE", "AGENTS.md", "VERSION"]);
 const requiredFiles = [
   ".opencode-plugin/plugin.json",

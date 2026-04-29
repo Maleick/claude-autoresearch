@@ -61,7 +61,7 @@ flowchart LR
 - Public product name: **Auto Research**
 - Repository: `Maleick/AutoResearch`
 - Package: `opencode-autoresearch`
-- Runtime: OpenCode only (v3.2.0+)
+- Runtime: OpenCode only (v3.3.0+)
 - License: MIT
 
 ## Self-Improvement at a Glance

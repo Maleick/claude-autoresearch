@@ -38,6 +38,7 @@ The shipped npm package includes:
 - `dist/` — Compiled TypeScript
 - `commands/` — OpenCode command surfaces
 - `skills/autoresearch/` — Skill bundle
+- `plugins/` — Plugin entry points
 - `hooks/` — Shell hooks
 - `docs/` — Install and architecture docs
 - `.opencode-plugin/plugin.json` — Plugin manifest

@@ -1,6 +1,6 @@
 # Auto Research Architecture
 
-> Current reference for v3.2.0.
+> Current reference for v3.3.0.
 
 Auto Research is an OpenCode-only npm package with recursive self-improvement capabilities. The runtime is Node.js ESM. All workflow semantics are preserved from earlier releases.
 
@@ -26,6 +26,7 @@ hooks/verify-package.sh        # Package verification
 docs/OPENCODE_INSTALL.md       # OpenCode install guide
 docs/ARCHITECTURE.md           # This document
 docs/RELEASE.md                # Release process
+plugins/autoresearch.ts        # OpenCode plugin entry point
 .opencode-plugin/plugin.json   # OpenCode plugin manifest
 .autoresearch/                 # Runtime state directory (created at runtime)
 ```

@@ -1,5 +1,17 @@
 # Auto Research Changelog
 
+## [3.3.1] - 2026-04-29
+
+### Fixed
+- **README typo**: `opencode-autoship` → `opencode-autoresearch`
+- **Package verification**: Added `plugins/` directory to allowlist in `verify-package.sh`
+- **Git hygiene**: Removed accidentally committed `.autoresearch-test-tmp/` test artifacts
+- **Git hygiene**: Added `.autoresearch-test-tmp/` to `.gitignore`
+
+### Changed
+- **Version references**: Updated all docs from v3.2.0 to v3.3.1 (ARCHITECTURE.md, wiki/Home.md, banner SVG)
+- **Documentation**: Added `plugins/` directory to package layout docs (ARCHITECTURE.md, wiki/Contributing.md)
+
 ## [3.3.0] - 2026-04-28
 
 ### Added

@@ -123,7 +123,7 @@ Then start the setup wizard inside OpenCode:
 npm install -g opencode-autoresearch
 
 # 2. Verify installation
-opencode-autoship doctor
+opencode-autoresearch doctor
 
 # 3. Navigate to your project
 cd ~/Projects/my-project
