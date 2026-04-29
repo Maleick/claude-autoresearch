@@ -1,4 +1,4 @@
-import { utcNow, ensureParent, atomicWriteJson, readJsonFile, resolvePath, normalizeDirection, parseDurationSeconds, normalizeLabels, missingRequiredLabels, AutoresearchError, } from "./helpers.js";
+import { utcNow, ensureParent, atomicWriteJson, readJsonFile, parseRunState, resolvePath, normalizeDirection, parseDurationSeconds, normalizeLabels, missingRequiredLabels, AutoresearchError, } from "./helpers.js";
 import { RESULTS_DEFAULT, STATE_DEFAULT } from "./constants.js";
 import { buildSubagentPoolPlan, buildContinuationPolicy } from "./subagent-pool.js";
 import { writeFileSync, readFileSync, appendFileSync, existsSync } from "fs";
@@ -20,7 +20,7 @@ export async function initializeRun(repo, resultsPathValue, statePathValue, conf
 export async function appendIteration(repo, resultsPathValue, statePathValue, decision, metricValue, verifyStatus, guardStatus, hypothesis, changeSummary, labels, note, iteration) {
     const resultsPath = resolvePath(repo, resultsPathValue, RESULTS_DEFAULT);
     const statePath = resolvePath(repo, statePathValue, STATE_DEFAULT);
-    const state = readJsonFile(statePath);
+    const state = parseRunState(readJsonFile(statePath));
     const currentIteration = iteration ?? state.stats.total_iterations + 1;
     const now = utcNow();
     const labelList = normalizeLabels(labels ?? []);
@@ -149,7 +149,7 @@ export function makeStatePayload(config, resultsPath, statePath) {
 }
 export async function setStopRequested(repo, statePathValue) {
     const statePath = resolvePath(repo, statePathValue, STATE_DEFAULT);
-    const state = readJsonFile(statePath);
+    const state = parseRunState(readJsonFile(statePath));
     if (state.mode !== "background") {
         throw new AutoresearchError("Only background runs can be stopped.");
     }
@@ -162,7 +162,7 @@ export async function setStopRequested(repo, statePathValue) {
 }
 export async function resumeBackgroundRun(repo, statePathValue) {
     const statePath = resolvePath(repo, statePathValue, STATE_DEFAULT);
-    const state = readJsonFile(statePath);
+    const state = parseRunState(readJsonFile(statePath));
     if (state.mode !== "background") {
         throw new AutoresearchError("Only background runs can be resumed.");
     }
@@ -179,7 +179,7 @@ export async function resumeBackgroundRun(repo, statePathValue) {
 }
 export async function completeRun(repo, statePathValue) {
     const statePath = resolvePath(repo, statePathValue, STATE_DEFAULT);
-    const state = readJsonFile(statePath);
+    const state = parseRunState(readJsonFile(statePath));
     if (state.status === "completed")
         return state;
     state.updated_at = utcNow();
@@ -194,7 +194,7 @@ export async function completeRun(repo, statePathValue) {
 export async function buildSupervisorSnapshot(repo, resultsPathValue, statePathValue) {
     const resultsPath = resolvePath(repo, resultsPathValue, RESULTS_DEFAULT);
     const statePath = resolvePath(repo, statePathValue, STATE_DEFAULT);
-    const state = readJsonFile(statePath);
+    const state = parseRunState(readJsonFile(statePath));
     let resultsRows = 0;
     if (existsSync(resultsPath)) {
         const content = readFileSync(resultsPath, "utf-8");

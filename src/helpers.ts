@@ -85,6 +85,15 @@ export function normalizeResultStatus(value: string | undefined | null, fieldNam
   return normalized;
 }
 
+export function parsePositiveInt(value: string | undefined | null, fieldName: string): number | undefined {
+  if (!value) return undefined;
+  const n = parseInt(value, 10);
+  if (isNaN(n) || n <= 0) {
+    throw new AutoresearchError(`Invalid ${fieldName}: ${value} (must be a positive integer)`);
+  }
+  return n;
+}
+
 export function parseDurationSeconds(value: string | undefined | null): number | null {
   if (!value) return null;
   const normalized = value.trim().toLowerCase();
@@ -171,4 +180,46 @@ export function parseTsvFile(content: string): Record<string, string>[] {
 export function countTsvDataRows(content: string): number {
   const lines = content.trim().split("\n");
   return lines.length > 1 ? lines.slice(1).filter((l) => l.trim()).length : 0;
+}
+
+import type { RunState } from "./types.js";
+
+export function parseRunState(value: unknown): RunState {
+  if (typeof value !== "object" || value === null) {
+    throw new AutoresearchError("Invalid state: expected object");
+  }
+  const obj = value as Record<string, unknown>;
+
+  const required = ["schema_version", "run_id", "created_at", "updated_at", "status", "mode", "goal", "scope", "metric", "verify", "label_requirements", "artifact_paths", "stats", "flags"];
+  for (const key of required) {
+    if (!(key in obj)) {
+      throw new AutoresearchError(`Invalid state: missing required field "${key}"`);
+    }
+  }
+
+  if (typeof obj.metric !== "object" || obj.metric === null) {
+    throw new AutoresearchError("Invalid state: metric must be an object");
+  }
+  const metric = obj.metric as Record<string, unknown>;
+  if (typeof metric.name !== "string" || typeof metric.direction !== "string") {
+    throw new AutoresearchError("Invalid state: metric must have name and direction");
+  }
+
+  if (typeof obj.stats !== "object" || obj.stats === null) {
+    throw new AutoresearchError("Invalid state: stats must be an object");
+  }
+  const stats = obj.stats as Record<string, unknown>;
+  if (typeof stats.total_iterations !== "number" || typeof stats.kept !== "number" || typeof stats.discarded !== "number" || typeof stats.needs_human !== "number") {
+    throw new AutoresearchError("Invalid state: stats must have total_iterations, kept, discarded, needs_human");
+  }
+
+  if (typeof obj.flags !== "object" || obj.flags === null) {
+    throw new AutoresearchError("Invalid state: flags must be an object");
+  }
+  const flags = obj.flags as Record<string, unknown>;
+  if (typeof flags.stop_requested !== "boolean" || typeof flags.needs_human !== "boolean" || typeof flags.background_active !== "boolean" || typeof flags.stop_ready !== "boolean") {
+    throw new AutoresearchError("Invalid state: flags must have stop_requested, needs_human, background_active, stop_ready");
+  }
+
+  return obj as unknown as RunState;
 }

@@ -53,7 +53,7 @@
   "scripts": {
     "build": "tsc",
     "typecheck": "tsc --noEmit",
-    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config jest.config.json",
+    "test": "node --no-warnings --experimental-vm-modules node_modules/jest/bin/jest.js --config jest.config.json",
     "verify:pack": "bash hooks/verify-package.sh",
     "prepack": "tsc"
   },

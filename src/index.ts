@@ -1,3 +1,5 @@
+import { dirname, resolve } from "path";
+import { fileURLToPath } from "url";
 import {
   VERSION,
   PACKAGE_NAME,
@@ -5,8 +7,10 @@ import {
   SKILL_NAME,
 } from "./constants.js";
 
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
 export const id = SKILL_NAME;
-export const repoRoot = "/Users/maleick/Projects/AutoResearch";
+export const repoRoot = resolve(__dirname, "..");
 export const version = VERSION;
 export { VERSION, PACKAGE_NAME, PRODUCT_BRAND, SKILL_NAME };
 export type {

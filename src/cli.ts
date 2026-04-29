@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 import { existsSync, readFileSync, readdirSync } from "fs";
 import { resolve } from "path";
-import { printJson, resolveRepo } from "./helpers.js";
-import type { RunState } from "./types.js";
+import { printJson, resolveRepo, parseRunState, parsePositiveInt } from "./helpers.js";
+
 
 const VERSION_FLAGS = ["--version", "-v"];
 const HELP_FLAGS = ["--help", "-h", "help"];
@@ -146,7 +146,7 @@ const main = async (): Promise<number> => {
           verify: grouped.verify as string | undefined,
           guard: grouped.guard as string | undefined,
           mode: grouped.mode as string | undefined,
-          iterations: grouped.iterations ? parseInt(grouped.iterations as string) : undefined,
+          iterations: parsePositiveInt(grouped.iterations as string | undefined, "iterations"),
           duration: grouped.duration as string | undefined,
           memory_path: grouped["memory-path"] as string | undefined,
           required_keep_labels: grouped["required-keep-labels"] as string[] | undefined,
@@ -178,7 +178,7 @@ const main = async (): Promise<number> => {
           mode: grouped.mode as string || "foreground",
           scope: grouped.scope as string | undefined,
           guard: grouped.guard as string | undefined,
-          iterations: grouped.iterations ? parseInt(grouped.iterations as string) : undefined,
+          iterations: parsePositiveInt(grouped.iterations as string | undefined, "iterations"),
           duration: grouped.duration as string | undefined,
           memory_path: grouped["memory-path"] as string | undefined,
           required_keep_labels: grouped["required-keep-labels"] as string[] | undefined,
@@ -287,7 +287,7 @@ const main = async (): Promise<number> => {
           console.log("No iteration records yet.");
           break;
         }
-        const limit = grouped.limit ? parseInt(grouped.limit as string) : 10;
+        const limit = parsePositiveInt(grouped.limit as string | undefined, "limit") ?? 10;
         const records = lines.slice(1).reverse().slice(0, limit);
         if (useJson) {
           const headers = lines[0].split("\t");
@@ -320,7 +320,7 @@ const main = async (): Promise<number> => {
           console.log("No run state found. Run 'autoresearch init' first.");
           break;
         }
-        const state = readJsonFile(statePath) as unknown as RunState;
+        const state = parseRunState(readJsonFile(statePath));
         if (useJson) {
           printJson({
             goal: state.goal,
@@ -450,7 +450,7 @@ const main = async (): Promise<number> => {
           break;
         }
         
-        const state = readJsonFile(statePath) as unknown as RunState;
+        const state = parseRunState(readJsonFile(statePath));
         let results: string[] = [];
         if (existsSync(resultsPath)) {
           const content = readFileSync(resultsPath, "utf-8");
@@ -616,7 +616,7 @@ const main = async (): Promise<number> => {
           mode: "background",
           scope: grouped.scope as string | undefined,
           guard: grouped.guard as string | undefined,
-          iterations: grouped.iterations ? parseInt(grouped.iterations as string) : undefined,
+          iterations: parsePositiveInt(grouped.iterations as string | undefined, "iterations"),
           duration: grouped.duration as string | undefined,
           memory_path: grouped["memory-path"] as string | undefined,
           required_keep_labels: grouped["required-keep-labels"] as string[] | undefined,
@@ -672,7 +672,7 @@ const main = async (): Promise<number> => {
           grouped["change-summary"] as string,
           grouped.labels ? (Array.isArray(grouped.labels) ? grouped.labels : [grouped.labels]) : undefined,
           grouped.note as string | undefined,
-          grouped.iteration ? parseInt(grouped.iteration as string) : undefined,
+          parsePositiveInt(grouped.iteration as string | undefined, "iteration"),
         );
         printJson(state);
         break;

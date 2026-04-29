@@ -4,6 +4,7 @@ import {
   ensureParent,
   atomicWriteJson,
   readJsonFile,
+  parseRunState,
   resolvePath,
   normalizeDirection,
   parseDurationSeconds,
@@ -56,7 +57,7 @@ export async function appendIteration(
 ): Promise<RunState> {
   const resultsPath = resolvePath(repo, resultsPathValue, RESULTS_DEFAULT);
   const statePath = resolvePath(repo, statePathValue, STATE_DEFAULT);
-  const state = readJsonFile(statePath) as unknown as RunState;
+  const state = parseRunState(readJsonFile(statePath));
 
   const currentIteration = iteration ?? state.stats.total_iterations + 1;
   const now = utcNow();
@@ -202,7 +203,7 @@ export async function setStopRequested(
   statePathValue: string | undefined,
 ): Promise<RunState> {
   const statePath = resolvePath(repo, statePathValue, STATE_DEFAULT);
-  const state = readJsonFile(statePath) as unknown as RunState;
+  const state = parseRunState(readJsonFile(statePath));
   if (state.mode !== "background") {
     throw new AutoresearchError("Only background runs can be stopped.");
   }
@@ -219,7 +220,7 @@ export async function resumeBackgroundRun(
   statePathValue: string | undefined,
 ): Promise<RunState> {
   const statePath = resolvePath(repo, statePathValue, STATE_DEFAULT);
-  const state = readJsonFile(statePath) as unknown as RunState;
+  const state = parseRunState(readJsonFile(statePath));
   if (state.mode !== "background") {
     throw new AutoresearchError("Only background runs can be resumed.");
   }
@@ -240,7 +241,7 @@ export async function completeRun(
   statePathValue: string | undefined,
 ): Promise<RunState> {
   const statePath = resolvePath(repo, statePathValue, STATE_DEFAULT);
-  const state = readJsonFile(statePath) as unknown as RunState;
+  const state = parseRunState(readJsonFile(statePath));
   if (state.status === "completed") return state;
   state.updated_at = utcNow();
   state.status = "completed";
@@ -259,7 +260,7 @@ export async function buildSupervisorSnapshot(
 ): Promise<SupervisorSnapshot> {
   const resultsPath = resolvePath(repo, resultsPathValue, RESULTS_DEFAULT);
   const statePath = resolvePath(repo, statePathValue, STATE_DEFAULT);
-  const state = readJsonFile(statePath) as unknown as RunState;
+  const state = parseRunState(readJsonFile(statePath));
 
   let resultsRows = 0;
   if (existsSync(resultsPath)) {

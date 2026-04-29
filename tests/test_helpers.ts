@@ -449,3 +449,113 @@ describe("AutoresearchError", () => {
     expect(err instanceof Error).toBe(true);
   });
 });
+
+describe("parsePositiveInt", () => {
+  let mod: any;
+  beforeAll(async () => { mod = await importHelpers(); });
+
+  it("returns undefined for undefined", () => {
+    expect(mod.parsePositiveInt(undefined, "field")).toBeUndefined();
+  });
+
+  it("returns undefined for null", () => {
+    expect(mod.parsePositiveInt(null, "field")).toBeUndefined();
+  });
+
+  it("returns undefined for empty string", () => {
+    expect(mod.parsePositiveInt("", "field")).toBeUndefined();
+  });
+
+  it("parses valid positive integer", () => {
+    expect(mod.parsePositiveInt("42", "field")).toBe(42);
+  });
+
+  it("throws on NaN", () => {
+    expect(() => mod.parsePositiveInt("abc", "field")).toThrow("Invalid field: abc");
+  });
+
+  it("throws on zero", () => {
+    expect(() => mod.parsePositiveInt("0", "field")).toThrow("Invalid field: 0");
+  });
+
+  it("throws on negative", () => {
+    expect(() => mod.parsePositiveInt("-5", "field")).toThrow("Invalid field: -5");
+  });
+});
+
+describe("parseRunState", () => {
+  let mod: any;
+  beforeAll(async () => { mod = await importHelpers(); });
+
+  it("returns valid state", () => {
+    const state = {
+      schema_version: 1,
+      run_id: "test-run",
+      created_at: "2024-01-01T00:00:00Z",
+      updated_at: "2024-01-01T00:00:00Z",
+      status: "running",
+      mode: "foreground",
+      goal: "test",
+      scope: "test",
+      metric: { name: "test", direction: "lower" },
+      verify: "npm test",
+      label_requirements: { keep: [], stop: [] },
+      artifact_paths: { results: "results.tsv", state: "state.json" },
+      stats: { total_iterations: 0, kept: 0, discarded: 0, needs_human: 0, consecutive_discards: 0 },
+      flags: { stop_requested: false, needs_human: false, background_active: false, stop_ready: false },
+    };
+    expect(mod.parseRunState(state)).toEqual(state);
+  });
+
+  it("throws on non-object", () => {
+    expect(() => mod.parseRunState("string")).toThrow("Invalid state: expected object");
+  });
+
+  it("throws on null", () => {
+    expect(() => mod.parseRunState(null)).toThrow("Invalid state: expected object");
+  });
+
+  it("throws on missing required field", () => {
+    expect(() => mod.parseRunState({})).toThrow('Invalid state: missing required field "schema_version"');
+  });
+
+  it("throws on invalid metric", () => {
+    const state = {
+      schema_version: 1,
+      run_id: "test-run",
+      created_at: "2024-01-01T00:00:00Z",
+      updated_at: "2024-01-01T00:00:00Z",
+      status: "running",
+      mode: "foreground",
+      goal: "test",
+      scope: "test",
+      metric: "invalid",
+      verify: "npm test",
+      label_requirements: { keep: [], stop: [] },
+      artifact_paths: { results: "results.tsv", state: "state.json" },
+      stats: { total_iterations: 0, kept: 0, discarded: 0, needs_human: 0, consecutive_discards: 0 },
+      flags: { stop_requested: false, needs_human: false, background_active: false, stop_ready: false },
+    };
+    expect(() => mod.parseRunState(state)).toThrow("Invalid state: metric must be an object");
+  });
+
+  it("throws on invalid stats", () => {
+    const state = {
+      schema_version: 1,
+      run_id: "test-run",
+      created_at: "2024-01-01T00:00:00Z",
+      updated_at: "2024-01-01T00:00:00Z",
+      status: "running",
+      mode: "foreground",
+      goal: "test",
+      scope: "test",
+      metric: { name: "test", direction: "lower" },
+      verify: "npm test",
+      label_requirements: { keep: [], stop: [] },
+      artifact_paths: { results: "results.tsv", state: "state.json" },
+      stats: "invalid",
+      flags: { stop_requested: false, needs_human: false, background_active: false, stop_ready: false },
+    };
+    expect(() => mod.parseRunState(state)).toThrow("Invalid state: stats must be an object");
+  });
+});

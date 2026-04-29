@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { existsSync, readFileSync, readdirSync } from "fs";
 import { resolve } from "path";
-import { printJson, resolveRepo } from "./helpers.js";
+import { printJson, resolveRepo, parseRunState, parsePositiveInt } from "./helpers.js";
 const VERSION_FLAGS = ["--version", "-v"];
 const HELP_FLAGS = ["--help", "-h", "help"];
 const usage = () => {
@@ -140,7 +140,7 @@ const main = async () => {
                     verify: grouped.verify,
                     guard: grouped.guard,
                     mode: grouped.mode,
-                    iterations: grouped.iterations ? parseInt(grouped.iterations) : undefined,
+                    iterations: parsePositiveInt(grouped.iterations, "iterations"),
                     duration: grouped.duration,
                     memory_path: grouped["memory-path"],
                     required_keep_labels: grouped["required-keep-labels"],
@@ -173,7 +173,7 @@ const main = async () => {
                     mode: grouped.mode || "foreground",
                     scope: grouped.scope,
                     guard: grouped.guard,
-                    iterations: grouped.iterations ? parseInt(grouped.iterations) : undefined,
+                    iterations: parsePositiveInt(grouped.iterations, "iterations"),
                     duration: grouped.duration,
                     memory_path: grouped["memory-path"],
                     required_keep_labels: grouped["required-keep-labels"],
@@ -273,7 +273,7 @@ const main = async () => {
                     console.log("No iteration records yet.");
                     break;
                 }
-                const limit = grouped.limit ? parseInt(grouped.limit) : 10;
+                const limit = parsePositiveInt(grouped.limit, "limit") ?? 10;
                 const records = lines.slice(1).reverse().slice(0, limit);
                 if (useJson) {
                     const headers = lines[0].split("\t");
@@ -306,7 +306,7 @@ const main = async () => {
                     console.log("No run state found. Run 'autoresearch init' first.");
                     break;
                 }
-                const state = readJsonFile(statePath);
+                const state = parseRunState(readJsonFile(statePath));
                 if (useJson) {
                     printJson({
                         goal: state.goal,
@@ -437,7 +437,7 @@ const main = async () => {
                     console.log("No run state found. Run 'autoresearch init' first.");
                     break;
                 }
-                const state = readJsonFile(statePath);
+                const state = parseRunState(readJsonFile(statePath));
                 let results = [];
                 if (existsSync(resultsPath)) {
                     const content = readFileSync(resultsPath, "utf-8");
@@ -600,7 +600,7 @@ const main = async () => {
                     mode: "background",
                     scope: grouped.scope,
                     guard: grouped.guard,
-                    iterations: grouped.iterations ? parseInt(grouped.iterations) : undefined,
+                    iterations: parsePositiveInt(grouped.iterations, "iterations"),
                     duration: grouped.duration,
                     memory_path: grouped["memory-path"],
                     required_keep_labels: grouped["required-keep-labels"],
@@ -638,7 +638,7 @@ const main = async () => {
                 const { normalizeResultStatus } = await import("./helpers.js");
                 const vs = grouped["verify-status"] || "pass";
                 const gs = grouped["guard-status"] || "skip";
-                const state = await appendIteration(grouped.repo, grouped["results-path"], grouped["state-path"], grouped.decision, grouped["metric-value"], normalizeResultStatus(vs, "verify_status"), normalizeResultStatus(gs, "guard_status"), grouped.hypothesis, grouped["change-summary"], grouped.labels ? (Array.isArray(grouped.labels) ? grouped.labels : [grouped.labels]) : undefined, grouped.note, grouped.iteration ? parseInt(grouped.iteration) : undefined);
+                const state = await appendIteration(grouped.repo, grouped["results-path"], grouped["state-path"], grouped.decision, grouped["metric-value"], normalizeResultStatus(vs, "verify_status"), normalizeResultStatus(gs, "guard_status"), grouped.hypothesis, grouped["change-summary"], grouped.labels ? (Array.isArray(grouped.labels) ? grouped.labels : [grouped.labels]) : undefined, grouped.note, parsePositiveInt(grouped.iteration, "iteration"));
                 printJson(state);
                 break;
             }

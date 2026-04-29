@@ -80,6 +80,15 @@ export function normalizeResultStatus(value, fieldName) {
     }
     return normalized;
 }
+export function parsePositiveInt(value, fieldName) {
+    if (!value)
+        return undefined;
+    const n = parseInt(value, 10);
+    if (isNaN(n) || n <= 0) {
+        throw new AutoresearchError(`Invalid ${fieldName}: ${value} (must be a positive integer)`);
+    }
+    return n;
+}
 export function parseDurationSeconds(value) {
     if (!value)
         return null;
@@ -172,5 +181,39 @@ export function parseTsvFile(content) {
 export function countTsvDataRows(content) {
     const lines = content.trim().split("\n");
     return lines.length > 1 ? lines.slice(1).filter((l) => l.trim()).length : 0;
+}
+export function parseRunState(value) {
+    if (typeof value !== "object" || value === null) {
+        throw new AutoresearchError("Invalid state: expected object");
+    }
+    const obj = value;
+    const required = ["schema_version", "run_id", "created_at", "updated_at", "status", "mode", "goal", "scope", "metric", "verify", "label_requirements", "artifact_paths", "stats", "flags"];
+    for (const key of required) {
+        if (!(key in obj)) {
+            throw new AutoresearchError(`Invalid state: missing required field "${key}"`);
+        }
+    }
+    if (typeof obj.metric !== "object" || obj.metric === null) {
+        throw new AutoresearchError("Invalid state: metric must be an object");
+    }
+    const metric = obj.metric;
+    if (typeof metric.name !== "string" || typeof metric.direction !== "string") {
+        throw new AutoresearchError("Invalid state: metric must have name and direction");
+    }
+    if (typeof obj.stats !== "object" || obj.stats === null) {
+        throw new AutoresearchError("Invalid state: stats must be an object");
+    }
+    const stats = obj.stats;
+    if (typeof stats.total_iterations !== "number" || typeof stats.kept !== "number" || typeof stats.discarded !== "number" || typeof stats.needs_human !== "number") {
+        throw new AutoresearchError("Invalid state: stats must have total_iterations, kept, discarded, needs_human");
+    }
+    if (typeof obj.flags !== "object" || obj.flags === null) {
+        throw new AutoresearchError("Invalid state: flags must be an object");
+    }
+    const flags = obj.flags;
+    if (typeof flags.stop_requested !== "boolean" || typeof flags.needs_human !== "boolean" || typeof flags.background_active !== "boolean" || typeof flags.stop_ready !== "boolean") {
+        throw new AutoresearchError("Invalid state: flags must have stop_requested, needs_human, background_active, stop_ready");
+    }
+    return obj;
 }
 //# sourceMappingURL=helpers.js.map
