@@ -42,6 +42,7 @@
     "hooks",
     "commands",
     "skills",
+    "plugins",
     "docs",
     ".opencode-plugin",
     "AGENTS.md",
